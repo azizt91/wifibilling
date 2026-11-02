@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Panel - SaaS RT/RW Net</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e1b4b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Super Admin">
+
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest-superadmin.json">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/logo_192x192.png">
+    
+    <!-- Fonts & Tailwind CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .stat-gradient-1 {
+            background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+        }
+        .stat-gradient-2 {
+            background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+        }
+        .stat-gradient-3 {
+            background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+        }
+        .stat-gradient-4 {
+            background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="glass-header sticky top-0 z-30 border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Brand / Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-slate-900 text-lg leading-tight">Super Admin SaaS</h1>
+                        <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">Owner</span>
+                    </div>
+                    <p class="text-xs text-slate-500 hidden sm:block">Manajemen Mitra RT/RW Net & Kuota Pelanggan</p>
+                </div>
+            </div>
+
+            <!-- Actions / Profile -->
+            <div class="flex items-center gap-2 sm:gap-3">
+
+                <button type="button" id="btn-install-superadmin-header" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-sm transition active:scale-95" title="Install Super Admin ke HP / Laptop">
+                    <span>📲</span>
+                    <span class="hidden sm:inline">Install App</span>
+                </button>
+
+                <button id="btn-add-tenant" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm shadow-brand-600/30 transition active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Tambah Mitra</span>
+                </button>
+
+                <button id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <!-- Welcome Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-2xl">
+                <span class="inline-block px-2.5 py-1 text-xs font-bold bg-white/10 text-indigo-200 rounded-md mb-2">Panel Kontrol Platform</span>
+                <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Kelola Seluruh Klien RT/RW Net Anda</h2>
+                <p class="text-xs sm:text-sm text-slate-300 mt-1">Buat akun untuk klien baru, pilih skema paket lisensi, dan sesuaikan kuota jumlah pelanggan secara fleksibel.</p>
+            </div>
+            <!-- Decorative icon bg -->
+            <div class="absolute -right-6 -bottom-8 opacity-10 pointer-events-none text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-56 h-56" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Metric Statistics Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+            
+            <!-- Total Tenants -->
+            <div class="stat-gradient-1 text-white p-4 sm:p-5 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between opacity-80 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Total Mitra</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div class="text-2xl sm:text-3xl font-extrabold" id="stat-total-tenants">0</div>
+                <p class="text-[11px] text-indigo-100 mt-1">Usaha RT/RW Net Terdaftar</p>
+            </div>
+
+            <!-- Total Customers across all tenants -->
+            <div class="stat-gradient-2 text-white p-4 sm:p-5 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between opacity-80 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Total Pelanggan WiFi</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                </div>
+                <div class="text-2xl sm:text-3xl font-extrabold" id="stat-total-customers">0</div>
+                <p class="text-[11px] text-teal-100 mt-1">Semua Pelanggan Aktif</p>
+            </div>
+
+            <!-- Active / Lifetime Tenants -->
+            <div class="stat-gradient-3 text-white p-4 sm:p-5 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between opacity-80 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Mitra Aktif</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="text-2xl sm:text-3xl font-extrabold" id="stat-active-tenants">0</div>
+                <p class="text-[11px] text-amber-100 mt-1">Status Active / Lifetime</p>
+            </div>
+
+            <!-- Jatuh Tempo (H-7) & Kedaluwarsa -->
+            <div id="card-filter-expiring" class="stat-gradient-4 text-white p-4 sm:p-5 rounded-xl shadow-sm cursor-pointer hover:ring-2 hover:ring-rose-300 transition" title="Klik untuk memfilter mitra yang mau jatuh tempo">
+                <div class="flex items-center justify-between opacity-90 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Jatuh Tempo (H-7)</span>
+                    <span class="text-base">⏳</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <div class="text-2xl sm:text-3xl font-extrabold" id="stat-expiring-tenants">0</div>
+                    <span id="stat-expired-badge" class="text-[10px] font-bold bg-rose-950/40 text-rose-200 px-1.5 py-0.5 rounded hidden">0 expired</span>
+                </div>
+                <p class="text-[11px] text-rose-100 mt-1 flex items-center justify-between">
+                    <span>Perlu Diingatkan WA</span>
+                    <span class="text-[10px] underline">Filter ➔</span>
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+            
+            <!-- Search Bar -->
+            <div class="relative flex-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Cari nama usaha, nama pemilik, email, no wa..." 
+                    class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                >
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <select id="filter-plan" class="text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:ring-brand-500 focus:border-brand-500">
+                    <option value="all">Semua Paket</option>
+                    <option value="starter">Starter</option>
+                    <option value="pro">Pro</option>
+                    <option value="unlimited">Unlimited</option>
+                    <option value="free-trial">Free Trial</option>
+                </select>
+
+                <select id="filter-status" class="text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:ring-brand-500 focus:border-brand-500">
+                    <option value="all">Semua Status</option>
+                    <option value="expiring">⏳ Mau Jatuh Tempo (≤ 7 Hari)</option>
+                    <option value="expired">🔴 Sudah Kedaluwarsa</option>
+                    <option value="active">🟢 Active (Aktif)</option>
+                    <option value="trial">Free Trial</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+
+                <button id="btn-refresh" title="Muat Ulang" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Tenants List Section -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base">Daftar Mitra RT/RW Net</h3>
+                <span id="tenant-count-label" class="text-xs text-slate-500 font-medium">Memuat data...</span>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-spinner" class="py-16 text-center text-slate-400">
+                <div class="inline-block animate-spin w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full mb-3"></div>
+                <p class="text-sm">Mengambil data mitra...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="py-16 text-center text-slate-400 hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <p class="text-base font-semibold text-slate-600">Tidak ada mitra ditemukan</p>
+                <p class="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau filter status.</p>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="overflow-x-auto hidden md:block">
+                <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                        <tr>
+                            <th class="px-5 py-3.5">Nama Usaha & Pemilik</th>
+                            <th class="px-5 py-3.5">Paket SaaS</th>
+                            <th class="px-5 py-3.5">Penggunaan Kuota Pelanggan</th>
+                            <th class="px-5 py-3.5">Status & Masa Aktif</th>
+                            <th class="px-5 py-3.5 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenants-table-body" class="divide-y divide-slate-100 text-slate-700">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div id="tenants-mobile-cards" class="md:hidden divide-y divide-slate-100">
+                <!-- Rendered by JS -->
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Modal: Tambah Mitra Baru (Create Tenant) -->
+    <div id="modal-add-tenant" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 my-auto flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 flex-shrink-0">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base">Tambah Mitra RT/RW Net Baru</h3>
+                    <p class="text-xs text-slate-500">Buat akun login & tenant untuk klien Anda</p>
+                </div>
+                <button type="button" class="btn-close-modal text-slate-400 hover:text-slate-600 p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="form-add-tenant" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div class="p-6 space-y-4 overflow-y-auto flex-1">
+                    <!-- Nama Usaha WiFi -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Usaha WiFi (Tenant) *</label>
+                        <input type="text" id="add-company-name" placeholder="Contoh: Berkah Net WiFi" required class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                    </div>
+
+                    <!-- Nama Pemilik -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap Pemilik</label>
+                        <input type="text" id="add-owner-name" placeholder="Contoh: Ahmad Fauzi" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                    </div>
+
+                    <!-- Email & Password -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Email Login *</label>
+                            <input type="email" id="add-email" placeholder="klien@gmail.com" required class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Password Login *</label>
+                            <input type="text" id="add-password" placeholder="Min. 6 karakter" required minlength="6" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Pilihan Paket SaaS -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Paket SaaS</label>
+                        <select id="add-plan-id" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-medium">
+                            <!-- Loaded dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Custom Kuota Pelanggan (Fleksibel) -->
+                    <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-indigo-950">Kuota Khusus Pelanggan</label>
+                            <span class="text-[10px] text-indigo-600 font-semibold bg-white px-2 py-0.5 rounded border border-indigo-200">Opsional</span>
+                        </div>
+                        <p class="text-[11px] text-indigo-700 leading-relaxed">
+                            Anda bisa mengubah batas pelanggan secara fleksibel (misal: isi <strong>100</strong>, <strong>300</strong>, atau <strong>500</strong>). Kosongkan jika ingin mengikuti batas bawaan paket.
+                        </p>
+                        <div class="flex gap-2">
+                            <input type="number" id="add-custom-max" placeholder="Bawaan paket (atau ketik misal: 500)" class="flex-1 text-sm border-slate-200 rounded-lg bg-white">
+                            <button type="button" id="btn-set-unlimited-add" class="px-3 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Unlimited</button>
+                        </div>
+                    </div>
+
+                    <!-- Model Masa Aktif (Sekali Beli / Lifetime) -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Model Masa Aktif</label>
+                        <select id="add-subscription-type" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                            <option value="lifetime">♾️ Sekali Beli / Lifetime (Aktif Selamanya)</option>
+                            <option value="trial">⏳ Free Trial (14 Hari)</option>
+                        </select>
+                    </div>
+
+                    <!-- Nomor WhatsApp Mitra -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nomor WhatsApp Pemilik (Untuk Kirim Akses Akun)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">🇮🇩 +62</span>
+                            <input type="tel" id="add-company-phone" placeholder="8123456789" class="w-full text-sm pl-16 border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-mono">
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">Bisa diketik 08xx atau 628xx</p>
+                    </div>
+
+                    <!-- Checkbox Kirim WA Fonnte Otomatis -->
+                    <div class="p-3 bg-emerald-50/80 rounded-xl border border-emerald-200 flex items-start gap-2.5">
+                        <input type="checkbox" id="add-send-wa" checked class="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500">
+                        <label for="add-send-wa" class="text-xs text-emerald-950 select-none">
+                            <strong>Kirim Info Akun Otomatis ke WhatsApp via Fonnte</strong><br>
+                            <span class="text-[11px] text-emerald-800">Kirimkan rincian akun (nama usaha, URL slug, email, & link login langsung) ke nomor WA di atas.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Solid Docked Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2 flex-shrink-0">
+                    <button type="button" class="btn-close-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Batal</button>
+                    <button type="submit" id="btn-save-new-tenant" class="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition inline-flex items-center gap-1.5">
+                        <span id="label-save-new-tenant">Simpan & Buat Akun</span>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Modal: Edit Tenant & Kuota Pelanggan -->
+    <div id="modal-edit-tenant" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 my-auto flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 flex-shrink-0">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base">Edit Data & Kuota Mitra</h3>
+                    <p class="text-xs text-slate-500" id="edit-modal-subtitle">Perbarui nama usaha, paket SaaS, batas kuota, dan masa aktif</p>
+                </div>
+                <button type="button" class="btn-close-modal text-slate-400 hover:text-slate-600 p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="form-edit-tenant" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <input type="hidden" id="edit-tenant-id">
+
+                <div class="p-6 space-y-4 overflow-y-auto flex-1">
+                    <!-- Nama Usaha WiFi -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Usaha WiFi *</label>
+                        <input type="text" id="edit-company-name" required class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                    </div>
+
+                    <!-- Paket SaaS -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Paket SaaS</label>
+                        <select id="edit-plan-id" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-medium">
+                            <!-- Loaded dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Custom Kuota Pelanggan -->
+                    <div class="p-3.5 bg-indigo-50/70 rounded-xl border border-indigo-100 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-indigo-950">Batas Jumlah Pelanggan (Fleksibel)</label>
+                            <span id="badge-current-used" class="text-[10px] text-indigo-700 font-semibold bg-white px-2 py-0.5 rounded border border-indigo-200">Terpakai: 0</span>
+                        </div>
+                        <p class="text-[11px] text-indigo-700 leading-relaxed">
+                            Ubah batas kapasitas pelanggan untuk mitra ini. Anda bisa mengisi angka custom misal <strong>100</strong>, <strong>300</strong>, <strong>500</strong>, atau set Unlimited.
+                        </p>
+                        <div class="flex gap-2">
+                            <input type="number" id="edit-custom-max" placeholder="Contoh: 500 (Kosongkan = ikuti paket)" class="flex-1 text-sm border-slate-200 rounded-lg bg-white">
+                            <button type="button" id="btn-set-unlimited-edit" class="px-3 py-1.5 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Set Unlimited</button>
+                        </div>
+                        <button type="button" id="btn-reset-to-plan" class="text-[11px] text-slate-500 hover:text-slate-800 underline">Gunakan batas standar paket bawaan</button>
+                    </div>
+
+                    <!-- Status Langganan -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Status Langganan</label>
+                            <select id="edit-status" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-medium">
+                                <option value="active">Active (Aktif)</option>
+                                <option value="trial">Trial</option>
+                                <option value="suspended">Suspended (Ditangguhkan)</option>
+                                <option value="past_due">Past Due</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Masa Berlaku</label>
+                            <select id="edit-expiry-type" class="w-full text-sm border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500">
+                                <option value="lifetime">♾️ Seumur Hidup (Lifetime)</option>
+                                <option value="custom">📅 Atur Tanggal Kedaluwarsa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="container-custom-expiry" class="hidden">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Kedaluwarsa</label>
+                        <input type="date" id="edit-expiry-date" class="w-full text-sm border-slate-200 rounded-lg">
+                    </div>
+
+                    <!-- Reset Password Login Mitra (Opsional) -->
+                    <div class="p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-amber-950">Ganti Password Login Mitra</label>
+                            <span class="text-[10px] text-amber-700 font-semibold bg-white px-2 py-0.5 rounded border border-amber-200">Opsional</span>
+                        </div>
+                        <p class="text-[11px] text-amber-800 leading-relaxed">
+                            Jika mitra lupa password atau ingin dibuatkan password baru, ketik di sini (min. 6 karakter). Kosongkan jika tidak ingin mengubah password.
+                        </p>
+                        <input type="text" id="edit-new-password" placeholder="Ketik password baru jika ingin diganti (min. 6 karakter)" class="w-full text-sm border-slate-200 rounded-lg bg-white font-mono">
+                    </div>
+
+                    <!-- Nomor WhatsApp Mitra -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nomor WhatsApp Mitra</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">🇮🇩 +62</span>
+                            <input type="tel" id="edit-company-phone" placeholder="8123456789" class="w-full text-sm pl-16 border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Checkbox Kirim WA Fonnte Update -->
+                    <div class="p-3 bg-emerald-50/80 rounded-xl border border-emerald-200 flex items-start gap-2.5">
+                        <input type="checkbox" id="edit-send-wa" class="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500">
+                        <label for="edit-send-wa" class="text-xs text-emerald-950 select-none">
+                            <strong>Kirim Notifikasi Perubahan / Aktivasi ke WhatsApp via Fonnte</strong><br>
+                            <span class="text-[11px] text-emerald-800">Kirimkan rincian akun dan status terbaru langsung ke WhatsApp mitra.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Solid Docked Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2 flex-shrink-0">
+                    <button type="button" class="btn-close-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Batal</button>
+                    <button type="submit" id="btn-save-edit-tenant" class="px-5 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition inline-flex items-center gap-1.5">
+                        <span id="label-save-edit-tenant">Simpan Perubahan</span>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Modal: Perpanjangan Masa Aktif / Berlangganan -->
+    <div id="modal-renew-tenant" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 my-auto flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex-shrink-0">
+                <div>
+                    <h3 class="font-extrabold text-base flex items-center gap-2">
+                        <span>➕</span> Perpanjang Langganan Mitra
+                    </h3>
+                    <p class="text-xs text-emerald-100" id="renew-modal-subtitle">Tambah masa aktif dan kirim konfirmasi otomatis</p>
+                </div>
+                <button type="button" class="btn-close-modal text-white/80 hover:text-white p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="form-renew-tenant" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <input type="hidden" id="renew-tenant-id">
+
+                <div class="p-6 space-y-4 overflow-y-auto flex-1">
+                    <!-- Info Mitra Saat Ini -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-500 font-medium">Mitra:</span>
+                            <span class="text-xs font-bold text-slate-900" id="renew-tenant-name">-</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-500 font-medium">Paket Aktif:</span>
+                            <span class="text-xs font-bold text-indigo-700" id="renew-tenant-plan">-</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-500 font-medium">Masa Aktif Saat Ini:</span>
+                            <span class="text-xs font-bold text-slate-700" id="renew-current-expiry">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Pintas Tambah Durasi -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-2">Pilih Durasi Perpanjangan:</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <button type="button" class="btn-add-duration px-3 py-2 text-xs font-bold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition" data-months="1">+1 Bulan</button>
+                            <button type="button" class="btn-add-duration px-3 py-2 text-xs font-bold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition" data-months="3">+3 Bulan</button>
+                            <button type="button" class="btn-add-duration px-3 py-2 text-xs font-bold rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white transition" data-months="12">+1 Tahun</button>
+                            <button type="button" class="btn-add-duration px-3 py-2 text-xs font-bold rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white transition" data-months="lifetime">♾️ Lifetime</button>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Jatuh Tempo Baru -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Tanggal Jatuh Tempo Baru *</label>
+                        <div class="flex items-center gap-2">
+                            <input type="date" id="renew-expiry-date" class="flex-1 text-sm border-slate-200 rounded-lg">
+                            <span id="renew-lifetime-tag" class="hidden px-3 py-2 text-xs font-bold bg-purple-100 text-purple-800 rounded-lg border border-purple-200">♾️ Aktif Selamanya</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">Gunakan tombol pintas di atas atau tentukan tanggal secara bebas.</p>
+                    </div>
+
+                    <!-- Nomor WA Tenant -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nomor WhatsApp Mitra (Untuk Kirim Konfirmasi)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">🇮🇩 +62</span>
+                            <input type="tel" id="renew-phone" placeholder="8123456789" class="w-full text-sm pl-16 border-slate-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Checkbox Kirim WA Otomatis -->
+                    <div class="p-3 bg-emerald-50/80 rounded-xl border border-emerald-200 flex items-start gap-2.5">
+                        <input type="checkbox" id="renew-send-wa" checked class="mt-0.5 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500">
+                        <label for="renew-send-wa" class="text-xs text-emerald-950 select-none">
+                            <strong>Kirim Bukti Konfirmasi via WhatsApp Fonnte</strong><br>
+                            <span class="text-[11px] text-emerald-800">Kirim notifikasi otomatis rincian perpanjangan ke WhatsApp mitra setelah disimpan.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Solid Docked Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2 flex-shrink-0">
+                    <button type="button" class="btn-close-modal px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Batal</button>
+                    <button type="submit" id="btn-save-renew" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition inline-flex items-center gap-1.5">
+                        <span id="label-save-renew">Simpan & Perpanjang</span>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Modal: Kirim Pengingat WhatsApp via Fonnte -->
+    <div id="modal-remind-wa" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-150 my-auto flex flex-col max-h-[90vh]">
+            
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-600 to-rose-600 text-white flex-shrink-0">
+                <div>
+                    <h3 class="font-extrabold text-base flex items-center gap-2">
+                        <span>📲</span> Kirim Pengingat Jatuh Tempo
+                    </h3>
+                    <p class="text-xs text-amber-100">Notifikasi tagihan langganan via Fonnte API</p>
+                </div>
+                <button type="button" class="btn-close-modal text-white/80 hover:text-white p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <input type="hidden" id="remind-tenant-id">
+
+                <div class="p-6 space-y-4 overflow-y-auto flex-1">
+                    <!-- Nomor WA Tujuan -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nomor WhatsApp Tujuan *</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">🇮🇩 +62</span>
+                            <input type="tel" id="remind-phone" placeholder="8123456789" class="w-full text-sm pl-16 border-slate-200 rounded-lg focus:ring-brand-500 focus:border-brand-500 font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Template Pesan (Editable) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-bold text-slate-700">Teks Pesan WhatsApp</label>
+                            <span class="text-[10px] text-slate-400">Dapat disesuaikan sebelum dikirim</span>
+                        </div>
+                        <textarea id="remind-message" rows="8" class="w-full text-xs font-mono border-slate-200 rounded-lg p-3 bg-slate-50 focus:bg-white focus:ring-amber-500 focus:border-amber-500 leading-relaxed"></textarea>
+                    </div>
+                </div>
+
+                <!-- Solid Docked Footer -->
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 flex-shrink-0">
+                    <button type="button" id="btn-open-wa-manual" class="w-full sm:w-auto px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition inline-flex items-center justify-center gap-1.5">
+                        <span>💬 Buka WhatsApp Web</span>
+                    </button>
+                    
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button type="button" class="btn-close-modal px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Batal</button>
+                        <button type="button" id="btn-send-fonnte" class="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-lg shadow-sm transition inline-flex items-center gap-1.5">
+                            <span id="label-send-fonnte">🚀 Kirim via Fonnte</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="supabase-client.js"></script>
+    <script type="module" src="superadmin.js"></script>
+    <script src="pwa-installer.js"></script>
+</body>
+</html>

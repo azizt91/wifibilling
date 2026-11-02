@@ -173,10 +173,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const newNama = editNama.value.trim();
         const newPassword = editPassword.value.trim();
-        const newEmail = editUser.value.trim();
 
-        if (!newNama || !newEmail) {
-            alert('Nama Lengkap dan Email tidak boleh kosong.');
+        if (!newNama) {
+            alert('Nama Lengkap tidak boleh kosong.');
             return;
         }
 
@@ -195,19 +194,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('id', currentUser.id);
             if (profileError) throw profileError;
 
-            const authUpdateData = {};
-            if (newEmail && newEmail !== currentUser.email) {
-                authUpdateData.email = newEmail;
-            }
             if (newPassword) {
-                authUpdateData.password = newPassword;
-            }
-
-            if (Object.keys(authUpdateData).length > 0) {
-                const { data: { user }, error: authError } = await supabase.auth.updateUser(authUpdateData);
+                const { data: { user }, error: authError } = await supabase.auth.updateUser({ password: newPassword });
                 if (authError) {
                     await supabase.from('profiles').update({ full_name: currentAdminData.full_name }).eq('id', currentUser.id);
-                    throw new Error(`Gagal memperbarui email/password: ${authError.message}`);
+                    throw new Error(`Gagal memperbarui password: ${authError.message}`);
                 }
             }
 
@@ -269,13 +260,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (confirm('Yakin ingin logout?')) {
             try {
                 const { error } = await supabase.auth.signOut();
-                if (error) {
-                    console.error('Logout error:', error);
-                }
-                window.location.href = 'index.html';
+                if (error) console.error('Logout error:', error);
             } catch (error) {
                 console.error('Logout error:', error);
-                window.location.href = 'index.html';
+            } finally {
+                sessionStorage.clear();
+                localStorage.removeItem('app_settings');
+                localStorage.removeItem('whatsapp_settings');
+                localStorage.removeItem('pwa_manifest');
+                window.location.href = 'login.html';
             }
         }
     }

@@ -1,0 +1,11 @@
+[functions.create-customer]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-customer/deno.json"
+entrypoint = "./functions/create-customer/index.ts"
+
+[functions.payment-reminder]
+import_map = "./functions/payment-reminder/deno.json"
+
+[functions.whatsapp-reminder]
+import_map = "./functions/whatsapp-reminder/deno.json"

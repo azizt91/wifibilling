@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const customerName = currentProfile ? currentProfile.full_name : currentUser.email;
         const customerIdpl = currentProfile ? currentProfile.idpl : 'N/A';
 
-        const appName = getAppSettings()?.app_name || 'REVAM NET';
+        const appName = getAppSettings()?.app_name || 'WiFi Billing System';
         const message = `Halo Admin ${appName}, saya ingin mengkonfirmasi pembayaran tagihan:
 
 - *Nama:* ${customerName}

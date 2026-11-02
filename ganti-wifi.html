@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ganti WiFi - REVAM NET</title>
+    <title>Ganti WiFi - WiFi Billing System</title>
     
     <meta name="theme-color" content="#f9f8fb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="REVAM NET">
+    <meta name="apple-mobile-web-app-title" content="WiFi Billing System">
     <meta name="description" content="Ganti SSID dan Password WiFi">
     
     <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
@@ -111,28 +111,26 @@
                     
                     <!-- SSID Baru -->
                     <label class="flex flex-col">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">Nama WiFi Baru (SSID) *</p>
+                        <p class="text-[#110e1b] text-sm font-medium pb-1">Nama WiFi Baru (SSID)</p>
                         <input 
                             id="new-ssid" 
                             type="text" 
                             class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm" 
                             placeholder="Contoh: WiFi-Rumah-Saya" 
-                            required 
                             maxlength="32"
                         />
-                        <small class="text-xs text-gray-400 mt-1">Maksimal 32 karakter</small>
+                        <small class="text-xs text-gray-400 mt-1">Maksimal 32 karakter (kosongkan jika tidak ingin mengubah nama)</small>
                     </label>
 
                     <!-- Password Baru -->
                     <label class="flex flex-col">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">Password WiFi Baru *</p>
+                        <p class="text-[#110e1b] text-sm font-medium pb-1">Password WiFi Baru</p>
                         <div class="relative">
                             <input 
                                 id="new-password" 
                                 type="password" 
                                 class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 pr-10 text-sm" 
                                 placeholder="Minimal 8 karakter" 
-                                required 
                                 minlength="8"
                             />
                             <button 
@@ -143,21 +141,7 @@
                                 <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path></svg>
                             </button>
                         </div>
-                        <small class="text-xs text-gray-400 mt-1">Minimal 8 karakter, gunakan kombinasi huruf dan angka</small>
-                    </label>
-
-                    <!-- Konfirmasi Password -->
-                    <label class="flex flex-col">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">Konfirmasi Password *</p>
-                        <input 
-                            id="confirm-password" 
-                            type="password" 
-                            class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm" 
-                            placeholder="Ketik ulang password" 
-                            required 
-                            minlength="8"
-                        />
-                        <small id="password-match-error" class="text-xs text-red-600 mt-1 hidden">Password tidak cocok</small>
+                        <small class="text-xs text-gray-400 mt-1">Minimal 8 karakter (kosongkan jika tidak ingin mengubah password)</small>
                     </label>
 
                     <!-- Submit Button -->
@@ -166,7 +150,7 @@
                         id="submit-btn"
                         class="w-full rounded-lg h-12 px-5 bg-[#683fe4] text-white text-base font-bold hover:bg-[#501ee6] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
-                        <span id="submit-text">Ganti WiFi</span>
+                        <span id="submit-text">Simpan</span>
                         <span id="submit-loading" class="hidden">Memproses...</span>
                     </button>
                 </form>

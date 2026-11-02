@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Login - Portal Owner SaaS</title>
+
+    <!-- PWA & Meta -->
+    <meta name="theme-color" content="#090d16">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Super Admin">
+
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest-superadmin.json">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/logo_192x192.png">
+
+    <!-- Fonts & Tailwind CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0b0f19',
+                            950: '#06090e',
+                        },
+                        brand: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #070a12;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow-box {
+            box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center p-4 sm:p-6 text-slate-100 font-sans antialiased relative overflow-hidden">
+
+    <!-- Background glowing ambient spheres -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute top-1/2 -right-32 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="w-full max-w-md">
+
+        <!-- Header Branding -->
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-2xl shadow-xl shadow-amber-500/20 mb-4 transform hover:scale-105 transition duration-300">
+                <span class="text-3xl">👑</span>
+            </div>
+
+            <div
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                Portal Khusus Super Admin
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Super Admin Panel
+            </h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">
+                Akses manajemen pusat platform SaaS & kelola seluruh mitra
+            </p>
+        </div>
+
+        <!-- Glassmorphism Login Card -->
+        <div class="glass-card rounded-3xl p-6 sm:p-8 glow-box shadow-2xl relative">
+
+            <!-- Alert Banner -->
+            <div id="login-alert"
+                class="hidden mb-5 p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 animate-in fade-in">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span id="login-alert-text">Email atau password salah.</span>
+            </div>
+
+            <form id="form-superadmin-login" class="space-y-4">
+
+                <!-- Email -->
+                <div>
+                    <label for="superadmin-email"
+                        class="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                        Email Super Admin
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                        </div>
+                        <input type="email" id="superadmin-email" required placeholder="admin@example.com"
+                            autocomplete="username"
+                            class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-900/80 border border-slate-700/60 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="superadmin-password"
+                        class="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <input type="password" id="superadmin-password" required placeholder="••••••••"
+                            autocomplete="current-password"
+                            class="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-900/80 border border-slate-700/60 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition font-mono">
+                        <button type="button" id="btn-toggle-password"
+                            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition"
+                            title="Tampilkan / Sembunyikan Password">
+                            <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" id="btn-login-submit"
+                        class="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-indigo-600/30 transform active:scale-[0.99] transition duration-200 flex items-center justify-center gap-2">
+                        <span id="btn-login-spinner" class="hidden">
+                            <svg class="animate-spin w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </span>
+                        <span id="btn-login-text">Masuk ke Panel Super Admin</span>
+                    </button>
+                </div>
+
+                <!-- Install App Button -->
+                <div class="pt-1 text-center">
+                    <button type="button" id="btn-install-superadmin-login"
+                        class="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 text-xs font-bold transition active:scale-95 shadow-sm">
+                        <span>📲</span>
+                        <span>Install Super Admin ke HP / Laptop</span>
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Card Footer -->
+            <div class="mt-6 pt-5 border-t border-slate-800 text-center space-y-2">
+                <a href="login.html"
+                    class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition">
+                    <span>←</span>
+                    <span>Kembali ke Halaman Login Mitra / Client</span>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Footer Copyright -->
+        <p class="text-center text-[11px] text-slate-600 mt-6 font-medium">
+            © 2026 WiFi Billing System SaaS Platform • Super Admin Access Only
+        </p>
+
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="superadmin-login.js"></script>
+    <script src="pwa-installer.js"></script>
+</body>
+
+</html>

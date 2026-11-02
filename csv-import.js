@@ -85,47 +85,57 @@ export function initializeCSVImport(fetchDataCallback) {
         uploadArea.classList.remove('hidden');
     }
 
-    function downloadTemplate() {
+    async function downloadTemplate() {
+        try {
+            const res = await fetch('template_import_pelanggan.csv?t=' + Date.now());
+            if (res.ok) {
+                const text = await res.text();
+                const blob = new Blob(['\uFEFF' + text], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'template_import_pelanggan.csv';
+                link.click();
+                return;
+            }
+        } catch (e) {
+            console.warn('Direct fetch template failed, falling back to local generator', e);
+        }
+
         const headers = [
-            'email', 'password', 'full_name', 'address', 'whatsapp_number',
-            'gender', 'status', 'package_id', 'amount', 'installation_date',
-            'latitude', 'longitude', 'device_type', 'ip_static_pppoe'
+            'full_name', 'whatsapp_number', 'address', 'amount',
+            'installation_date', 'device_type', 'ip_static_pppoe',
+            'email', 'password'
         ];
 
         const sampleData = [
             [
-                'import1@yourisp.com', 'password123', 'John Doe', 'Jl. Merdeka No 1 RT 02 RW 03 Bandung',
-                '08123456789', 'LAKI-LAKI', 'AKTIF', '1', '150000', '2024-01-15',
-                '-6.9174639', '107.6191228', 'ONT ZTE F609', '192.168.1.100'
+                'Budi Santoso', '08123456789', 'Jl. Merdeka No 1 RT 02 RW 03 Bandung', '150000',
+                '2024-01-15', 'ONT ZTE F609', '192.168.1.100', '', ''
             ],
             [
-                'import2@yourisp.com', 'password456', 'Jane Smith', 'Jl. Sudirman No 25 RT 01 RW 02 Jakarta',
-                '08198765432', 'PEREMPUAN', 'AKTIF', '1', '150000', '2024-03-20',
-                '-6.9147444', '107.6098111', 'ONT Huawei HG8245H', '192.168.1.101'
+                'Siti Aminah', '08198765432', 'Jl. Sudirman No 25 RT 01 RW 02 Jakarta', '150000',
+                '2024-03-20', 'ONT Huawei HG8245H', '192.168.1.101', '', ''
             ],
             [
-                'import3@yourisp.com', 'password789', 'Bob Wilson', 'Jl. Asia Afrika No 3 RT 05 RW 01 Surabaya',
-                '08111222333', 'LAKI-LAKI', 'AKTIF', '1', '150000', '2023-12-01',
-                '', '', 'Router Mikrotik RB750', ''
+                'Ahmad Wijaya', '08111222333', 'Jl. Asia Afrika No 3 RT 05 RW 01 Surabaya', '150000',
+                '2023-12-01', 'Router Mikrotik RB750', '', '', ''
             ],
             [
-                'import4@yourisp.com', 'mypass2024', 'Alice Brown', 'Jl. Gatot Subroto No 12 RT 03 RW 04 Semarang',
-                '08567891234', 'PEREMPUAN', 'AKTIF', '1', '150000', '2024-02-10',
-                '-7.0051453', '110.4381254', 'ONT ZTE F660', '192.168.1.102'
+                'Rina Suryani', '08567891234', 'Jl. Gatot Subroto No 12 RT 03 RW 04 Semarang', '200000',
+                '2024-02-10', 'ONT ZTE F660', '192.168.1.102', '', ''
             ],
             [
-                'import5@yourisp.com', 'secure123', 'Charlie Davis', 'Jl. Diponegoro No 88 RT 02 RW 01 Yogyakarta',
-                '08234567890', 'LAKI-LAKI', 'AKTIF', '1', '150000', '2023-11-05',
-                '-7.7955798', '110.3694896', 'ONT Fiberhome AN5506', '192.168.1.103'
+                'Dedi Kurniawan', '08234567890', 'Jl. Diponegoro No 88 RT 02 RW 01 Yogyakarta', '150000',
+                '2023-11-05', 'ONT Fiberhome AN5506', '192.168.1.103', '', ''
             ]
         ];
 
         const csvContent = [
             headers.join(','),
-            ...sampleData.map(row => row.join(','))
+            ...sampleData.map(row => row.map(v => v.includes(',') ? `"${v}"` : v).join(','))
         ].join('\n');
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = 'template_import_pelanggan.csv';
@@ -214,43 +224,61 @@ export function initializeCSVImport(fetchDataCallback) {
             return;
         }
 
+        // Fetch available packages for automatic package detection
+        let dbPackages = [];
+        try {
+            const { data: pkgData, error: pkgError } = await supabase
+                .from('packages')
+                .select('id, package_name, price');
+            if (pkgError) throw pkgError;
+            dbPackages = pkgData || [];
+        } catch (err) {
+            console.error('Error fetching packages for import:', err);
+        }
+
+        if (dbPackages.length === 0) {
+            alert('Peringatan: Belum ada paket internet yang dibuat di menu Paket. Silakan tambahkan minimal satu paket terlebih dahulu agar pelanggan dapat dikaitkan.');
+            return;
+        }
+
         // Hide preview, show progress
         previewSection.classList.add('hidden');
         progressSection.classList.remove('hidden');
         startImportBtn.disabled = true;
         cancelBtn.disabled = true;
 
-        // Pre-generate all IDPLs to avoid race condition
+        // Pre-generate all IDPLs (Format 5 karakter: 2 Huruf + 3 Angka, contoh: UD417)
         const idpls = [];
-        let baseIdpl = 1;
+        const existingSet = new Set();
         try {
-            // Get ALL CST profiles and sort by number in JavaScript
             const { data: profiles, error: fetchError } = await supabase
                 .from('profiles')
-                .select('idpl')
-                .like('idpl', 'CST%');
+                .select('idpl');
 
-            if (fetchError) throw fetchError;
-
-            if (profiles && profiles.length > 0) {
-                // Extract numbers and find max
-                const numbers = profiles
-                    .map(p => parseInt(p.idpl.replace('CST', '')))
-                    .filter(n => !isNaN(n));
-
-                if (numbers.length > 0) {
-                    const maxNumber = Math.max(...numbers);
-                    baseIdpl = maxNumber + 1;
-                    console.log(`[CSV Import] Last IDPL: CST${maxNumber.toString().padStart(3, '0')}, Next: CST${baseIdpl.toString().padStart(3, '0')}`);
-                }
+            if (!fetchError && profiles) {
+                profiles.forEach(p => { if (p.idpl) existingSet.add(p.idpl); });
             }
         } catch (error) {
-            console.warn('Error getting last IDPL, starting from CST001:', error);
+            console.warn('Error fetching existing IDPLs for CSV import:', error);
         }
 
-        // Generate IDPLs for all rows
+        const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const getRandomCode = () => {
+            const l1 = letters.charAt(Math.floor(Math.random() * letters.length));
+            const l2 = letters.charAt(Math.floor(Math.random() * letters.length));
+            const num = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `${l1}${l2}${num}`;
+        };
+
         for (let i = 0; i < parsedData.length; i++) {
-            idpls.push(`CST${(baseIdpl + i).toString().padStart(3, '0')}`);
+            let candidate = getRandomCode();
+            let attempts = 0;
+            while (existingSet.has(candidate) && attempts < 100) {
+                candidate = getRandomCode();
+                attempts++;
+            }
+            existingSet.add(candidate);
+            idpls.push(candidate);
         }
 
         let successfulImports = 0;
@@ -263,7 +291,11 @@ export function initializeCSVImport(fetchDataCallback) {
             const idpl = idpls[i];
 
             try {
-                await importSingleCustomer(row, rowNumber, idpl);
+                const packageId = resolvePackageId(row, dbPackages);
+                if (!packageId) {
+                    throw new Error('Tidak dapat menemukan paket yang sesuai dengan harga ' + row.amount);
+                }
+                await importSingleCustomer(row, rowNumber, idpl, packageId);
                 successfulImports++;
             } catch (error) {
                 failedImports++;
@@ -299,53 +331,58 @@ export function initializeCSVImport(fetchDataCallback) {
         }
     }
 
+
+    function resolvePackageId(row, dbPackages) {
+        if (row.package_id && !isNaN(parseInt(row.package_id))) {
+            const found = dbPackages.find(p => p.id === parseInt(row.package_id));
+            if (found) return found.id;
+        }
+        const rowAmount = parseFloat(row.amount);
+        if (!isNaN(rowAmount)) {
+            const foundByPrice = dbPackages.find(p => Math.abs(parseFloat(p.price) - rowAmount) < 0.01);
+            if (foundByPrice) return foundByPrice.id;
+        }
+        if (row.package_name) {
+            const cleanName = String(row.package_name).trim().toLowerCase();
+            const foundByName = dbPackages.find(p => p.package_name && p.package_name.trim().toLowerCase() === cleanName);
+            if (foundByName) return foundByName.id;
+        }
+        return dbPackages.length > 0 ? dbPackages[0].id : null;
+    }
+
     function validateCSVData(data) {
         const errors = [];
-        const requiredFields = ['email', 'password', 'full_name', 'address', 'whatsapp_number', 'gender', 'status', 'package_id', 'amount'];
+        const requiredFields = ['full_name', 'address', 'whatsapp_number', 'amount'];
 
         data.forEach((row, index) => {
             const rowNumber = index + 2;
 
             // Check required fields
             requiredFields.forEach(field => {
-                if (!row[field] || row[field].trim() === '') {
-                    errors.push(`Baris ${rowNumber}: Field ${field} tidak boleh kosong`);
+                if (!row[field] || String(row[field]).trim() === '') {
+                    errors.push(`Baris ${rowNumber}: Field ${field} wajib diisi`);
                 }
             });
 
-            // Validate email format
-            if (row.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
+            // Validate amount (harga tagihan)
+            if (row.amount && (isNaN(parseFloat(row.amount)) || parseFloat(row.amount) <= 0)) {
+                errors.push(`Baris ${rowNumber}: amount (tagihan) harus berupa angka positif`);
+            }
+
+            // Validate optional email if provided
+            if (row.email && row.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email.trim())) {
                 errors.push(`Baris ${rowNumber}: Format email tidak valid`);
             }
 
-            // Validate password length
-            if (row.password && row.password.length < 6) {
+            // Validate optional password if provided
+            if (row.password && row.password.trim() !== '' && row.password.trim().length < 6) {
                 errors.push(`Baris ${rowNumber}: Password minimal 6 karakter`);
             }
 
-            // Validate gender
-            if (row.gender && !['LAKI-LAKI', 'PEREMPUAN'].includes(row.gender.toUpperCase())) {
-                errors.push(`Baris ${rowNumber}: Gender harus LAKI-LAKI atau PEREMPUAN`);
-            }
-
-            // Validate status
-            if (row.status && !['AKTIF', 'NONAKTIF'].includes(row.status.toUpperCase())) {
-                errors.push(`Baris ${rowNumber}: Status harus AKTIF atau NONAKTIF`);
-            }
-
-            // Validate numbers
-            if (row.package_id && isNaN(parseInt(row.package_id))) {
-                errors.push(`Baris ${rowNumber}: package_id harus berupa angka`);
-            }
-
-            if (row.amount && isNaN(parseFloat(row.amount))) {
-                errors.push(`Baris ${rowNumber}: amount harus berupa angka`);
-            }
-
-            // Validate installation_date format
+            // Validate optional installation_date format
             if (row.installation_date && row.installation_date.trim() !== '') {
                 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-                if (!dateRegex.test(row.installation_date)) {
+                if (!dateRegex.test(row.installation_date.trim())) {
                     errors.push(`Baris ${rowNumber}: Format tanggal instalasi salah (gunakan YYYY-MM-DD)`);
                 }
             }
@@ -362,12 +399,25 @@ export function initializeCSVImport(fetchDataCallback) {
 
         return {
             valid: errors.length === 0,
-            errors: errors.slice(0, 10) // Show max 10 errors
+            errors: errors.slice(0, 10)
         };
     }
 
-    async function importSingleCustomer(row, rowNumber, idpl) {
-        // IDPL is pre-generated and passed as parameter
+    async function importSingleCustomer(row, rowNumber, idpl, packageId) {
+        // Auto-generate email if blank: idpl@wifi.id
+        const finalEmail = (row.email && row.email.trim())
+            ? row.email.trim().toLowerCase()
+            : `${idpl.toLowerCase()}@wifi.id`;
+
+        // Auto-generate password if blank: 123456
+        const finalPassword = (row.password && row.password.trim().length >= 6)
+            ? row.password.trim()
+            : '123456';
+
+        // Auto status: AKTIF (default) or NONAKTIF
+        const finalStatus = (row.status && row.status.trim().toUpperCase() === 'NONAKTIF')
+            ? 'NONAKTIF'
+            : 'AKTIF';
 
         // Prepare installation_date
         let installationDate = row.installation_date?.trim();
@@ -387,24 +437,22 @@ export function initializeCSVImport(fetchDataCallback) {
         const longitude = row.longitude?.trim() ? parseFloat(row.longitude) : null;
 
         const customerData = {
-            email: row.email.trim(),
-            password: row.password.trim(),
+            email: finalEmail,
+            password: finalPassword,
             full_name: row.full_name.trim(),
             address: row.address.trim(),
             whatsapp_number: row.whatsapp_number.trim(),
-            gender: row.gender.toUpperCase(),
-            status: row.status.toUpperCase(),
+            gender: 'LAKI-LAKI',
+            status: finalStatus,
             device_type: row.device_type?.trim() || null,
             ip_static_pppoe: row.ip_static_pppoe?.trim() || null,
-            photo_url: row.gender.toUpperCase() === 'LAKI-LAKI'
-                ? 'assets/avatar_male.svg'
-                : 'assets/avatar_female.svg',
+            photo_url: 'assets/avatar_male.svg',
             installation_date: installationDate,
-            package_id: parseInt(row.package_id),
+            package_id: packageId,
             amount: parseFloat(row.amount),
             latitude: latitude,
             longitude: longitude,
-            idpl: idpl // Generated IDPL
+            idpl: idpl
         };
 
         console.log(`[CSV Import] Row ${rowNumber} data (IDPL: ${idpl}):`, customerData);

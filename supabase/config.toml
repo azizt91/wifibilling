@@ -1,11 +1,36 @@
+project_id = "oawsmjpibfwpiaebvhot"
 
 [functions.create-customer]
 enabled = true
 verify_jwt = true
-import_map = "./functions/create-customer/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/create-customer/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/create-customer/*.html" ]
+
+[functions.create-tenant]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/create-tenant/index.ts"
+
+[functions.delete-user]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/delete-user/index.ts"
+
+[functions.genieacs-proxy]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/genieacs-proxy/index.ts"
+
+[functions.send-whatsapp-notification]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-whatsapp-notification/index.ts"
+
+[functions.update-user-auth]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/update-user-auth/index.ts"
+
+[functions.whatsapp-reminder]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/whatsapp-reminder/index.ts"

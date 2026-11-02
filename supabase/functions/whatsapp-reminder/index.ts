@@ -1,155 +1,188 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
+import {
+  createAdminClient,
+  getCallerContext,
+  jsonResponse,
+  errorStatus
+} from '../_shared/tenant.ts';
 
-console.log('Fungsi whatsapp-reminder dipanggil.');
+console.log('Fungsi whatsapp-reminder multi-tenant dimuat.');
 
 serve(async (req) => {
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-    console.log('Klien Supabase berhasil dibuat.');
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
 
-    // 1. Dapatkan informasi tanggal hari ini
+  try {
+    const supabaseAdmin = createAdminClient();
+
+    // Opsional: cek caller jika dipanggil manual oleh admin
+    let specificTenantId: string | null = null;
+    try {
+      const caller = await getCallerContext(req, supabaseAdmin);
+      if (caller.role === 'admin' && caller.tenantId) {
+        specificTenantId = caller.tenantId;
+      }
+    } catch {
+      // Dipanggil oleh cron scheduler / webhook tanpa Bearer user biasa
+    }
+
     const today = new Date();
     const currentDay = today.getDate();
     const currentMonthYear = today.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-    console.log(`Mengecek jatuh tempo untuk tanggal: ${currentDay}, Periode: ${currentMonthYear}`);
+    console.log(`[Remind WA] Tanggal: ${currentDay}, Periode: ${currentMonthYear}`);
 
-    // 2. Cari semua pelanggan aktif yang tanggal pemasangannya cocok dengan tanggal hari ini
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, idpl, full_name, whatsapp_number, package_id, installation_date')
-      .eq('status', 'AKTIF');
+    // 1. Ambil daftar tenant yang langganannya aktif / trial
+    let tenantQuery = supabaseAdmin
+      .from('tenants')
+      .select('id, name, subscription_status, subscription_expires_at')
+      .in('subscription_status', ['active', 'trial']);
 
-    if (profilesError) throw profilesError;
+    if (specificTenantId) {
+      tenantQuery = tenantQuery.eq('id', specificTenantId);
+    }
 
-    const potentialUsers = profiles.filter(p => {
-        if (!p.installation_date) return false;
-        const installationDay = new Date(p.installation_date).getDate();
-        return installationDay === currentDay;
+    const { data: activeTenants, error: tenantError } = await tenantQuery;
+    if (tenantError) throw tenantError;
+
+    const validTenants = (activeTenants || []).filter(t => {
+      if (!t.subscription_expires_at) return true;
+      return new Date(t.subscription_expires_at) > today;
     });
 
-    if (potentialUsers.length === 0) {
-      const msg = 'Tidak ada pengguna yang jatuh tempo hari ini.';
-      console.log(msg);
-      return new Response(JSON.stringify({ message: msg }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200,
+    console.log(`Ditemukan ${validTenants.length} tenant aktif untuk diproses reminder-nya.`);
+
+    const tenantResults: any[] = [];
+    let totalSuccess = 0;
+    let totalFailure = 0;
+
+    // 2. Iterasi setiap tenant (Isolasi data & konfigurasi WA)
+    for (const tenant of validTenants) {
+      const tenantId = tenant.id;
+
+      // Ambil token WA & template milik tenant ini
+      const { data: waSettings } = await supabaseAdmin
+        .from('whatsapp_settings')
+        .select('setting_key, setting_value, is_enabled')
+        .eq('tenant_id', tenantId);
+
+      const settingsMap: Record<string, string> = {};
+      waSettings?.forEach((s: any) => {
+        if (s.is_enabled) settingsMap[s.setting_key] = s.setting_value || '';
       });
-    }
-    console.log(`Ditemukan ${potentialUsers.length} pengguna yang berpotensi untuk dinotifikasi.`);
 
-    // 3. Cek siapa saja dari pengguna tersebut yang sudah membayar bulan ini
-    const potentialUserIds = potentialUsers.map(u => u.id);
-    const { data: paidInvoices, error: invoicesError } = await supabase
-      .from('invoices')
-      .select('customer_id')
-      .in('customer_id', potentialUserIds)
-      .eq('status', 'paid')
-      .eq('invoice_period', currentMonthYear);
+      const autoEnabled = settingsMap['auto_notification_enabled'] !== 'false';
+      const fonnteToken = settingsMap['fonnte_token'] || Deno.env.get('FONNTE_TOKEN');
 
-    if (invoicesError) throw invoicesError;
-
-    const paidUserIds = new Set(paidInvoices.map(inv => inv.customer_id));
-    console.log(`Ditemukan ${paidUserIds.size} pengguna yang sudah membayar bulan ini.`);
-
-    // 4. Filter pengguna, hanya sisakan yang belum bayar
-    const usersToNotify = potentialUsers.filter(user => !paidUserIds.has(user.id));
-
-    if (usersToNotify.length === 0) {
-      const msg = 'Semua pengguna yang jatuh tempo hari ini sudah membayar.';
-      console.log(msg);
-      return new Response(JSON.stringify({ message: msg }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200,
-      });
-    }
-    console.log(`Final: ${usersToNotify.length} pengguna akan dikirimkan notifikasi WhatsApp.`);
-
-
-    // 5. Ambil semua data paket untuk efisiensi
-    const { data: packages, error: packagesError } = await supabase.from('packages').select('id, price');
-    if (packagesError) throw packagesError;
-    const packagesMap = new Map(packages.map(p => [p.id, p.price]));
-
-    // 6. Kirim notifikasi ke pengguna yang sudah difilter
-    let successCount = 0;
-    let failureCount = 0;
-
-    // Fetch active payment methods
-    const { data: payMethods } = await supabaseClient
-      .from('payment_methods')
-      .select('bank_name, account_number, account_holder')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
-
-    let payMethodsText = '';
-    if (payMethods && payMethods.length > 0) {
-      payMethodsText = payMethods.map((m: any) => `• ${m.bank_name}: ${m.account_number} (an. ${m.account_holder})`).join('\n');
-    } else {
-      payMethodsText = '• Silakan cek metode pembayaran yang tersedia pada aplikasi.';
-    }
-
-    for (const user of usersToNotify) {
-      const price = packagesMap.get(user.package_id);
-
-      if (!price || !user.whatsapp_number) {
-        console.warn(`Melewatkan user ${user.full_name} karena harga paket atau nomor WhatsApp tidak ditemukan.`);
+      if (!autoEnabled || !fonnteToken) {
+        console.log(`Tenant ${tenant.name} (${tenantId}): reminder dilewati (notifikasi nonaktif atau token kosong).`);
         continue;
       }
 
-      // Membuat isi pesan sesuai template
-      const message = `*Informasi Tagihan WiFi Anda*\n\nHai Bapak/Ibu ${user.full_name},\nID Pelanggan: ${user.idpl || '-'}\n\nTagihan Anda untuk periode *${currentMonthYear}* sebesar *Rp${new Intl.NumberFormat('id-ID').format(price)}* telah jatuh tempo.\n\n*METODE PEMBAYARAN:*\n${payMethodsText}\n\nTerima kasih atas kepercayaan Anda.\n_____________________________\n*_Pesan ini dibuat otomatis. Abaikan jika sudah membayar._`;
+      // Ambil paket & metode pembayaran milik tenant ini
+      const { data: packages } = await supabaseAdmin
+        .from('packages')
+        .select('id, price')
+        .eq('tenant_id', tenantId);
 
-      // Panggil fungsi 'send-whatsapp-notification' yang sudah ada
-      try {
-        console.log(`Mengirim pesan ke ${user.full_name} (${user.whatsapp_number})...`);
-        
-        const response = await fetch(Deno.env.get('SUPABASE_URL')! + '/functions/v1/send-whatsapp-notification', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ target: user.whatsapp_number, message: message })
-        });
+      const packagesMap = new Map((packages || []).map(p => [p.id, p.price]));
 
-        const responseBody = await response.text();
-        console.log(`Response status: ${response.status}, body:`, responseBody);
+      const { data: payMethods } = await supabaseAdmin
+        .from('payment_methods')
+        .select('bank_name, account_number, account_holder')
+        .eq('tenant_id', tenantId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${responseBody}`);
-        }
-
-        // Parse response untuk validasi lebih lanjut
-        const result = JSON.parse(responseBody);
-        if (!result.success) {
-          throw new Error(`API Error: ${result.message || 'Unknown error'}`);
-        }
-
-        console.log(`✓ Berhasil mengirim pesan ke ${user.full_name}:`, result.data);
-        successCount++;
-      } catch (e) {
-        console.error(`✗ Gagal mengirim pesan ke ${user.full_name}:`, e.message);
-        failureCount++;
+      let payMethodsText = '';
+      if (payMethods && payMethods.length > 0) {
+        payMethodsText = payMethods.map((m: any) => `• ${m.bank_name}: ${m.account_number} (an. ${m.account_holder})`).join('\n');
+      } else {
+        payMethodsText = '• Silakan cek metode pembayaran yang tersedia pada aplikasi.';
       }
+
+      // Cari pelanggan aktif tenant ini yang jatuh tempo hari ini
+      const { data: profiles, error: profErr } = await supabaseAdmin
+        .from('profiles')
+        .select('id, idpl, full_name, whatsapp_number, package_id, installation_date')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'AKTIF');
+
+      if (profErr || !profiles) continue;
+
+      const potentialUsers = profiles.filter(p => {
+        if (!p.installation_date) return false;
+        const instDay = new Date(p.installation_date).getDate();
+        return instDay === currentDay;
+      });
+
+      if (potentialUsers.length === 0) continue;
+
+      // Cek yang sudah bayar bulan ini
+      const potentialUserIds = potentialUsers.map(u => u.id);
+      const { data: paidInvoices } = await supabaseAdmin
+        .from('invoices')
+        .select('customer_id')
+        .eq('tenant_id', tenantId)
+        .in('customer_id', potentialUserIds)
+        .eq('status', 'paid')
+        .eq('invoice_period', currentMonthYear);
+
+      const paidUserIds = new Set((paidInvoices || []).map(inv => inv.customer_id));
+      const usersToNotify = potentialUsers.filter(u => !paidUserIds.has(u.id));
+
+      let tenantSuccess = 0;
+      let tenantFailure = 0;
+
+      for (const user of usersToNotify) {
+        const price = packagesMap.get(user.package_id);
+        if (!price || !user.whatsapp_number) continue;
+
+        const message = `*Informasi Tagihan WiFi Anda*\n\nHai Bapak/Ibu ${user.full_name},\nID Pelanggan: ${user.idpl || '-'}\n\nTagihan Anda untuk periode *${currentMonthYear}* sebesar *Rp${new Intl.NumberFormat('id-ID').format(price)}* telah jatuh tempo.\n\n*METODE PEMBAYARAN:*\n${payMethodsText}\n\nTerima kasih atas kepercayaan Anda.\n_____________________________\n*_Pesan ini dibuat otomatis oleh ${tenant.name}. Abaikan jika sudah membayar._*`;
+
+        try {
+          const res = await fetch('https://api.fonnte.com/send', {
+            method: 'POST',
+            headers: {
+              'Authorization': fonnteToken,
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+              target: user.whatsapp_number,
+              message: message
+            })
+          });
+
+          if (res.ok) {
+            tenantSuccess++;
+            totalSuccess++;
+          } else {
+            tenantFailure++;
+            totalFailure++;
+          }
+        } catch {
+          tenantFailure++;
+          totalFailure++;
+        }
+      }
+
+      tenantResults.push({
+        tenant_id: tenantId,
+        tenant_name: tenant.name,
+        notified: tenantSuccess,
+        failed: tenantFailure
+      });
     }
 
-    const responseMessage = `Proses notifikasi WhatsApp selesai. Berhasil: ${successCount}, Gagal: ${failureCount}.`;
-    console.log(responseMessage);
+    return jsonResponse({
+      message: `Proses notifikasi WhatsApp selesai. Berhasil: ${totalSuccess}, Gagal: ${totalFailure}.`,
+      tenants_processed: tenantResults.length,
+      details: tenantResults
+    }, 200, corsHeaders);
 
-    return new Response(JSON.stringify({ message: responseMessage }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 200,
-    });
-
-  } catch (error) {
-    console.error('Terjadi kesalahan tidak terduga di whatsapp-reminder:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500,
-    });
+  } catch (error: any) {
+    console.error('Error in whatsapp-reminder:', error);
+    return jsonResponse({ error: error.message }, errorStatus(error, 500), corsHeaders);
   }
 });

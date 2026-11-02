@@ -147,19 +147,6 @@ function initializeEventListeners() {
         passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
     });
 
-    // Password match validation
-    const newPassword = document.getElementById('new-password');
-    const confirmPassword = document.getElementById('confirm-password');
-    const errorMsg = document.getElementById('password-match-error');
-
-    confirmPassword?.addEventListener('input', () => {
-        if (confirmPassword.value && newPassword.value !== confirmPassword.value) {
-            errorMsg.classList.remove('hidden');
-        } else {
-            errorMsg.classList.add('hidden');
-        }
-    });
-
     // Form submit
     document.getElementById('wifi-form')?.addEventListener('submit', handleFormSubmit);
 }
@@ -169,20 +156,14 @@ async function handleFormSubmit(e) {
 
     const newSSID = document.getElementById('new-ssid').value.trim();
     const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
 
-    // Validation
-    if (!newSSID || !newPassword || !confirmPassword) {
-        showNotification('Semua field harus diisi', 'error');
+    // Validation: minimal salah satu diisi
+    if (!newSSID && !newPassword) {
+        showNotification('Harap isi Nama WiFi Baru atau Password WiFi Baru', 'error');
         return;
     }
 
-    if (newPassword !== confirmPassword) {
-        showNotification('Password tidak cocok', 'error');
-        return;
-    }
-
-    if (newPassword.length < 8) {
+    if (newPassword && newPassword.length < 8) {
         showNotification('Password minimal 8 karakter', 'error');
         return;
     }
@@ -196,7 +177,11 @@ async function handleFormSubmit(e) {
     const ipAddress = currentProfile.ip_static_pppoe;
 
     // Confirm action
-    if (!confirm(`Yakin ingin mengganti WiFi?\n\nSSID Baru: ${newSSID}\n\nProses membutuhkan waktu 1-2 menit.`)) {
+    const changeList = [];
+    if (newSSID) changeList.push(`• Nama WiFi Baru: ${newSSID}`);
+    if (newPassword) changeList.push(`• Password WiFi Baru: (Diperbarui)`);
+
+    if (!confirm(`Yakin ingin menyimpan perubahan WiFi?\n\n${changeList.join('\n')}\n\nProses membutuhkan waktu 1-2 menit.`)) {
         return;
     }
 
@@ -204,14 +189,16 @@ async function handleFormSubmit(e) {
     setLoading(true);
 
     try {
+        const currentSSIDText = document.getElementById('current-ssid').textContent;
+
         // Save to log first
         const { data: logData, error: logError } = await supabase
             .from('wifi_change_logs')
             .insert({
                 customer_id: currentUser.id,
                 ip_address: ipAddress,
-                old_ssid: document.getElementById('current-ssid').textContent,
-                new_ssid: newSSID,
+                old_ssid: currentSSIDText,
+                new_ssid: newSSID || currentSSIDText,
                 status: 'processing'
             })
             .select()
@@ -229,8 +216,12 @@ async function handleFormSubmit(e) {
                 .update({ status: 'success' })
                 .eq('id', logData.id);
 
-            showNotification('✅ WiFi berhasil diganti! Silakan hubungkan ulang perangkat Anda.', 'success');
+            showNotification('✅ Perubahan WiFi berhasil disimpan! Silakan hubungkan ulang perangkat Anda.', 'success');
             
+            // Clear inputs
+            document.getElementById('new-password').value = '';
+            document.getElementById('new-ssid').value = '';
+
             // Reload data
             setTimeout(() => {
                 loadUserData();
@@ -246,7 +237,7 @@ async function handleFormSubmit(e) {
                 })
                 .eq('id', logData.id);
 
-            showNotification(`❌ Gagal mengganti WiFi: ${result.message}`, 'error');
+            showNotification(`❌ Gagal menyimpan perubahan: ${result.message}`, 'error');
         }
 
     } catch (error) {
@@ -298,37 +289,38 @@ async function changeWiFiViaGenieACS(ipAddress, newSSID, newPassword) {
 
         const deviceId = devices[0]._id;
 
-        // Step 2: Set SSID parameter
-        const ssidPath = 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID';
-        const ssidResponse = await fetch(`${genieacsUrl}/devices/${deviceId}/tasks?timeout=3000&connection_request`, {
+        // Step 2: Siapkan parameter yang ingin diubah (SSID, Password, atau keduanya)
+        const parameterValues = [];
+
+        if (newSSID) {
+            const ssidPath = 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID';
+            parameterValues.push([ssidPath, newSSID, 'xsd:string']);
+        }
+
+        if (newPassword) {
+            const passwordPath = 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1.KeyPassphrase';
+            parameterValues.push([passwordPath, newPassword, 'xsd:string']);
+        }
+
+        if (parameterValues.length === 0) {
+            return { success: false, message: 'Tidak ada parameter yang diubah' };
+        }
+
+        // Step 3: Kirim task setParameterValues ke GenieACS
+        const taskResponse = await fetch(`${genieacsUrl}/devices/${deviceId}/tasks?timeout=3000&connection_request`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
                 name: 'setParameterValues',
-                parameterValues: [[ssidPath, newSSID, 'xsd:string']]
+                parameterValues: parameterValues
             })
         });
 
-        if (!ssidResponse.ok) {
-            return { success: false, message: 'Gagal mengatur SSID' };
+        if (!taskResponse.ok) {
+            return { success: false, message: 'Gagal mengatur parameter WiFi' };
         }
 
-        // Step 3: Set Password parameter
-        const passwordPath = 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1.KeyPassphrase';
-        const passwordResponse = await fetch(`${genieacsUrl}/devices/${deviceId}/tasks?timeout=3000&connection_request`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-                name: 'setParameterValues',
-                parameterValues: [[passwordPath, newPassword, 'xsd:string']]
-            })
-        });
-
-        if (!passwordResponse.ok) {
-            return { success: false, message: 'Gagal mengatur password' };
-        }
-
-        return { success: true, message: 'WiFi berhasil diganti' };
+        return { success: true, message: 'WiFi berhasil disimpan' };
 
     } catch (error) {
         console.error('Error in changeWiFiViaGenieACS:', error);

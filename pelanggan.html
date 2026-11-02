@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pelanggan - REVAM NET</title>
+  <title>Pelanggan - WiFi Billing System</title>
 
   <meta name="theme-color" content="#fdf9f7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="REVAM NET">
+  <meta name="apple-mobile-web-app-title" content="WiFi Billing System">
   <meta name="description" content="Manajemen pelanggan ISP">
 
   <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
@@ -21,6 +21,9 @@
   <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
     href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Leaflet CSS & JS for Interactive Map Picker -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     .search-filter-sticky {
       position: -webkit-sticky;
@@ -351,13 +354,9 @@
             <p class="text-[#625095] text-sm">NAMA</p>
             <p id="detail-nama" class="text-[#110e1b] text-sm">-</p>
           </div>
-          <div class="flex flex-col gap-1 border-t py-4 pr-2">
+          <div class="flex flex-col gap-1 border-t py-4 pr-2 col-span-2">
             <p class="text-[#625095] text-sm">ALAMAT</p>
             <p id="detail-alamat" class="text-[#110e1b] text-sm">-</p>
-          </div>
-          <div class="flex flex-col gap-1 border-t py-4 pl-2">
-            <p class="text-[#625095] text-sm">JENIS KELAMIN</p>
-            <p id="detail-gender" class="text-[#110e1b] text-sm">-</p>
           </div>
           <div class="flex flex-col gap-1 border-t py-4 pr-2">
             <p class="text-[#625095] text-sm">WHATSAPP</p>
@@ -454,12 +453,7 @@
                 class="form-input w-full rounded-lg bg-[#f3ece8] h-14 p-4 text-base" required /></div>
             <div><input id="customer-whatsapp" placeholder="Nomor WhatsApp" type="tel"
                 class="form-input w-full rounded-lg bg-[#f3ece8] h-14 p-4 text-base" required /></div>
-            <div><select id="customer-gender" class="form-input w-full rounded-lg bg-[#f3ece8] h-14 p-4 text-base"
-                required>
-                <option value="">Pilih Jenis Kelamin</option>
-                <option value="LAKI-LAKI">Laki-laki</option>
-                <option value="PEREMPUAN">Perempuan</option>
-              </select></div>
+            
             <div><select id="customer-package" class="form-input w-full rounded-lg bg-[#f3ece8] h-14 p-4 text-base"
                 required></select></div>
             <div><input id="customer-bill" placeholder="Tagihan Bulanan" type="number"
@@ -494,16 +488,70 @@
               <p class="text-xs text-gray-500 mt-1">Kosongkan untuk menggunakan tanggal hari ini</p>
             </div>
 
-            <!-- Lokasi (Latitude & Longitude) -->
+            <!-- Lokasi Pelanggan (GPS / Koordinat) -->
             <div class="border-t border-gray-300 pt-4 mt-2">
-              <p class="text-sm font-medium text-gray-600 mb-3">Lokasi (Opsional)</p>
-              <div class="grid grid-cols-2 gap-3">
-                <input id="customer-latitude" placeholder="Latitude" type="number" step="any"
-                  class="form-input w-full rounded-lg bg-[#f3ece8] h-14 p-4 text-base" />
-                <input id="customer-longitude" placeholder="Longitude" type="number" step="any"
-                  class="form-input w-full rounded-lg bg-[#f3ece8] h-14 p-4 text-base" />
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-semibold text-gray-800">Lokasi Pelanggan (GPS / Koordinat)</p>
+                <span class="text-xs text-gray-500 font-medium">Opsional</span>
               </div>
-              <p class="text-xs text-gray-500 mt-2">Contoh: -6.9174639, 107.6191228</p>
+
+              <!-- Action Buttons Row -->
+              <div class="grid grid-cols-2 gap-2 mb-3">
+                <button type="button" id="btn-get-current-loc"
+                  class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition shadow-sm active:scale-95">
+                  <svg id="icon-get-loc" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span id="btn-get-loc-text">📍 Ambil Lokasi Saya</span>
+                </button>
+                <button type="button" id="btn-open-map-picker"
+                  class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition shadow-sm active:scale-95">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  <span>🗺️ Pilih di Peta</span>
+                </button>
+              </div>
+
+              <!-- Smart Paste Box -->
+              <div class="mb-3">
+                <div class="relative">
+                  <input id="quick-location-input" type="text" placeholder="Tempel link Maps / share loc WA di sini..."
+                    class="form-input w-full rounded-lg bg-[#f3ece8] text-xs h-10 pl-8 pr-16 focus:bg-white transition border-gray-200" />
+                  <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <button type="button" id="btn-paste-smart-loc" class="absolute inset-y-1 right-1 px-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold rounded transition flex items-center gap-1">
+                    Tempel
+                  </button>
+                </div>
+                <div id="smart-loc-feedback" class="text-[11px] mt-1 hidden font-medium"></div>
+              </div>
+
+              <!-- Input Latitude & Longitude -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[11px] font-semibold text-gray-600 block mb-1">Latitude</label>
+                  <input id="customer-latitude" placeholder="-6.xxxxxx" type="number" step="any"
+                    class="form-input w-full rounded-lg bg-[#f3ece8] h-11 p-3 text-sm font-mono text-gray-800" />
+                </div>
+                <div>
+                  <label class="text-[11px] font-semibold text-gray-600 block mb-1">Longitude</label>
+                  <input id="customer-longitude" placeholder="107.xxxxxx" type="number" step="any"
+                    class="form-input w-full rounded-lg bg-[#f3ece8] h-11 p-3 text-sm font-mono text-gray-800" />
+                </div>
+              </div>
+
+              <!-- Preview Status & Maps Link -->
+              <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
+                <span id="loc-status-text">Otomatis GPS atau ketik manual</span>
+                <a id="btn-view-gmaps" href="#" target="_blank" class="hidden text-indigo-600 font-bold hover:underline flex items-center gap-1">
+                  Lihat di Maps ↗
+                </a>
+              </div>
             </div>
           </div>
           <div class="pt-6 grid grid-cols-2 gap-3">
@@ -623,8 +671,8 @@
               </path>
             </svg>
             <div class="flex-1">
-              <h3 class="font-semibold text-orange-900 mb-1">Download Template CSV</h3>
-              <p class="text-sm text-orange-700 mb-3">Gunakan template ini untuk format yang benar</p>
+              <h3 class="font-semibold text-orange-900 mb-1">Download Template CSV Praktis</h3>
+              <p class="text-xs text-orange-700 mb-3">Cukup isi Nama, No WA, Alamat, dan Harga (Amount). Email & Password otomatis dibuat jika dikosongkan.</p>
               <button id="download-template-btn"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-[#5324e0] text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -719,12 +767,44 @@
     </div>
   </div>
 
+  <!-- Map Picker Modal -->
+  <div id="map-picker-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in duration-200">
+      <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100">
+        <div class="flex items-center gap-2">
+          <span class="p-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm">📍</span>
+          <div>
+            <h3 class="font-bold text-gray-800 text-base">Pilih Titik Lokasi Pelanggan</h3>
+            <p class="text-xs text-gray-500">Klik di peta atau geser pin untuk menentukan posisi akurat</p>
+          </div>
+        </div>
+        <button type="button" id="btn-close-map-modal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold leading-none p-1 transition">&times;</button>
+      </div>
+      <div id="leaflet-map-container" class="w-full h-80 sm:h-96 relative bg-gray-100">
+        <!-- Leaflet map injects here -->
+      </div>
+      <div class="p-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-xs text-gray-700 font-mono" id="modal-coords-display">
+          📍 Belum ada titik dipilih
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <button type="button" id="btn-modal-my-loc" class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100 transition shadow-sm">
+            📍 Lokasi Saya
+          </button>
+          <button type="button" id="btn-confirm-map-loc" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-sm">
+            Gunakan Titik Ini
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PapaParse Library for CSV parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script type="module" src="supabase-client.js?v=5"></script>
   <script type="module" src="auth.js?v=5"></script>
   <script type="module" src="apply-settings.js"></script>
-  <script type="module" src="pelanggan.js?v=5"></script>
+  <script type="module" src="pelanggan.js?v=2.2"></script>
 
 </body>
 

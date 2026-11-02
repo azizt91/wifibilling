@@ -1,14 +1,17 @@
 // payment-methods.js - Payment Methods Management (CRUD)
 import { supabase } from './supabase-client.js';
+import { requireRole } from './auth.js';
 
 export default class PaymentMethodsManager {
     constructor() {
         this.currentMethod = null; // For edit mode
+        this.appSettingsId = null;
         this.init();
     }
 
     init() {
         this.initializeEventListeners();
+        this.loadQrisSettings();
         this.loadPaymentMethods(); // Load immediately on page load
     }
 
@@ -41,6 +44,25 @@ export default class PaymentMethodsManager {
         // Delete button
         document.getElementById('pm-delete-btn')?.addEventListener('click', () => {
             this.deletePaymentMethod();
+        });
+
+        // QRIS Toggle
+        document.getElementById('show-qris-input')?.addEventListener('change', (e) => {
+            this.toggleQris(e.target.checked);
+        });
+
+        // QRIS Upload
+        document.getElementById('qris-upload')?.addEventListener('change', (e) => {
+            this.handleQrisUpload(e);
+        });
+
+        // Listen for settings loaded from apply-settings.js (sync)
+        window.addEventListener('settings-loaded', (e) => {
+            const settings = e.detail;
+            if (settings) {
+                if (settings.id) this.appSettingsId = settings.id;
+                this.renderQrisPreview(settings.qris_image_url, settings.show_qris);
+            }
         });
     }
 
@@ -292,6 +314,181 @@ export default class PaymentMethodsManager {
     }
 
     // ===============================================
+    // QRIS Management
+    // ===============================================
+    renderQrisPreview(imageUrl, showQris) {
+        const defaultQris = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='300' height='300' fill='%23f8f9fa' rx='16'/><rect x='20' y='20' width='260' height='260' fill='none' stroke='%23cbd5e1' stroke-width='4' stroke-dasharray='8 8' rx='12'/><path d='M70 70h50v50H70zm20 20h10v10H90zm90-20h50v50h-50zm20 20h10v10h-10zm-110 90h50v50H70zm20 20h10v10H90zm70-40h20v20h-20zm30 0h20v20h-20zm-30 30h20v20h-20zm30 30h20v20h-20zm-30 0h20v20h-20z' fill='%2364748b'/><text x='50%' y='62%' text-anchor='middle' fill='%23475569' font-size='14' font-weight='bold' font-family='sans-serif'>BELUM ADA QRIS</text><text x='50%' y='70%' text-anchor='middle' fill='%2394a3b8' font-size='11' font-family='sans-serif'>Klik untuk upload QRIS</text></svg>";
+        const isOldQris = !imageUrl || imageUrl === 'assets/qris.jpeg';
+        const previewEl = document.getElementById('qris-preview');
+        if (previewEl) {
+            previewEl.src = isOldQris ? defaultQris : imageUrl;
+        }
+
+        const showInput = document.getElementById('show-qris-input');
+        if (showInput && showQris !== undefined) {
+            showInput.checked = showQris !== false;
+        }
+    }
+
+    async loadQrisSettings() {
+        // 1. Coba muat dari localStorage terlebih dahulu (instant zero-flicker)
+        try {
+            const cached = JSON.parse(localStorage.getItem('app_settings') || '{}');
+            if (cached && (cached.qris_image_url || cached.show_qris !== undefined)) {
+                if (cached.id) this.appSettingsId = cached.id;
+                this.renderQrisPreview(cached.qris_image_url, cached.show_qris);
+            }
+        } catch (e) {}
+
+        // 2. Ambil data terbaru dari Supabase
+        try {
+            const { data, error } = await supabase
+                .from('app_settings')
+                .select('id, qris_image_url, show_qris')
+                .limit(1)
+                .maybeSingle();
+
+            if (error) {
+                console.error('[PaymentMethods] Error loading QRIS settings:', error);
+                return;
+            }
+
+            if (data) {
+                this.appSettingsId = data.id;
+                this.renderQrisPreview(data.qris_image_url, data.show_qris);
+
+                // Sinkronkan ke cache localStorage
+                try {
+                    const local = JSON.parse(localStorage.getItem('app_settings') || '{}');
+                    local.id = data.id;
+                    local.qris_image_url = data.qris_image_url;
+                    local.show_qris = data.show_qris;
+                    localStorage.setItem('app_settings', JSON.stringify(local));
+                } catch (e) {}
+            }
+        } catch (e) {
+            console.error('[PaymentMethods] Failed to load QRIS settings:', e);
+        }
+    }
+
+    async toggleQris(enabled) {
+        try {
+            const updatePayload = {
+                show_qris: enabled,
+                updated_at: new Date().toISOString()
+            };
+
+            let res;
+            if (this.appSettingsId) {
+                res = await supabase
+                    .from('app_settings')
+                    .update(updatePayload)
+                    .eq('id', this.appSettingsId);
+            } else {
+                res = await supabase
+                    .from('app_settings')
+                    .upsert([updatePayload]);
+            }
+
+            if (res.error) throw res.error;
+
+            // Update local storage
+            try {
+                const local = JSON.parse(localStorage.getItem('app_settings') || '{}');
+                local.show_qris = enabled;
+                localStorage.setItem('app_settings', JSON.stringify(local));
+            } catch (e) {}
+
+            this.showToast(`QRIS ${enabled ? 'diaktifkan' : 'dinonaktifkan'}`, 'success');
+        } catch (err) {
+            console.error('Error updating QRIS toggle:', err);
+            this.showToast('Gagal mengubah status QRIS', 'error');
+            const showInput = document.getElementById('show-qris-input');
+            if (showInput) showInput.checked = !enabled;
+        }
+    }
+
+    async handleQrisUpload(event) {
+        const file = event.target?.files?.[0];
+        if (!file) return;
+
+        const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        if (!validTypes.includes(file.type)) {
+            this.showToast('Format file tidak valid. Gunakan PNG atau JPG', 'error');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            this.showToast('Ukuran file terlalu besar. Maksimal 2MB', 'error');
+            return;
+        }
+
+        // Preview immediately
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const previewEl = document.getElementById('qris-preview');
+            if (previewEl) previewEl.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        this.showToast('Mengupload QRIS...', 'info');
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `qris-${Date.now()}.${fileExt}`;
+            const filePath = `qris/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            const publicUrl = urlData.publicUrl;
+
+            const updatePayload = {
+                qris_image_url: publicUrl,
+                updated_at: new Date().toISOString()
+            };
+
+            let res;
+            if (this.appSettingsId) {
+                res = await supabase
+                    .from('app_settings')
+                    .update(updatePayload)
+                    .eq('id', this.appSettingsId);
+            } else {
+                res = await supabase
+                    .from('app_settings')
+                    .upsert([updatePayload]);
+            }
+
+            if (res.error) throw res.error;
+
+            // Update local storage
+            try {
+                const local = JSON.parse(localStorage.getItem('app_settings') || '{}');
+                local.qris_image_url = publicUrl;
+                local.show_qris = document.getElementById('show-qris-input')?.checked !== false;
+                localStorage.setItem('app_settings', JSON.stringify(local));
+            } catch (e) {}
+
+            this.showToast('QRIS berhasil diupload dan disimpan!', 'success');
+        } catch (err) {
+            console.error('Error uploading QRIS:', err);
+            this.showToast('Gagal upload QRIS: ' + err.message, 'error');
+            this.loadQrisSettings();
+        }
+    }
+
+    // ===============================================
     // Helper Functions
     // ===============================================
     showToast(message, type = 'info') {
@@ -327,7 +524,12 @@ export default class PaymentMethodsManager {
 }
 
 // Initialize Payment Methods Manager on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('[PaymentMethods] Initializing on payment-methods.html');
+    try {
+        await requireRole('ADMIN');
+    } catch (e) {
+        console.warn('[PaymentMethods] requireRole check error:', e);
+    }
     window.paymentMethodsManager = new PaymentMethodsManager();
 });

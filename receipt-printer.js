@@ -32,6 +32,34 @@ class ReceiptPrinter {
                 this.appSettings = {};
             }
         }
+
+        // Ambil nama tenant dari tabel tenants jika app_name belum ada atau default
+        if (!this.appSettings?.app_name || this.appSettings.app_name === 'WiFi Billing System') {
+            try {
+                const { data: tenant } = await supabase.from('tenants').select('name').limit(1).maybeSingle();
+                if (tenant?.name && tenant.name.trim()) {
+                    if (!this.appSettings) this.appSettings = {};
+                    this.appSettings.app_name = tenant.name.trim();
+                }
+            } catch (tErr) {
+                console.warn('Gagal memuat nama tenant:', tErr);
+            }
+        }
+
+        // Ambil custom footer dari whatsapp_settings jika ada
+        try {
+            const { data: footerRow } = await supabase
+                .from('whatsapp_settings')
+                .select('setting_value')
+                .eq('setting_key', 'receipt_footer')
+                .maybeSingle();
+            if (footerRow?.setting_value && footerRow.setting_value.trim()) {
+                this.receiptFooter = footerRow.setting_value.trim();
+                localStorage.setItem('receipt_footer', this.receiptFooter);
+            }
+        } catch (fErr) {
+            console.warn('Gagal memuat receipt_footer:', fErr);
+        }
     }
 
     /**
@@ -84,7 +112,20 @@ class ReceiptPrinter {
         const inv = this.currentInvoice;
         const app = this.appSettings || {};
 
-        const appName = app.app_name || 'REVAM NET';
+        let appName = app.app_name;
+        if (!appName || appName === 'WiFi Billing System') {
+            const cachedSettings = localStorage.getItem('app_settings');
+            if (cachedSettings) {
+                try {
+                    const parsed = JSON.parse(cachedSettings);
+                    if (parsed.app_name && parsed.app_name !== 'WiFi Billing System') {
+                        appName = parsed.app_name;
+                    }
+                } catch (e) {}
+            }
+        }
+        appName = appName || 'WiFi Billing System';
+
         const appAddress = app.office_address || app.offline_payment_address || 'Layanan Internet Cepat & Stabil';
         const appPhone = app.whatsapp_number || '-';
 
@@ -97,7 +138,19 @@ class ReceiptPrinter {
         const amountPaid = Number(inv.amount_paid || (inv.status === 'paid' ? totalDue : 0));
         const remaining = Math.max(0, totalDue - amountPaid);
 
-        const statusText = inv.status === 'paid' ? 'LUNAS' : (amountPaid > 0 ? 'CICILAN / SEBAGIAN' : 'BELUM LUNAS');
+        // Status penentuan matematis yang akurat
+        const statusLower = (inv.status || '').toLowerCase().trim();
+        let statusText = 'BELUM BAYAR';
+        if (statusLower === 'paid' || statusLower === 'lunas' || (amountPaid >= totalDue && totalDue > 0)) {
+            statusText = 'LUNAS';
+        } else if (statusLower === 'partially_paid' || statusLower === 'installment' || statusLower === 'cicilan' || (amountPaid > 0 && amountPaid < totalDue)) {
+            statusText = 'CICILAN';
+        }
+
+        const footerText = this.receiptFooter || 
+            localStorage.getItem('receipt_footer') || 
+            'Terima kasih atas pembayaran Anda.\nSimpan struk ini sebagai bukti pembayaran sah.';
+
         const paymentMethod = inv.payment_method ? inv.payment_method.toUpperCase() : 'TUNAI';
         const paidAt = this.formatDateTime(inv.paid_at || inv.last_payment_date || new Date());
         const noInvoice = (inv.id || '').substring(0, 8).toUpperCase();
@@ -117,6 +170,7 @@ class ReceiptPrinter {
             remaining,
             statusText,
             paymentMethod,
+            footerText,
             rawInvoice: inv
         };
     }
@@ -345,8 +399,7 @@ class ReceiptPrinter {
 
                         <!-- Footer -->
                         <div style="text-align: center; font-size: 10px; color: #4b5563; margin-top: 6px;">
-                            <div>Terima kasih atas pembayaran Anda.</div>
-                            <div style="margin-top: 2px;">Simpan struk ini sebagai bukti sah.</div>
+                            ${data.footerText.split('\n').filter(l => l.trim()).map(l => `<div style="margin-top: 1px;">${l.trim()}</div>`).join('')}
                             <div style="margin-top: 4px; font-weight: bold; color: #111;">${data.appName}</div>
                         </div>
                     </div>
@@ -561,8 +614,7 @@ class ReceiptPrinter {
                 <div class="double-divider"></div>
 
                 <div class="text-center" style="font-size: 9.5px; margin-top: 6px;">
-                    <div>Terima kasih atas pembayaran Anda.</div>
-                    <div>Simpan struk ini sebagai bukti sah.</div>
+                    ${data.footerText.split('\n').filter(l => l.trim()).map(l => `<div style="margin-top: 1px;">${l.trim()}</div>`).join('')}
                     <div class="bold" style="margin-top: 3px;">${data.appName}</div>
                 </div>
                 <div style="height: 12mm;"></div>
@@ -730,12 +782,11 @@ class ReceiptPrinter {
         // 1. Inisialisasi Printer
         pushBytes(ESC, 0x40); // Reset
 
-        // 2. Header (Tengah, Bold, Double Size)
+        // 2. Header (Tengah, Bold, Normal Size agar muat di kertas 58mm tanpa kata terpotong)
         pushBytes(ESC, 0x61, 0x01); // Center
         pushBytes(ESC, 0x45, 0x01); // Bold ON
-        pushBytes(GS, 0x21, 0x11);  // Double size
-        pushLine(data.appName);
-        pushBytes(GS, 0x21, 0x00);  // Normal size
+        pushBytes(GS, 0x21, 0x00);  // Normal size (jangan double width pada 58mm agar teks tidak meluber)
+        pushLine(data.appName.toUpperCase());
         pushBytes(ESC, 0x45, 0x00); // Bold OFF
         pushLine(data.appAddress);
         pushLine('WA/CS: ' + data.appPhone);
@@ -745,7 +796,7 @@ class ReceiptPrinter {
 
         // Judul Struk
         pushBytes(ESC, 0x45, 0x01); // Bold
-        pushLine('BUKTI PEMBAYARAN INTERNET');
+        pushLine('STRUK PEMBAYARAN TAGIHAN');
         pushBytes(ESC, 0x45, 0x00);
         pushLine('No: #' + data.noInvoice);
         pushLine('');
@@ -777,10 +828,12 @@ class ReceiptPrinter {
 
         pushLine('='.repeat(maxCols));
 
-        // Footer
+        // Footer Dinamis
         pushBytes(ESC, 0x61, 0x01); // Center
-        pushLine('Terima kasih atas pembayaran Anda.');
-        pushLine('Simpan struk ini sebagai bukti sah.');
+        for (const line of data.footerText.split('\n')) {
+            const clean = line.trim();
+            if (clean) pushLine(clean);
+        }
         pushBytes(ESC, 0x45, 0x01);
         pushLine(data.appName);
         pushBytes(ESC, 0x45, 0x00);
@@ -803,7 +856,7 @@ class ReceiptPrinter {
 _${data.appAddress}_
 _WA: ${data.appPhone}_
 =============================
-*BUKTI PEMBAYARAN INTERNET*
+*STRUK PEMBAYARAN TAGIHAN*
 No: #${data.noInvoice}
 Status: *[ ${data.statusText} ]*
 =============================
@@ -816,7 +869,7 @@ Status: *[ ${data.statusText} ]*
 • Total Tagihan : ${this.formatRupiah(data.totalDue)}
 • Jumlah Dibayar: *${this.formatRupiah(data.amountPaid)}*
 ${data.remaining > 0 ? `• Sisa Tagihan  : ${this.formatRupiah(data.remaining)}\n` : ''}=============================
-Terima kasih telah berlangganan layanan internet kami. Simpan bukti ini sebagai konfirmasi pembayaran yang sah.`;
+${data.footerText}`;
 
         try {
             await navigator.clipboard.writeText(text);

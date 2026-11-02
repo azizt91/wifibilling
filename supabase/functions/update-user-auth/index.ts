@@ -1,51 +1,64 @@
 // supabase/functions/update-user-auth/index.ts
+// Purpose: Update user auth with Cross-Tenant IDOR prevention
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from '../_shared/cors.ts'
+import {
+  createAdminClient,
+  getCallerContext,
+  requireAdmin,
+  assertSameTenant,
+  jsonResponse,
+  errorStatus
+} from '../_shared/tenant.ts'
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   // Menangani preflight request untuk CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { user_id, update_data } = await req.json();
+    const { user_id, update_data } = await req.json()
 
     if (!user_id || !update_data) {
-      throw new Error("User ID and update data are required.");
+      throw new Error("User ID and update data are required.")
     }
 
-    // Buat Admin Client Supabase yang memiliki hak akses penuh
-    // Pastikan Anda sudah mengatur SUPABASE_SERVICE_ROLE_KEY di .env
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-    
-    // Panggil fungsi admin untuk mengupdate user
+    const supabaseAdmin = createAdminClient()
+
+    // 1. Dapatkan konteks pemanggil & pastikan admin
+    const caller = await getCallerContext(req, supabaseAdmin)
+    requireAdmin(caller)
+
+    // 2. Cegah Cross-Tenant IDOR: pastikan target user berada di tenant yang sama
+    await assertSameTenant(supabaseAdmin, caller, user_id)
+
+    // 3. Panggil fungsi admin untuk mengupdate user di Auth
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
       user_id,
       {
-        email: update_data.email, // Akan diabaikan jika null
-        password: update_data.password, // Akan diabaikan jika null
-        email_confirm: true, // AUTO CONFIRM jika email berubah
-        // Anda juga bisa mengupdate data lain di sini jika perlu
+        email: update_data.email || undefined,
+        password: update_data.password || undefined,
+        email_confirm: true,
       }
-    );
+    )
 
     if (error) {
-      throw error;
+      throw error
     }
 
-    return new Response(JSON.stringify({ success: true, message: "User updated successfully.", data }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ success: false, message: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    });
+    return jsonResponse({
+      success: true,
+      message: "User updated successfully.",
+      data
+    }, 200, corsHeaders)
+
+  } catch (error: any) {
+    console.error('Error in update-user-auth function:', error)
+    return jsonResponse({
+      success: false,
+      message: error.message
+    }, errorStatus(error, 400), corsHeaders)
   }
-});
+})

@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         customerEmail.textContent = currentUser.email || 'email@example.com';
         
         const photoUrl = data.photo_url;
-        const defaultGenderAvatar = (data.gender || '').toUpperCase() === 'PEREMPUAN' ? 'assets/avatar_female.svg' : 'assets/avatar_male.svg';
+        const defaultGenderAvatar = 'assets/avatar_male.svg';
         const validPhoto = (photoUrl && !photoUrl.includes('sb-admin-pro.startbootstrap.com'))
             ? photoUrl
             : defaultGenderAvatar;
@@ -253,12 +253,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             try {
                 await supabase.auth.signOut();
                 sessionStorage.clear();
-                window.location.href = 'index.html';
+                localStorage.removeItem('app_settings');
+                localStorage.removeItem('whatsapp_settings');
+                localStorage.removeItem('pwa_manifest');
+                window.location.href = 'login.html';
             } catch (error) {
                 console.error('Logout error:', error);
                 // Force logout even if there's an error
                 sessionStorage.clear();
-                window.location.href = 'index.html';
+                localStorage.removeItem('app_settings');
+                localStorage.removeItem('whatsapp_settings');
+                localStorage.removeItem('pwa_manifest');
+                window.location.href = 'login.html';
             }
         }
     });

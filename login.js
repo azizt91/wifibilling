@@ -12,14 +12,34 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
     });
 
+    // Toggle intip/lihat password
+    const passwordInput = document.getElementById('password');
+    const btnTogglePassword = document.getElementById('btn-toggle-password');
+    btnTogglePassword?.addEventListener('click', () => {
+        if (!passwordInput) return;
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            btnTogglePassword.classList.add('text-white');
+            btnTogglePassword.classList.remove('text-white/60');
+        } else {
+            passwordInput.type = 'password';
+            btnTogglePassword.classList.remove('text-white');
+            btnTogglePassword.classList.add('text-white/60');
+        }
+    });
+
     loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const submitButton = event.target.querySelector('button[type="submit"]');
         errorMessage.textContent = '';
         errorMessage.classList.add('hidden');
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        let email = (document.getElementById('email')?.value || '').trim();
+        // Jika pelanggan mengetik IDPL saja (misal: gj782 atau GJ782 tanpa @), otomatis lengkapi @wifi.id
+        if (email && !email.includes('@')) {
+            email = `${email.toLowerCase()}@wifi.id`;
+        }
+        const password = document.getElementById('password')?.value || '';
 
         setButtonLoading(submitButton, true);
 
@@ -30,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (error) {
-                throw new Error(error.message);
+                throw error;
             }
 
             if (data.user) {
@@ -38,7 +58,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (error) {
-            errorMessage.textContent = 'Email atau password salah. Silakan coba lagi.';
+            console.error("DEBUG: Detail error saat login:", error);
+            const msg = (error?.message || '').toLowerCase();
+            if (msg.includes('email not confirmed')) {
+                errorMessage.textContent = 'Email belum dikonfirmasi! Silakan cek inbox/spam email Anda, atau matikan opsi "Confirm email" di pengaturan Supabase Authentication.';
+            } else if (msg.includes('invalid login credentials')) {
+                errorMessage.textContent = 'Email atau password salah. Pastikan password sudah benar dan perhatikan huruf besar/kecil.';
+            } else if (msg.includes('user not found')) {
+                errorMessage.textContent = 'Akun dengan email ini belum terdaftar.';
+            } else if (msg.includes('too many requests')) {
+                errorMessage.textContent = 'Terlalu banyak percobaan login yang gagal. Silakan tunggu beberapa saat lagi.';
+            } else {
+                errorMessage.textContent = error.message || 'Email atau password salah. Silakan coba lagi.';
+            }
             errorMessage.classList.remove('hidden');
         } finally {
             setButtonLoading(submitButton, false);
@@ -73,13 +105,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const profile = profiles[0];
             console.log("DEBUG: Found profile:", profile);
 
+            // Bersihkan cache settings lama dari browser agar tidak terjadi kebocoran tampilan antar tenant
+            localStorage.removeItem('app_settings');
+            localStorage.removeItem('whatsapp_settings');
+            localStorage.removeItem('pwa_manifest');
+
             // Redirect based on the role from the profiles table
-            if (profile.role === 'ADMIN') {
+            const rawRole = (profile.role || '').toLowerCase();
+            if (rawRole === 'super_admin' || rawRole === 'superadmin') {
+                window.location.href = 'superadmin.html';
+            } else if (rawRole === 'admin') {
                 window.location.href = 'dashboard.html';
-            } else if (profile.role === 'USER') {
+            } else if (rawRole === 'user' || rawRole === 'pelanggan' || rawRole === 'customer') {
                 window.location.href = 'pelanggan_dashboard.html';
             } else {
-                errorMessage.textContent = 'Peran pengguna tidak dikenali.';
+                errorMessage.textContent = `Peran pengguna (${profile.role}) tidak dikenali.`;
                 errorMessage.classList.remove('hidden');
             }
         } catch (error) {

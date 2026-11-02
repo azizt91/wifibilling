@@ -1,52 +1,61 @@
-// Service Worker untuk PWA AI.NET
-const CACHE_NAME = 'yourisp-v1.5.5';
+// Service Worker untuk PWA WiFi Billing System
+const CACHE_NAME = 'wifibilling-pwa-v2.0.0';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/dashboard.html',
-  '/pelanggan.html',
-  '/tagihan.html',
-  '/pengeluaran.html',
-  '/pelanggan_dashboard.html',
-  '/pelanggan_profile.html',
-  '/pelanggan_riwayat_lunas.html',
-  '/pelanggan_info.html',
-  '/profile.html',
-  '/style.css',
-  '/login.js',
-  '/auth.js',
-  '/datetime-display.js',
-  '/dashboard.js',
-  '/pelanggan.js',
-  '/tagihan.js',
-  '/pengeluaran.js',
-  '/pelanggan_dashboard.js',
-  '/pelanggan_profile.js',
-  '/pelanggan_riwayat_lunas.js',
-  '/pelanggan_info.js',
-  '/profile.js',
-  '/assets/yourisp.png',
-  '/assets/avatar_male.svg',
-  '/assets/avatar_female.svg',
-  '/assets/default_avatar.svg',
-  '/assets/login_illustration.svg',
-  '/manifest.json',
+  './',
+  './index.html',
+  './login.html',
+  './dashboard.html',
+  './pelanggan.html',
+  './tagihan.html',
+  './pengeluaran.html',
+  './pelanggan_dashboard.html',
+  './pelanggan_profile.html',
+  './pelanggan_riwayat_lunas.html',
+  './pelanggan_info.html',
+  './profile.html',
+  './style.css',
+  './login.js',
+  './auth.js',
+  './datetime-display.js',
+  './dashboard.js',
+  './pelanggan.js',
+  './tagihan.js',
+  './pengeluaran.js',
+  './pelanggan_dashboard.js',
+  './pelanggan_profile.js',
+  './pelanggan_riwayat_lunas.js',
+  './pelanggan_info.js',
+  './profile.js',
+  './assets/logo_192x192.png',
+  './assets/logo_512x512.png',
+  './assets/avatar_male.svg',
+  './assets/avatar_female.svg',
+  './assets/default_avatar.svg',
+  './assets/login_illustration.svg',
+  './manifest.json',
+  './manifest-superadmin.json',
+  './superadmin-login.html',
+  './superadmin-login.js',
+  './superadmin.html',
+  './superadmin.js',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css'
 ];
 
-// Install Event - Cache resources
+// Install Event - Cache resources with tolerant Promise.allSettled
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Caching files');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((error) => {
-        console.error('Service Worker: Cache failed', error);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Service Worker: Caching files');
+      return Promise.allSettled(
+        urlsToCache.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn('SW cache skip:', url, err);
+          })
+        )
+      );
+    })
   );
   self.skipWaiting();
 });
@@ -66,80 +75,46 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  self.clients.claim();
+  return self.clients.claim();
 });
 
-// Fetch Event - Serve cached content when offline
+// Fetch Event - Network first with cache fallback
 self.addEventListener('fetch', (event) => {
+  // Hanya tangani request GET http/https
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return;
+  }
+
+  // Bypass cache untuk API Supabase agar data selalu real-time
+  if (event.request.url.includes('.supabase.co')) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
+        // Jangan cache jika bukan response sukses
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
 
-        // For API calls, try network first, then show offline message
-        if (event.request.url.includes('/api/') || event.request.url.includes('localhost:3000')) {
-          return fetch(event.request).catch(() => {
-            // Return a custom offline response for API calls
-            return new Response(
-              JSON.stringify({
-                message: 'Aplikasi sedang offline. Silakan coba lagi ketika koneksi internet tersedia.'
-              }),
-              {
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: { 'Content-Type': 'application/json' }
-              }
-            );
-          });
-        }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
 
-        // For other requests, try network first
-        return fetch(event.request).catch(() => {
-          // If network fails, return cached version if available
-          return caches.match('/index.html');
+        return response;
+      })
+      .catch(() => {
+        // Fallback ke cache jika offline
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          if (event.request.mode === 'navigate') {
+            return caches.match('./login.html') || caches.match('./index.html');
+          }
         });
       })
-  );
-});
-
-// Background Sync (for when connection is restored)
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync') {
-    console.log('Service Worker: Background sync triggered');
-    // Handle background sync tasks here
-  }
-});
-
-// Push Notification (optional for future use)
-self.addEventListener('push', (event) => {
-  if (event.data) {
-    const options = {
-      body: event.data.text(),
-      icon: '/assets/yourisp.png',
-      badge: '/assets/yourisp.png',
-      vibrate: [200, 100, 200],
-      data: {
-        dateOfArrival: Date.now(),
-        primaryKey: 1
-      }
-    };
-
-    event.waitUntil(
-      self.registration.showNotification('REVAM NET', options)
-    );
-  }
-});
-
-// Handle notification click
-self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked, opening notification center.');
-  event.notification.close();
-
-  // Arahkan ke HALAMAN NOTIFIKASI BARU
-  event.waitUntil(
-    clients.openWindow('/notifikasi.html')
   );
 });

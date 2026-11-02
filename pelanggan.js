@@ -1,7 +1,7 @@
 // pelanggan.js (Supabase Version - FINAL & COMPLETE with Event Delegation)
 import { supabase } from './supabase-client.js';
 import { requireRole } from './auth.js';
-import { initializeCSVImport } from './csv-import.js';
+import { initializeCSVImport } from './csv-import.js?v=2.1';
 
 document.addEventListener('DOMContentLoaded', async () => {
     await requireRole('ADMIN');
@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // State Management
     let allPackages = [];
     let currentEditingProfileId = null;
+    let currentAddIdpl = null;
     let lastView = 'list';
     let currentFilter = 'all';
 
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial Setup
     initializeEventListeners();
     initializeStickyHeader(); // Initialize sticky header behavior
+    initLocationPicker();
     checkURLParameters(); // Check for URL parameters first
     fetchInitialData();
 
@@ -314,15 +316,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function getCustomerAvatar(profile) {
-        if (!profile) return 'assets/login_illustration.svg';
+        if (!profile) return 'assets/avatar_male.svg';
         const url = profile.photo_url;
         if (url && (url.startsWith('data:') || url.startsWith('assets/') || (url.startsWith('http') && !url.includes('sb-admin-pro.startbootstrap.com')))) {
             return url;
         }
-        const gender = (profile.gender || '').toUpperCase();
-        if (gender === 'LAKI-LAKI') return 'assets/avatar_male.svg';
-        if (gender === 'PEREMPUAN') return 'assets/avatar_female.svg';
-        return 'assets/login_illustration.svg';
+        return 'assets/avatar_male.svg';
     }
 
     function renderCustomerList(data) {
@@ -400,6 +399,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     switchView('form');
     // }
 
+    /**
+     * Generator ID Pelanggan Acak 5 Karakter: 2 Huruf Kapital + 3 Angka (contoh: UD417)
+     */
+    async function generateCustomerIdpl() {
+        const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // 24 huruf tanpa I & O
+        const getRandomCode = () => {
+            const l1 = letters.charAt(Math.floor(Math.random() * letters.length));
+            const l2 = letters.charAt(Math.floor(Math.random() * letters.length));
+            const num = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `${l1}${l2}${num}`;
+        };
+
+        try {
+            const { data: existingProfiles, error } = await supabase
+                .from('profiles')
+                .select('idpl');
+
+            const existingSet = new Set((existingProfiles || []).map(p => p.idpl).filter(Boolean));
+
+            for (let i = 0; i < 50; i++) {
+                const candidate = getRandomCode();
+                if (!existingSet.has(candidate)) {
+                    return candidate;
+                }
+            }
+        } catch (err) {
+            console.warn('Gagal cek keunikan IDPL, gunakan generator acak langsung:', err);
+        }
+
+        return getRandomCode();
+    }
+
     async function openAddForm() {
         customerForm.reset();
         currentEditingProfileId = null;
@@ -413,37 +444,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         emailInput.required = true;
         passInput.required = true;
 
+        // Reset location input & preview
+        const quickInput = document.getElementById('quick-location-input');
+        if (quickInput) quickInput.value = '';
+        const smartFeedback = document.getElementById('smart-loc-feedback');
+        if (smartFeedback) smartFeedback.className = 'text-[11px] mt-1 hidden font-medium';
+        updateLocationPreview();
+
         lastView = 'list';
         switchView('form');
 
         emailInput.placeholder = 'Memuat...';
         passInput.placeholder = 'Memuat...';
 
-        // Auto-generate email and password
+        // Auto-generate email unik berbasis ID Pelanggan dan password
         try {
-            const { data: customers, error } = await supabase
-                .from('profiles')
-                .select('idpl')
-                .like('idpl', 'CST%');
-
-            let nextNumber = 1;
-            if (!error && customers && customers.length > 0) {
-                const numbers = customers
-                    .map(c => {
-                        const match = c.idpl.match(/^CST(\d+)$/);
-                        return match ? parseInt(match[1], 10) : 0;
-                    })
-                    .filter(num => !isNaN(num));
-
-                if (numbers.length > 0) {
-                    nextNumber = Math.max(...numbers) + 1;
-                }
-            }
-
-            emailInput.value = `client${nextNumber}@gmail.com`;
-            passInput.value = 'password123';
+            currentAddIdpl = await generateCustomerIdpl();
+            emailInput.value = `${currentAddIdpl.toLowerCase()}@wifi.id`;
+            passInput.value = '123456';
         } catch (e) {
             console.error('Error auto-generating credentials:', e);
+            currentAddIdpl = await generateCustomerIdpl();
+            emailInput.value = `${currentAddIdpl.toLowerCase()}@wifi.id`;
+            passInput.value = '123456';
         }
     }
 
@@ -464,7 +487,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('customer-name').value = profile.full_name || '';
         document.getElementById('customer-address').value = profile.address || '';
         document.getElementById('customer-whatsapp').value = profile.whatsapp_number || '';
-        document.getElementById('customer-gender').value = profile.gender || '';
         document.getElementById('customer-status').value = profile.status || 'AKTIF';
         document.getElementById('customer-device').value = profile.device_type || '';
         document.getElementById('customer-ip').value = profile.ip_static_pppoe || '';
@@ -482,6 +504,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('customer-longitude').value = profile.longitude || '';
         document.getElementById('edit-customer-email').value = userEmail || '';
         document.getElementById('edit-customer-password').value = '';
+
+        // Reset quick input & update location preview
+        const quickInput = document.getElementById('quick-location-input');
+        if (quickInput) quickInput.value = '';
+        const smartFeedback = document.getElementById('smart-loc-feedback');
+        if (smartFeedback) smartFeedback.className = 'text-[11px] mt-1 hidden font-medium';
+        updateLocationPreview();
 
         // Churn Date Logic - Show/Hide and populate based on status
         const churnDateContainer = document.getElementById('churn-date-container');
@@ -670,7 +699,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             'detail-idpl': profile.idpl,
             'detail-nama': profile.full_name,
             'detail-alamat': profile.address,
-            'detail-gender': profile.gender,
             'detail-whatsapp': profile.whatsapp_number,
             'detail-email': userEmail || '-',
             'detail-paket': customerPackage ? customerPackage.package_name : 'Belum diatur',
@@ -741,15 +769,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const statusValue = document.getElementById('customer-status').value;
             const churnDateValue = document.getElementById('customer-churn-date').value;
-            const gender = document.getElementById('customer-gender').value;
-
-            // Set photo_url based on gender (same logic as create)
-            let photoUrl = 'assets/login_illustration.svg';
-            if (gender === 'LAKI-LAKI') {
-                photoUrl = 'assets/avatar_male.svg';
-            } else if (gender === 'PEREMPUAN') {
-                photoUrl = 'assets/avatar_female.svg';
-            }
+            const gender = 'LAKI-LAKI';
+            const photoUrl = 'assets/avatar_male.svg';
 
             // Get latitude/longitude
             const latitudeValue = document.getElementById('customer-latitude').value.trim();
@@ -908,49 +929,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } else {
             // Add Logic
-            const genderElement = document.getElementById('customer-gender');
-            const gender = genderElement.value;
-            let photoUrl = 'assets/login_illustration.svg';
+            const gender = 'LAKI-LAKI';
+            const photoUrl = 'assets/avatar_male.svg';
 
-            // Set photo_url based on gender
-            if (gender === 'LAKI-LAKI') {
-                photoUrl = 'assets/avatar_male.svg';
-            } else if (gender === 'PEREMPUAN') {
-                photoUrl = 'assets/avatar_female.svg';
+            // Gunakan ID Pelanggan yang sinkron dengan email, atau generate baru
+            let idpl = currentAddIdpl;
+            const emailVal = document.getElementById('customer-email').value.trim();
+            const matchWifi = emailVal.match(/^([a-z0-9]+)@wifi\.id$/i);
+            if (matchWifi) {
+                idpl = matchWifi[1].toUpperCase();
+            } else if (!idpl) {
+                idpl = await generateCustomerIdpl();
             }
-
-            // Generate IDPL berurut
-            let idpl = 'CST001'; // Default jika belum ada data
-
-            try {
-                // Ambil semua IDPL yang dimulai dengan CST
-                const { data: customers, error: customersError } = await supabase
-                    .from('profiles')
-                    .select('idpl')
-                    .like('idpl', 'CST%');
-
-                if (!customersError && customers && customers.length > 0) {
-                    // Extract semua nomor dan cari yang tertinggi
-                    const numbers = customers
-                        .map(customer => {
-                            const match = customer.idpl.match(/^CST(\d+)$/);
-                            return match ? parseInt(match[1], 10) : 0;
-                        })
-                        .filter(num => !isNaN(num));
-
-                    if (numbers.length > 0) {
-                        const highestNumber = Math.max(...numbers);
-                        const nextNumber = highestNumber + 1;
-                        // Format ke 3 digit dengan leading zeros
-                        idpl = `CST${nextNumber.toString().padStart(3, '0')}`;
-                    }
-                }
-            } catch (error) {
-                console.error('Error getting last IDPL:', error);
-                // Jika error, gunakan default CST001
-            }
-
-            console.log('Generated IDPL:', idpl);
+            currentAddIdpl = null;
+            console.log('Final IDPL for Customer:', idpl);
 
             // Get latitude/longitude
             const latitudeValue = document.getElementById('customer-latitude').value.trim();
@@ -1099,10 +1091,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
             const emails = emailResults.map(r => (r.status === 'fulfilled' && r.value) ? r.value : '');
 
-            // 3. Header columns
+            // 3. Header columns (tanpa gender)
             const headers = [
                 'email', 'password', 'full_name', 'address', 'whatsapp_number',
-                'gender', 'status', 'package_id', 'amount', 'installation_date',
+                'status', 'package_id', 'amount', 'installation_date',
                 'latitude', 'longitude', 'device_type', 'ip_static_pppoe'
             ];
 
@@ -1113,7 +1105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const fullName = p.full_name || '';
                 const address = p.address || '';
                 const whatsapp = p.whatsapp_number || '';
-                const gender = p.gender || '';
                 const status = p.status || 'AKTIF';
                 const packageId = p.package_id || '';
                 const amount = p.packages ? p.packages.price : (p.amount || '');
@@ -1125,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 return [
                     email, password, fullName, address, whatsapp,
-                    gender, status, packageId, amount, installDate,
+                    status, packageId, amount, installDate,
                     lat, lng, device, ip
                 ];
             });
@@ -1166,5 +1157,303 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error exporting CSV:', err);
             alert('Gagal mengeksport data CSV: ' + err.message);
         }
+    }
+
+    // ==========================================
+    // Fitur Lokasi Otomatis & Interactive Map Picker
+    // ==========================================
+    let leafletMap = null;
+    let mapMarker = null;
+
+    function showLocationToast(message, type = 'success') {
+        let toast = document.getElementById('location-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'location-toast';
+            document.body.appendChild(toast);
+        }
+        const bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-red-600' : 'bg-gray-800');
+        toast.className = `fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold text-white flex items-center gap-2 transition-all duration-300 ${bg}`;
+        toast.textContent = message;
+        clearTimeout(toast.timeoutId);
+        toast.timeoutId = setTimeout(() => {
+            toast.className = 'hidden';
+        }, 3200);
+    }
+
+    function parseLocationInput(text) {
+        if (!text || typeof text !== 'string') return null;
+        text = text.trim();
+        if (!text) return null;
+
+        // 1. Format @lat,lng (contoh URL desktop Google Maps)
+        const atMatch = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+
+        // 2. Query parameter q=lat,lng atau ll=lat,lng
+        const qMatch = text.match(/[?&](?:q|ll|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+        if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+
+        // 3. Format koordinat biasa: "-6.9174639, 107.6191228" atau "-6.9174639 107.6191228"
+        const coordMatch = text.match(/(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/);
+        if (coordMatch) return { lat: parseFloat(coordMatch[1]), lng: parseFloat(coordMatch[2]) };
+
+        return null;
+    }
+
+    function updateLocationPreview() {
+        const latInput = document.getElementById('customer-latitude');
+        const lngInput = document.getElementById('customer-longitude');
+        const previewLink = document.getElementById('btn-view-gmaps');
+        const statusText = document.getElementById('loc-status-text');
+
+        const latVal = latInput?.value?.trim();
+        const lngVal = lngInput?.value?.trim();
+
+        if (latVal && lngVal && !isNaN(parseFloat(latVal)) && !isNaN(parseFloat(lngVal))) {
+            const url = `https://www.google.com/maps?q=${latVal},${lngVal}`;
+            if (previewLink) {
+                previewLink.href = url;
+                previewLink.classList.remove('hidden');
+            }
+            if (statusText) {
+                statusText.textContent = `📍 Titik: ${parseFloat(latVal).toFixed(5)}, ${parseFloat(lngVal).toFixed(5)}`;
+                statusText.className = 'text-xs text-emerald-600 font-semibold';
+            }
+        } else {
+            if (previewLink) previewLink.classList.add('hidden');
+            if (statusText) {
+                statusText.textContent = 'Otomatis GPS atau ketik manual';
+                statusText.className = 'text-xs text-gray-500';
+            }
+        }
+    }
+
+    function initLocationPicker() {
+        const btnGetLoc = document.getElementById('btn-get-current-loc');
+        const btnOpenMap = document.getElementById('btn-open-map-picker');
+        const quickInput = document.getElementById('quick-location-input');
+        const btnPaste = document.getElementById('btn-paste-smart-loc');
+        const feedback = document.getElementById('smart-loc-feedback');
+        const latInput = document.getElementById('customer-latitude');
+        const lngInput = document.getElementById('customer-longitude');
+
+        // Listener input lat/lng manual
+        latInput?.addEventListener('input', updateLocationPreview);
+        lngInput?.addEventListener('input', updateLocationPreview);
+
+        // 1. Ambil Lokasi GPS (1-Klik)
+        btnGetLoc?.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                showLocationToast('Browser tidak mendukung GPS Geolocation.', 'error');
+                return;
+            }
+
+            const btnText = document.getElementById('btn-get-loc-text');
+            const originalText = btnText ? btnText.textContent : '';
+            if (btnText) btnText.textContent = 'Mencari GPS...';
+            btnGetLoc.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    btnGetLoc.disabled = false;
+                    if (btnText) btnText.textContent = originalText;
+
+                    const lat = pos.coords.latitude.toFixed(7);
+                    const lng = pos.coords.longitude.toFixed(7);
+                    if (latInput) latInput.value = lat;
+                    if (lngInput) lngInput.value = lng;
+                    updateLocationPreview();
+
+                    showLocationToast(`📍 Lokasi GPS berhasil didapatkan! (Akurasi: ±${pos.coords.accuracy.toFixed(1)}m)`, 'success');
+                },
+                (err) => {
+                    btnGetLoc.disabled = false;
+                    if (btnText) btnText.textContent = originalText;
+                    let msg = 'Gagal mengakses GPS: ' + err.message;
+                    if (err.code === 1) msg = 'Izin akses lokasi ditolak oleh browser/pengguna.';
+                    else if (err.code === 2) msg = 'Posisi GPS tidak ditemukan. Pastikan GPS aktif.';
+                    else if (err.code === 3) msg = 'Waktu permintaan GPS habis (timeout).';
+                    showLocationToast(msg, 'error');
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        });
+
+        // 2. Smart Paste Handler
+        function handleSmartParse(text) {
+            const result = parseLocationInput(text);
+            if (result) {
+                if (latInput) latInput.value = result.lat.toFixed(7);
+                if (lngInput) lngInput.value = result.lng.toFixed(7);
+                updateLocationPreview();
+
+                if (feedback) {
+                    feedback.textContent = `✓ Koordinat berhasil dideteksi: ${result.lat}, ${result.lng}`;
+                    feedback.className = 'text-[11px] mt-1 text-emerald-600 font-semibold block';
+                }
+                showLocationToast('Koordinat berhasil diekstrak!', 'success');
+                return true;
+            } else {
+                if (feedback) {
+                    feedback.textContent = '✗ Format link / koordinat tidak dikenali';
+                    feedback.className = 'text-[11px] mt-1 text-red-500 font-medium block';
+                }
+                return false;
+            }
+        }
+
+        quickInput?.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (val.length > 5) handleSmartParse(val);
+        });
+
+        quickInput?.addEventListener('paste', (e) => {
+            setTimeout(() => {
+                const val = quickInput.value.trim();
+                if (val) handleSmartParse(val);
+            }, 50);
+        });
+
+        btnPaste?.addEventListener('click', async () => {
+            try {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        if (quickInput) quickInput.value = text;
+                        handleSmartParse(text);
+                        return;
+                    }
+                }
+            } catch (_) {}
+
+            const val = quickInput?.value?.trim();
+            if (val) {
+                handleSmartParse(val);
+            } else {
+                showLocationToast('Silakan ketik atau tempel link/koordinat di kotak.', 'info');
+                quickInput?.focus();
+            }
+        });
+
+        // 3. Map Picker Modal (Leaflet)
+        const mapModal = document.getElementById('map-picker-modal');
+        const btnCloseMap = document.getElementById('btn-close-map-modal');
+        const btnConfirmMap = document.getElementById('btn-confirm-map-loc');
+        const btnModalMyLoc = document.getElementById('btn-modal-my-loc');
+        const modalCoordsDisplay = document.getElementById('modal-coords-display');
+
+        let selectedLat = null;
+        let selectedLng = null;
+
+        function setMapSelection(lat, lng, updateMap = false) {
+            selectedLat = lat;
+            selectedLng = lng;
+
+            if (modalCoordsDisplay) {
+                modalCoordsDisplay.textContent = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            }
+
+            if (window.L && leafletMap) {
+                if (!mapMarker) {
+                    mapMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
+                    mapMarker.on('dragend', (e) => {
+                        const pos = e.target.getLatLng();
+                        setMapSelection(pos.lat, pos.lng, false);
+                    });
+                } else {
+                    mapMarker.setLatLng([lat, lng]);
+                }
+
+                if (updateMap) {
+                    leafletMap.setView([lat, lng], 16);
+                }
+            }
+        }
+
+        btnOpenMap?.addEventListener('click', () => {
+            if (!mapModal) return;
+            mapModal.classList.remove('hidden');
+
+            const currentLat = parseFloat(latInput?.value);
+            const currentLng = parseFloat(lngInput?.value);
+
+            const hasValidCoords = !isNaN(currentLat) && !isNaN(currentLng);
+            const initLat = hasValidCoords ? currentLat : -6.2088;
+            const initLng = hasValidCoords ? currentLng : 106.8456;
+            const initZoom = hasValidCoords ? 16 : 12;
+
+            setTimeout(() => {
+                if (window.L) {
+                    if (!leafletMap) {
+                        leafletMap = L.map('leaflet-map-container').setView([initLat, initLng], initZoom);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            attribution: '© OpenStreetMap contributors'
+                        }).addTo(leafletMap);
+
+                        leafletMap.on('click', (e) => {
+                            setMapSelection(e.latlng.lat, e.latlng.lng, false);
+                        });
+                    } else {
+                        leafletMap.invalidateSize();
+                        leafletMap.setView([initLat, initLng], initZoom);
+                    }
+
+                    if (hasValidCoords) {
+                        setMapSelection(initLat, initLng, true);
+                    } else {
+                        // Coba ambil GPS user untuk memusatkan peta
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                    setMapSelection(pos.coords.latitude, pos.coords.longitude, true);
+                                },
+                                () => {
+                                    setMapSelection(initLat, initLng, false);
+                                },
+                                { timeout: 5000 }
+                            );
+                        } else {
+                            setMapSelection(initLat, initLng, false);
+                        }
+                    }
+                } else {
+                    showLocationToast('Library Peta sedang dimuat, mohon tunggu sebentar...', 'info');
+                }
+            }, 150);
+        });
+
+        btnCloseMap?.addEventListener('click', () => {
+            mapModal?.classList.add('hidden');
+        });
+
+        btnModalMyLoc?.addEventListener('click', () => {
+            if (!navigator.geolocation) return;
+            btnModalMyLoc.textContent = 'Mencari...';
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    btnModalMyLoc.textContent = '📍 Lokasi Saya';
+                    setMapSelection(pos.coords.latitude, pos.coords.longitude, true);
+                },
+                (err) => {
+                    btnModalMyLoc.textContent = '📍 Lokasi Saya';
+                    showLocationToast('Gagal mengambil lokasi GPS: ' + err.message, 'error');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        });
+
+        btnConfirmMap?.addEventListener('click', () => {
+            if (selectedLat != null && selectedLng != null) {
+                if (latInput) latInput.value = selectedLat.toFixed(7);
+                if (lngInput) lngInput.value = selectedLng.toFixed(7);
+                updateLocationPreview();
+                mapModal?.classList.add('hidden');
+                showLocationToast('Titik lokasi berhasil diterapkan!', 'success');
+            } else {
+                showLocationToast('Silakan klik di peta terlebih dahulu untuk memilih titik.', 'error');
+            }
+        });
     }
 });

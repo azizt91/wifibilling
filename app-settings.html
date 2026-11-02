@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengaturan Aplikasi - REVAM NET</title>
+    <title>Pengaturan Aplikasi - WiFi Billing System</title>
     <link rel="icon" type="image/png" href="assets/logo_192x192.png">
     <link rel="manifest" href="manifest.json">
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#5324e0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="REVAM NET">
+    <meta name="apple-mobile-web-app-title" content="WiFi Billing System">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
     <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
         href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
@@ -93,7 +93,7 @@
                             <input id="app-name-input"
                                 class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
                                 placeholder="AI.NET" />
-                            <small class="text-xs text-gray-400 mt-1">Nama lengkap untuk title & PWA</small>
+                            <small class="text-xs text-gray-400 mt-1">Nama lengkap untuk judul browser & aplikasi</small>
                         </label>
                         <label class="flex flex-col">
                             <p class="text-[#110e1b] text-sm font-medium pb-1">Nama Pendek</p>
@@ -246,71 +246,28 @@
                     </div>
                 </div>
 
-                <!-- Section: Pembayaran Offline -->
+                <!-- Section: Pengaturan Struk Kasir / Printer Thermal -->
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                     <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
                             viewBox="0 0 256 256">
                             <path
-                                d="M216,64H176V56a24,24,0,0,0-24-24H104A24,24,0,0,0,80,56v8H40A16,16,0,0,0,24,80V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V80A16,16,0,0,0,216,64ZM96,56a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM216,192H40V80H216V192Zm-88-80a32,32,0,0,0-32,32,8,8,0,0,0,16,0,16,16,0,0,1,32,0,8,8,0,0,0,16,0A32,32,0,0,0,128,112Z">
+                                d="M216,40H40A16,16,0,0,0,24,56V184a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V88H40ZM216,184H40V104H216v80Zm-32-48a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,136Zm0,24a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,160Z">
                             </path>
                         </svg>
-                        Pembayaran Offline
+                        Pengaturan Struk Kasir (Printer Thermal)
                     </h3>
                     <div class="space-y-3">
                         <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nama Penerima</p>
-                            <input id="offline-name-input" type="text"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                placeholder="Nama Penerima Pembayaran" />
-                            <small class="text-xs text-gray-400 mt-1">Nama untuk pembayaran langsung/offline</small>
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Alamat Pembayaran</p>
-                            <textarea id="offline-address-input"
+                            <p class="text-[#110e1b] text-sm font-medium pb-1">Catatan / Pesan Footer Struk</p>
+                            <textarea id="receipt-footer-input"
                                 class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2 text-sm"
-                                rows="2" placeholder="Dukuh Sekiyong RT 04/RW 07, Desa Pamutih"></textarea>
-                            <small class="text-xs text-gray-400 mt-1">Alamat untuk pembayaran offline langsung</small>
+                                rows="2" placeholder="Contoh: Jika ada gangguan hubungi CS: 0812-XXXX-XXXX. Simpan struk ini sebagai bukti pembayaran sah."></textarea>
+                            <small class="text-xs text-gray-500 mt-1">Pesan ini akan dicetak di bagian paling bawah struk thermal (kasir/Bluetooth) pada aplikasi web dan mobile.</small>
                         </label>
                     </div>
                 </div>
 
-                <!-- Section: QRIS Payment -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm0,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48ZM200,40H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-64,72V152a16,16,0,0,1,16-16h8a8,8,0,0,1,0,16h-8v24h24V160a8,8,0,0,1,16,0v16h8a8,8,0,0,1,0,16h-8v8a8,8,0,0,1-16,0v-8H160v8a8,8,0,0,1-16,0v-8h-8A8,8,0,0,1,136,176Z">
-                            </path>
-                        </svg>
-                        QRIS Payment
-                    </h3>
-                    <div class="space-y-3">
-                        <label class="flex items-center gap-2 mb-3">
-                            <input id="show-qris-input" type="checkbox"
-                                class="w-4 h-4 text-[#683fe4] border-gray-300 rounded focus:ring-[#683fe4]" checked />
-                            <span class="text-sm font-medium text-gray-700">Tampilkan QRIS di halaman customer</span>
-                        </label>
-
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                            <label for="qris-upload" class="cursor-pointer">
-                                <div class="flex flex-col items-center gap-2">
-                                    <img id="qris-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='300' height='300' fill='%23f8f9fa' rx='16'/><rect x='20' y='20' width='260' height='260' fill='none' stroke='%23cbd5e1' stroke-width='4' stroke-dasharray='8 8' rx='12'/><path d='M70 70h50v50H70zm20 20h10v10H90zm90-20h50v50h-50zm20 20h10v10h-10zm-110 90h50v50H70zm20 20h10v10H90zm70-40h20v20h-20zm30 0h20v20h-20zm-30 30h20v20h-20zm30 30h20v20h-20zm-30 0h20v20h-20z' fill='%2364748b'/><text x='50%' y='62%' text-anchor='middle' fill='%23475569' font-size='14' font-weight='bold' font-family='sans-serif'>BELUM ADA QRIS</text><text x='50%' y='70%' text-anchor='middle' fill='%2394a3b8' font-size='11' font-family='sans-serif'>Upload di Pengaturan Aplikasi</text></svg>" alt="QRIS Preview"
-                                        class="w-32 h-32 object-contain rounded">
-                                    <div class="text-center">
-                                        <p class="text-sm font-medium text-[#683fe4]">Upload QRIS Image</p>
-                                        <p class="text-xs text-gray-500 mt-1">PNG atau JPG, max 2MB</p>
-                                    </div>
-                                </div>
-                                <input id="qris-upload" type="file" class="hidden"
-                                    accept="image/png,image/jpeg,image/jpg" />
-                            </label>
-                        </div>
-                        <p class="text-xs text-gray-400">💡 Jika tidak punya QRIS, uncheck checkbox di atas agar tidak
-                            tampil di customer</p>
-                    </div>
-                </div>
 
                 <!-- Section: Tema PWA -->
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
@@ -420,17 +377,71 @@
                         <small class="text-xs text-gray-400 mt-1">URL untuk login pelanggan di pesan WhatsApp</small>
                     </label>
 
-                    <!-- Template Pesan Custom -->
-                    <div class="mb-4">
+                    <!-- Template 1: Pembayaran Lunas -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
                         <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Template Pesan WhatsApp</p>
+                            <div class="flex items-center justify-between pb-1">
+                                <p class="text-[#110e1b] text-sm font-semibold flex items-center gap-1.5">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                                    Template Pembayaran Lunas
+                                </p>
+                                <span class="text-[11px] font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Lunas Otomatis</span>
+                            </div>
+                            <textarea id="template-payment-full"
+                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2.5 text-xs font-mono leading-relaxed mt-1"
+                                rows="8" placeholder="Template pembayaran lunas..."></textarea>
+                            <small class="text-xs text-gray-500 mt-1">
+                                <span class="font-medium text-gray-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {total_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan}
+                            </small>
+                            <div class="mt-2.5 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-start gap-2">
+                                <span class="text-sm flex-shrink-0">💡</span>
+                                <div>
+                                    <strong>Info Pengiriman:</strong> Pesan ini akan terkirim otomatis ke WhatsApp pelanggan saat status tagihan dicatat <strong>Lunas</strong>, asalkan tombol <em>Notifikasi Otomatis</em> diaktifkan dan <em>Fonnte API Token</em> telah diisi.
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Template 2: Pembayaran Cicilan -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <label class="flex flex-col">
+                            <div class="flex items-center justify-between pb-1">
+                                <p class="text-[#110e1b] text-sm font-semibold flex items-center gap-1.5">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+                                    Template Pembayaran Cicilan
+                                </p>
+                                <span class="text-[11px] font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Cicilan Otomatis</span>
+                            </div>
+                            <textarea id="template-payment-installment"
+                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2.5 text-xs font-mono leading-relaxed mt-1"
+                                rows="8" placeholder="Template pembayaran cicilan..."></textarea>
+                            <small class="text-xs text-gray-500 mt-1">
+                                <span class="font-medium text-gray-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {jumlah_dibayar}, {sisa_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan}
+                            </small>
+                            <div class="mt-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-start gap-2">
+                                <span class="text-sm flex-shrink-0">💡</span>
+                                <div>
+                                    <strong>Info Pengiriman:</strong> Pesan ini akan terkirim otomatis ke WhatsApp pelanggan saat pembayaran <strong>Cicilan</strong> dicatat, asalkan tombol <em>Notifikasi Otomatis</em> diaktifkan dan <em>Fonnte API Token</em> telah diisi.
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Template 3: Tagihan / Pesan Manual -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <label class="flex flex-col">
+                            <div class="flex items-center justify-between pb-1">
+                                <p class="text-[#110e1b] text-sm font-semibold flex items-center gap-1.5">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-purple-500"></span>
+                                    Template Tagihan / Pesan Manual
+                                </p>
+                                <span class="text-[11px] font-medium bg-purple-100 text-[#683fe4] px-2 py-0.5 rounded-full">Tagihan & Manual</span>
+                            </div>
                             <textarea id="template-custom-message"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2 text-sm font-mono"
-                                rows="12" placeholder="Template pesan..."></textarea>
-                            <small class="text-xs text-gray-400 mt-1">
-                                Variabel yang bisa digunakan: {nama_pelanggan}, {idpl}, {periode}, {total_tagihan},
-                                {jumlah_dibayar}, {sisa_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan},
-                                {pesan_custom}
+                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2.5 text-xs font-mono leading-relaxed mt-1"
+                                rows="8" placeholder="Template tagihan / pesan manual..."></textarea>
+                            <small class="text-xs text-gray-500 mt-1">
+                                <span class="font-medium text-gray-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {total_tagihan}, {metode_pembayaran}, {pesan_custom}
                             </small>
                         </label>
                     </div>
@@ -438,7 +449,7 @@
                     <!-- Reset to Default Button -->
                     <button id="reset-whatsapp-templates-btn"
                         class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors">
-                        Reset ke Template Default
+                        Reset Semua Template ke Default
                     </button>
                 </div>
 

@@ -1,6 +1,6 @@
 {
-  "name": "REVAM NET",
-  "short_name": "REVAM NET",
+  "name": "WiFi Billing System",
+  "short_name": "WiFi Billing",
   "description": "Sistem manajemen pelanggan ISP dengan integrasi Google Sheets",
   "start_url": "/",
   "display": "standalone",

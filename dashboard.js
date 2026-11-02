@@ -28,11 +28,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Set email immediately
         userEmail.textContent = user.email;
 
-        // Fetch full_name and photo_url from profiles
+        // Fetch full_name, photo_url, and role from profiles
         try {
             const { data: profile, error } = await supabase
                 .from('profiles')
-                .select('full_name, photo_url') // Fetch photo_url as well
+                .select('full_name, photo_url, role')
                 .eq('id', user.id)
                 .single();
 
@@ -153,27 +153,38 @@ document.addEventListener('DOMContentLoaded', async function() {
                 throw new Error(`Supabase RPC Error: ${error.message}`);
             }
 
-            // Call the RPC function for charts data
-            const { data: chartsData, error: chartsError } = await supabase.rpc('get_dashboard_charts_data', {
-                p_months: 6
-            });
+            // Call the RPC function for charts data with resilient client-side fallback
+            let finalChartsData = null;
+            try {
+                const { data: rpcData, error: rpcError } = await supabase.rpc('get_dashboard_charts_data', {
+                    p_months: 6
+                });
+                if (!rpcError && rpcData && rpcData.customer_total_chart) {
+                    finalChartsData = rpcData;
+                } else if (rpcError) {
+                    console.warn('RPC charts error (falling back to direct query):', rpcError.message);
+                }
+            } catch (err) {
+                console.warn('RPC charts call exception:', err);
+            }
 
-            if (chartsError) {
-                console.warn('Charts data error:', chartsError.message);
+            // Fallback: If RPC error or returned null/incomplete format, calculate directly
+            if (!finalChartsData) {
+                console.log('Generating charts data from database tables...');
+                finalChartsData = await generateClientChartsData(6);
             }
 
             hideLoading();
-            displayStats(stats[0]); // RPC returns an array, get the first element
-            
-            // Render charts if data available
-            if (chartsData) {
-                console.log('Charts data received:', chartsData);
-                renderCharts(chartsData);
-                hideChartsLoading();
+            displayStats(stats[0]);
+
+            // Render charts
+            if (finalChartsData) {
+                console.log('Charts data ready to render:', finalChartsData);
+                renderCharts(finalChartsData);
             } else {
-                console.warn('No charts data received');
-                hideChartsLoading();
+                console.warn('No charts data available to render');
             }
+            hideChartsLoading();
 
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
@@ -380,6 +391,155 @@ document.addEventListener('DOMContentLoaded', async function() {
     let customerGrowthChart = null;
     let customerTotalChart = null;
 
+
+    // Resilient client-side charts data generator (guarantees charts always render)
+    async function generateClientChartsData(p_months = 6) {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const now = new Date();
+        const months = [];
+
+        for (let i = p_months - 1; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const mNum = d.getMonth();
+            const yNum = d.getFullYear();
+            const start = new Date(yNum, mNum, 1);
+            const end = new Date(yNum, mNum + 1, 1);
+            months.push({
+                label: `${monthNames[mNum]} ${yNum}`,
+                start,
+                end
+            });
+        }
+
+        const labels = months.map(m => m.label);
+
+        try {
+            const [profilesRes, invoicesRes, expensesRes] = await Promise.all([
+                supabase.from('profiles').select('id, status, installation_date, churn_date, created_at, role'),
+                supabase.from('invoices').select('id, amount, amount_paid, status, paid_at, last_payment_date, created_at'),
+                supabase.from('expenses').select('id, amount, expense_date')
+            ]);
+
+            const allProfiles = (profilesRes.data || []).filter(p => {
+                const r = (p.role || '').toLowerCase();
+                return r === 'user' || r === 'pelanggan' || r === 'customer' || r === '';
+            });
+            const allInvoices = invoicesRes.data || [];
+            const allExpenses = expensesRes.data || [];
+
+            const revenueData = [];
+            const expensesData = [];
+            const profitData = [];
+            const growthNew = [];
+            const growthChurn = [];
+            const totalActive = [];
+
+            months.forEach(m => {
+                // Revenue
+                let rev = 0;
+                allInvoices.forEach(inv => {
+                    const payDate = inv.last_payment_date || inv.paid_at || (inv.status === 'paid' ? inv.created_at : null);
+                    if (payDate) {
+                        const d = new Date(payDate);
+                        if (d >= m.start && d < m.end) {
+                            rev += parseFloat(inv.amount_paid || inv.amount || 0);
+                        }
+                    }
+                });
+                revenueData.push(rev);
+
+                // Expense
+                let exp = 0;
+                allExpenses.forEach(e => {
+                    if (e.expense_date) {
+                        const d = new Date(e.expense_date);
+                        if (d >= m.start && d < m.end) {
+                            exp += parseFloat(e.amount || 0);
+                        }
+                    }
+                });
+                expensesData.push(exp);
+                profitData.push(rev - exp);
+
+                // Customer Growth
+                let newCount = 0;
+                let churnCount = 0;
+                allProfiles.forEach(p => {
+                    const instDate = p.installation_date ? new Date(p.installation_date) : new Date(p.created_at);
+                    if (instDate >= m.start && instDate < m.end) {
+                        newCount++;
+                    }
+                    if (p.status === 'NONAKTIF') {
+                        const cDate = p.churn_date ? new Date(p.churn_date) : new Date(p.created_at);
+                        if (cDate >= m.start && cDate < m.end) {
+                            churnCount++;
+                        }
+                    }
+                });
+                growthNew.push(newCount);
+                growthChurn.push(churnCount);
+
+                // Cumulative Total Active Customers (considers installation date & created_at)
+                let activeCount = 0;
+                allProfiles.forEach(p => {
+                    if (p.status === 'AKTIF') {
+                        const effectiveDate = p.installation_date ? new Date(p.installation_date) : new Date(p.created_at);
+                        if (effectiveDate < m.end) {
+                            activeCount++;
+                        }
+                    }
+                });
+                totalActive.push(activeCount);
+            });
+
+            // Payment status breakdown
+            let paidCount = 0;
+            let partialCount = 0;
+            let unpaidCount = 0;
+            allInvoices.forEach(inv => {
+                if (inv.status === 'paid') paidCount++;
+                else if (inv.status === 'partially_paid') partialCount++;
+                else unpaidCount++;
+            });
+
+            return {
+                revenue_chart: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Pendapatan', data: revenueData, borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: true },
+                        { label: 'Pengeluaran', data: expensesData, borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: true },
+                        { label: 'Profit', data: profitData, borderColor: '#6366F1', backgroundColor: 'rgba(99, 102, 241, 0.1)', tension: 0.4, fill: true }
+                    ]
+                },
+                payment_status_chart: {
+                    labels: ['Lunas', 'Cicilan', 'Belum Bayar'],
+                    datasets: [{
+                        data: [paidCount, partialCount, unpaidCount],
+                        backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                        borderColor: ['#059669', '#D97706', '#DC2626'],
+                        borderWidth: 2
+                    }]
+                },
+                customer_growth_chart: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Pelanggan Baru', data: growthNew, backgroundColor: '#10B981', borderColor: '#059669', borderWidth: 2, borderRadius: 4 },
+                        { label: 'Pelanggan Berhenti', data: growthChurn, backgroundColor: '#EF4444', borderColor: '#DC2626', borderWidth: 2, borderRadius: 4 }
+                    ]
+                },
+                customer_total_chart: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Total Pelanggan Aktif', data: totalActive, borderColor: '#8B5CF6', backgroundColor: 'rgba(139, 92, 246, 0.1)', tension: 0.4, fill: true }
+                    ]
+                }
+            };
+        } catch (err) {
+            console.error('Error in generateClientChartsData:', err);
+            return null;
+        }
+    }
+
     // Chart rendering function
     function renderCharts(chartsData) {
         try {
@@ -471,7 +631,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                                 callbacks: {
                                     label: function(context) {
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : '0';
                                         return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
                                     }
                                 }

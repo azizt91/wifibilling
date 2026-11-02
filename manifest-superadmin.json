@@ -1,0 +1,38 @@
+{
+  "name": "Super Admin - WiFi Billing SaaS",
+  "short_name": "SuperAdmin",
+  "description": "Portal Manajemen Owner WiFi Billing SaaS Multi-Tenant",
+  "start_url": "superadmin-login.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070a12",
+  "theme_color": "#090d16",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/logo_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo_192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/logo_512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
+

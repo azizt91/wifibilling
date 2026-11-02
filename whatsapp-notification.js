@@ -86,8 +86,11 @@ export async function sendCustomerPaymentNotification(customerData, invoiceData,
 
     const paymentMethodText = { 'cash': 'Tunai', 'transfer': 'Transfer Bank', 'ewallet': 'E-Wallet', 'qris': 'QRIS' }[paymentMethod] || 'Tunai';
 
-    // Get template
-    let template = settings.template_custom_message || '';
+    // Get appropriate template: full payment vs installment vs fallback custom
+    const isInstallment = invoiceData.remaining_amount !== undefined && Number(invoiceData.remaining_amount) > 0;
+    let template = isInstallment
+        ? (settings.template_payment_installment || settings.template_custom_message || '')
+        : (settings.template_payment_full || settings.template_custom_message || '');
 
     // Replace variables in template
     const message = template

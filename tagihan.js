@@ -585,23 +585,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const broadcastContainer = document.getElementById('broadcast-actions-container');
         const btnBroadcast = document.getElementById('btn-show-broadcast-modal');
         const selectedCount = document.getElementById('broadcast-selected-count');
+        const btnBulkDelete = document.getElementById('btn-bulk-delete');
+        const deleteCount = document.getElementById('delete-selected-count');
 
         if (currentTab === 'unpaid') {
-            broadcastContainer.classList.remove('hidden');
+            broadcastContainer?.classList.remove('hidden');
             if (checkboxes.length > 0) {
-                checkAll.checked = checkboxes.length === checkedBoxes.length;
+                if (checkAll) checkAll.checked = checkboxes.length === checkedBoxes.length;
             } else {
-                checkAll.checked = false;
+                if (checkAll) checkAll.checked = false;
             }
 
             if (checkedBoxes.length > 0) {
-                btnBroadcast.classList.remove('hidden');
-                selectedCount.textContent = checkedBoxes.length;
+                btnBroadcast?.classList.remove('hidden');
+                btnBulkDelete?.classList.remove('hidden');
+                if (selectedCount) selectedCount.textContent = checkedBoxes.length;
+                if (deleteCount) deleteCount.textContent = checkedBoxes.length;
             } else {
-                btnBroadcast.classList.add('hidden');
+                btnBroadcast?.classList.add('hidden');
+                btnBulkDelete?.classList.add('hidden');
             }
         } else {
-            broadcastContainer.classList.add('hidden');
+            broadcastContainer?.classList.add('hidden');
         }
     }
 
@@ -621,8 +626,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnReleaseLimit = document.getElementById('btn-release-limit');
         const limitInput = document.getElementById('broadcast-batch-limit');
         const infoCount = document.getElementById('broadcast-info-count');
+        const delayModeSelect = document.getElementById('broadcast-delay-mode');
+        const customDelayContainer = document.getElementById('custom-delay-container');
+        const customDelayInput = document.getElementById('broadcast-custom-delay');
 
         if (!btnShowModal || !modal) return;
+
+        if (delayModeSelect && customDelayContainer) {
+            delayModeSelect.addEventListener('change', () => {
+                if (delayModeSelect.value === 'custom') {
+                    customDelayContainer.classList.remove('hidden');
+                } else {
+                    customDelayContainer.classList.add('hidden');
+                }
+            });
+        }
+
+        function calculateBroadcastDelay(mode, customSec) {
+            if (mode === 'supersafe') {
+                // Acak 10 - 20 detik (10.000 - 20.000 ms)
+                return Math.floor(Math.random() * (20000 - 10000 + 1)) + 10000;
+            } else if (mode === 'custom') {
+                const secs = Math.max(3, parseInt(customSec) || 7);
+                return secs * 1000;
+            } else {
+                // Mode 'safe' (default): Acak 5 - 10 detik (5.000 - 10.000 ms)
+                return Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000;
+            }
+        }
 
         // Toggle modal
         btnShowModal.addEventListener('click', async () => {
@@ -736,6 +767,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const delayMode = delayModeSelect ? delayModeSelect.value : 'safe';
+            const customDelaySec = customDelayInput ? parseInt(customDelayInput.value) || 7 : 7;
+
             showPaymentLoading(`Memproses Broadcast ke ${batchIds.length} pelanggan...`);
             let sent = 0;
             let skipped = 0;
@@ -749,6 +783,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     skipped++;
                     continue;
                 }
+
+                showPaymentLoading(`[${i + 1}/${batchIds.length}] Mengirim WhatsApp ke ${invoice.profiles.full_name}...`);
 
                 // Ambil email pelanggan
                 let customerEmail = '-';
@@ -817,9 +853,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     skipped++;
                 }
 
-                // Jeda 2 detik per pengiriman
+                // Jeda cerdas anti-banned per pengiriman
                 if (i < batchIds.length - 1) {
-                    await new Promise(r => setTimeout(r, 2000));
+                    const delayMs = calculateBroadcastDelay(delayMode, customDelaySec);
+                    const delaySec = (delayMs / 1000).toFixed(1);
+                    showPaymentLoading(`[${i + 1}/${batchIds.length}] Terkirim ke ${invoice.profiles.full_name}.
+Menunggu jeda aman ${delaySec} detik sebelum nomor berikutnya...`);
+                    await new Promise(r => setTimeout(r, delayMs));
                 }
             }
 
@@ -916,9 +956,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const icon2Title = broadcastCount >= 2 ? 'Broadcast ke-2: Sudah dikirim' : 'Broadcast ke-2: Belum dikirim';
 
                 const hasValidWhatsapp = item.profiles?.whatsapp_number && String(item.profiles.whatsapp_number).replace(/[^0-9]/g, '').length >= 10;
-                const checkboxHtml = hasValidWhatsapp ?
-                    `<input type="checkbox" class="broadcast-checkbox w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500" value="${invoiceId}">` :
-                    `<div class="w-4 h-4" title="Tidak ada nomor WA"></div>`;
+                const checkboxHtml = `<input type="checkbox" class="broadcast-checkbox w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500" value="${invoiceId}">`;
 
                 const waButtonHtml = hasValidWhatsapp ?
                     `<button class="whatsapp-btn flex items-center justify-center w-7 h-7 bg-green-500 hover:bg-green-600 rounded-lg transition-colors" title="Kirim WhatsApp" data-invoice-id="${invoiceId}">
@@ -941,12 +979,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             <svg class="w-4 h-4 ${icon2Class} broadcast-icon-2" title="${icon2Title}" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" /></svg>
                         </div>
                         ${waButtonHtml}
-                        <button class="installment-btn flex items-center justify-center h-7 px-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs transition-colors" title="Bayar Cicilan" data-invoice-id="${invoiceId}" data-remaining-amount="${item.amount}" data-customer-name="${customerName}">
-                            Cicil
-                        </button>
-                        <button class="mark-paid-btn flex min-w-[60px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-7 px-3 bg-[#eae8f3] text-[#110e1b] text-xs font-medium leading-normal w-fit" data-invoice-id="${invoiceId}">
+                        <button class="mark-paid-btn flex min-w-[60px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-7 px-3 bg-[#eae8f3] hover:bg-[#dedae9] text-[#110e1b] text-xs font-medium leading-normal w-fit transition-colors" data-invoice-id="${invoiceId}" title="Bayar Lunas Langsung">
                             <span class="truncate">LUNAS</span>
                         </button>
+                        <div class="relative action-menu-container">
+                            <button class="action-menu-btn flex items-center justify-center w-7 h-7 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" data-invoice-id="${invoiceId}" title="Opsi Tagihan">
+                                <svg class="w-4 h-4 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                            </button>
+                            <div class="action-menu-dropdown hidden absolute right-0 top-8 z-30 w-36 bg-white rounded-lg shadow-xl border border-gray-200 py-1 text-xs">
+                                <button class="installment-btn w-full text-left px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 transition-colors" data-invoice-id="${invoiceId}" data-remaining-amount="${item.amount}" data-customer-name="${customerName}">
+                                    <svg class="w-3.5 h-3.5 text-blue-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    Bayar Cicilan
+                                </button>
+                                <button class="delete-invoice-btn w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-100 transition-colors" data-invoice-id="${invoiceId}" data-customer-name="${customerName}" data-period="${period}" data-amount="${item.amount}">
+                                    <svg class="w-3.5 h-3.5 text-red-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    Hapus Tagihan
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else if (currentTab === 'installment') {
@@ -1061,9 +1111,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (button.classList.contains('whatsapp-btn')) {
                 sendWhatsAppMessage(targetItem);
             } else if (button.classList.contains('installment-btn')) {
+                closeAllActionMenus();
                 handleInstallmentPayment(targetItem);
             } else if (button.classList.contains('revert-paid-btn')) {
                 revertPaymentStatus(targetItem);
+            } else if (button.classList.contains('delete-invoice-btn')) {
+                closeAllActionMenus();
+                const custName = button.getAttribute('data-customer-name') || targetItem.profiles?.full_name || 'Pelanggan';
+                const invPeriod = button.getAttribute('data-period') || targetItem.invoice_period || '-';
+                const invAmount = parseFloat(button.getAttribute('data-amount')) || targetItem.amount || 0;
+                handleDeleteSingleInvoice(invoiceId, custName, invPeriod, invAmount);
+            } else if (button.classList.contains('action-menu-btn')) {
+                toggleActionMenu(button);
             }
             return;
         }
@@ -1423,7 +1482,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .from('profiles')
                 .select('id, package_id, packages(price)')
                 .eq('status', 'AKTIF')
-                .eq('role', 'USER')
+                .in('role', ['USER', 'pelanggan', 'user'])
                 .not('package_id', 'is', null);
 
             if (profError) throw new Error(`Gagal mengambil data pelanggan: ${profError.message}`);
@@ -2027,4 +2086,94 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 3000);
     }
+    // ===============================================
+    // Action Menu & Delete Invoices Functions
+    // ===============================================
+    function toggleActionMenu(button) {
+        const container = button.closest('.action-menu-container');
+        if (!container) return;
+        const dropdown = container.querySelector('.action-menu-dropdown');
+        if (!dropdown) return;
+
+        const isCurrentlyHidden = dropdown.classList.contains('hidden');
+        closeAllActionMenus();
+        if (isCurrentlyHidden) {
+            dropdown.classList.remove('hidden');
+        }
+    }
+
+    function closeAllActionMenus() {
+        document.querySelectorAll('.action-menu-dropdown').forEach(dd => dd.classList.add('hidden'));
+    }
+
+    // Global listener untuk tutup dropdown menu saat klik di luar
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.action-menu-container')) {
+            closeAllActionMenus();
+        }
+    });
+
+    async function handleDeleteSingleInvoice(invoiceId, customerName, period, amount) {
+        const formattedAmount = formatter.format(amount || 0);
+        const confirmMsg = `Apakah Anda YAKIN ingin menghapus tagihan periode ${period} milik "${customerName}" (${formattedAmount})?\n\nTagihan yang dihapus tidak dapat dikembalikan.`;
+        if (!confirm(confirmMsg)) return;
+
+        showPaymentLoading('Menghapus tagihan...');
+        try {
+            const { error } = await supabase
+                .from('invoices')
+                .delete()
+                .eq('id', invoiceId)
+                .eq('status', 'unpaid'); // Hanya tagihan unpaid
+
+            if (error) throw error;
+
+            hidePaymentLoading();
+            showSuccessNotification(`Tagihan periode ${period} milik ${customerName} berhasil dihapus.`);
+            await fetchData();
+        } catch (err) {
+            hidePaymentLoading();
+            console.error('Error deleting invoice:', err);
+            showErrorNotification(`Gagal menghapus tagihan: ${err.message}`);
+        }
+    }
+
+    async function handleBulkDeleteInvoices() {
+        const checkedBoxes = Array.from(document.querySelectorAll('.broadcast-checkbox:checked'));
+        if (checkedBoxes.length === 0) {
+            showErrorNotification('Pilih setidaknya satu tagihan untuk dihapus.');
+            return;
+        }
+
+        const count = checkedBoxes.length;
+        const confirmMsg = `Apakah Anda YAKIN ingin menghapus ${count} tagihan terpilih?\n\nPERINGATAN: Tagihan yang dihapus akan hilang permanen!`;
+        if (!confirm(confirmMsg)) return;
+
+        showPaymentLoading(`Menghapus ${count} tagihan...`);
+        try {
+            const selectedIds = checkedBoxes.map(cb => cb.value);
+
+            const { error } = await supabase
+                .from('invoices')
+                .delete()
+                .in('id', selectedIds)
+                .eq('status', 'unpaid'); // Hanya tagihan unpaid
+
+            if (error) throw error;
+
+            hidePaymentLoading();
+            showSuccessNotification(`Berhasil menghapus ${count} tagihan.`);
+            await fetchData();
+        } catch (err) {
+            hidePaymentLoading();
+            console.error('Error bulk deleting invoices:', err);
+            showErrorNotification(`Gagal menghapus tagihan massal: ${err.message}`);
+        }
+    }
+
+    // Listener tombol Bulk Delete
+    document.getElementById('btn-bulk-delete')?.addEventListener('click', () => {
+        handleBulkDeleteInvoices();
+    });
+
 });

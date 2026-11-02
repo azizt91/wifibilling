@@ -7,9 +7,9 @@ export default class AppSettings {
             logo: null,
             favicon: null,
             icon192: null,
-            icon512: null,
-            qris: null
+            icon512: null
         };
+        this.rawSettings = null;
         this.init();
     }
 
@@ -52,11 +52,6 @@ export default class AppSettings {
         // Icon 512 upload
         document.getElementById('icon-512-upload')?.addEventListener('change', (e) => {
             this.handleImageUpload(e, 'icon512', 'icon-512-preview');
-        });
-
-        // QRIS upload
-        document.getElementById('qris-upload')?.addEventListener('change', (e) => {
-            this.handleImageUpload(e, 'qris', 'qris-preview');
         });
 
         // Color pickers sync with text inputs
@@ -105,6 +100,7 @@ export default class AppSettings {
                 .single();
 
             if (data) {
+                this.rawSettings = data;
                 this.populateForm(data);
                 // Also save to localStorage
                 this.saveLocalSettings(data);
@@ -112,10 +108,13 @@ export default class AppSettings {
                 // Try localStorage fallback
                 const localSettings = this.getLocalSettings();
                 if (localSettings) {
+                    this.rawSettings = localSettings;
                     this.populateForm(localSettings);
                 } else {
                     // Load defaults
-                    this.populateForm(this.getDefaultSettings());
+                    const def = this.getDefaultSettings();
+                    this.rawSettings = def;
+                    this.populateForm(def);
                 }
             }
         } catch (error) {
@@ -134,6 +133,101 @@ export default class AppSettings {
 
         // Load GenieACS settings separately
         await this.loadGenieACSSettings();
+
+        // Load receipt footer
+        await this.loadReceiptFooter();
+    }
+
+    async loadReceiptFooter() {
+        try {
+            const { data } = await supabase
+                .from('whatsapp_settings')
+                .select('setting_value')
+                .eq('setting_key', 'receipt_footer')
+                .maybeSingle();
+
+            if (data && data.setting_value !== undefined && data.setting_value !== null) {
+                const footerInput = document.getElementById('receipt-footer-input');
+                if (footerInput) footerInput.value = data.setting_value;
+                localStorage.setItem('receipt_footer', data.setting_value);
+                return;
+            }
+        } catch (e) {
+            console.warn('Error fetching receipt_footer from DB:', e);
+        }
+
+        const localFooter = localStorage.getItem('receipt_footer');
+        if (localFooter) {
+            const footerInput = document.getElementById('receipt-footer-input');
+            if (footerInput) footerInput.value = localFooter;
+        }
+    }
+
+    async saveReceiptFooter() {
+        const footerInput = document.getElementById('receipt-footer-input');
+        if (!footerInput) return;
+        const footerVal = footerInput.value.trim();
+        try {
+            localStorage.setItem('receipt_footer', footerVal);
+            await supabase
+                .from('whatsapp_settings')
+                .upsert({
+                    setting_key: 'receipt_footer',
+                    setting_value: footerVal,
+                    is_enabled: true,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'tenant_id, setting_key' });
+        } catch (e) {
+            console.warn('Error saving receipt_footer to DB:', e);
+        }
+    }
+
+    getDefaultTemplatePaymentFull() {
+        return `Konfirmasi Pembayaran LUNAS
+
+Hai Bapak/Ibu {nama_pelanggan},
+ID Pelanggan: {idpl}
+
+✅ *TAGIHAN TELAH LUNAS!*
+
+*Detail Pembayaran:*
+• Periode: *{periode}*
+• Total Tagihan: *{total_tagihan}*
+• Metode: {metode_pembayaran}
+• Status: *LUNAS*
+
+Terima kasih atas pembayaran Anda.
+
+Login di:
+*{app_url}*
+*- Email:* {email_pelanggan}
+*- Password:* password
+
+_____________________________
+*Pesan otomatis dari WiFi Billing System*`;
+    }
+
+    getDefaultTemplateInstallment() {
+        return `Konfirmasi Pembayaran Cicilan
+
+Hai Bapak/Ibu {nama_pelanggan},
+ID Pelanggan: {idpl}
+
+✅ *Pembayaran cicilan diterima!*
+
+*Detail Pembayaran:*
+• Periode: *{periode}*
+• Jumlah Dibayar: *{jumlah_dibayar}*
+• Metode: {metode_pembayaran}
+• Sisa Tagihan: *{sisa_tagihan}*
+
+Login di:
+*{app_url}*
+*- Email:* {email_pelanggan}
+*- Password:* password
+
+_____________________________
+*Pesan otomatis dari WiFi Billing System*`;
     }
 
     getDefaultWhatsAppTemplate() {
@@ -169,6 +263,14 @@ _____________________________
             const input = document.getElementById('app-url-input');
             if (input && settings.app_url) input.value = settings.app_url;
         }
+        if (settings.template_payment_full !== undefined) {
+            const input = document.getElementById('template-payment-full');
+            if (input && settings.template_payment_full) input.value = settings.template_payment_full;
+        }
+        if (settings.template_payment_installment !== undefined) {
+            const input = document.getElementById('template-payment-installment');
+            if (input && settings.template_payment_installment) input.value = settings.template_payment_installment;
+        }
         if (settings.template_custom_message !== undefined) {
             const input = document.getElementById('template-custom-message');
             if (input && settings.template_custom_message) input.value = settings.template_custom_message;
@@ -183,9 +285,19 @@ _____________________________
         }
 
         // Pastikan template textarea tidak kosong jika belum ada data sama sekali
-        const templateTextarea = document.getElementById('template-custom-message');
-        if (templateTextarea && !templateTextarea.value.trim()) {
-            templateTextarea.value = this.getDefaultWhatsAppTemplate();
+        const tFull = document.getElementById('template-payment-full');
+        if (tFull && !tFull.value.trim()) {
+            tFull.value = this.getDefaultTemplatePaymentFull();
+        }
+
+        const tInstallment = document.getElementById('template-payment-installment');
+        if (tInstallment && !tInstallment.value.trim()) {
+            tInstallment.value = this.getDefaultTemplateInstallment();
+        }
+
+        const tCustom = document.getElementById('template-custom-message');
+        if (tCustom && !tCustom.value.trim()) {
+            tCustom.value = this.getDefaultWhatsAppTemplate();
         }
 
         // 2. Ambil data terbaru dari Supabase
@@ -245,11 +357,11 @@ _____________________________
 
     getDefaultSettings() {
         return {
-            app_name: 'REVAM NET',
-            app_short_name: 'REVAM NET',
+            app_name: 'WiFi Billing System',
+            app_short_name: 'WiFi Billing System',
             app_description: 'Sistem manajemen pelanggan ISP',
             app_tagline: 'Kelola pelanggan dengan mudah',
-            logo_url: 'assets/logo_rivamnet.jpg',
+            logo_url: 'assets/logo_wifi.png',
             favicon_url: 'assets/logo_192x192.png',
             icon_192_url: 'assets/logo_192x192.png',
             icon_512_url: 'assets/logo_512x512.png',
@@ -266,8 +378,6 @@ _____________________________
     }
 
     populateForm(settings) {
-        const defaultQris = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='300' height='300' fill='%23f8f9fa' rx='16'/><rect x='20' y='20' width='260' height='260' fill='none' stroke='%23cbd5e1' stroke-width='4' stroke-dasharray='8 8' rx='12'/><path d='M70 70h50v50H70zm20 20h10v10H90zm90-20h50v50h-50zm20 20h10v10h-10zm-110 90h50v50H70zm20 20h10v10H90zm70-40h20v20h-20zm30 0h20v20h-20zm-30 30h20v20h-20zm30 30h20v20h-20zm-30 0h20v20h-20z' fill='%2364748b'/><text x='50%' y='62%' text-anchor='middle' fill='%23475569' font-size='14' font-weight='bold' font-family='sans-serif'>BELUM ADA QRIS</text><text x='50%' y='70%' text-anchor='middle' fill='%2394a3b8' font-size='11' font-family='sans-serif'>Upload di Pengaturan Aplikasi</text></svg>";
-
         // App Info
         document.getElementById('app-name-input').value = settings.app_name || '';
         document.getElementById('app-short-name-input').value = settings.app_short_name || '';
@@ -286,14 +396,11 @@ _____________________________
         document.getElementById('email-input').value = settings.support_email || '';
         document.getElementById('address-input').value = settings.office_address || '';
 
-        // Offline Payment
-        document.getElementById('offline-name-input').value = settings.offline_payment_name || '';
-        document.getElementById('offline-address-input').value = settings.offline_payment_address || '';
-
-        // QRIS
-        const isOldQris = !settings.qris_image_url || settings.qris_image_url === 'assets/qris.jpeg';
-        document.getElementById('qris-preview').src = isOldQris ? defaultQris : settings.qris_image_url;
-        document.getElementById('show-qris-input').checked = settings.show_qris !== false;
+        // Offline Payment (jika elemen tersedia di form)
+        const offlineNameInput = document.getElementById('offline-name-input');
+        if (offlineNameInput) offlineNameInput.value = settings.offline_payment_name || '';
+        const offlineAddressInput = document.getElementById('offline-address-input');
+        if (offlineAddressInput) offlineAddressInput.value = settings.offline_payment_address || '';
 
         // Theme
         document.getElementById('theme-color-input').value = settings.theme_color || '#6a5acd';
@@ -363,16 +470,15 @@ _____________________________
                 ? await this.uploadImage(this.uploadedFiles.icon512, 'icons')
                 : document.getElementById('icon-512-preview').src;
 
-            const qrisUrl = this.uploadedFiles.qris
-                ? await this.uploadImage(this.uploadedFiles.qris, 'qris')
-                : document.getElementById('qris-preview').src;
-
             // Fetch existing row to get ID (to prevent creating new rows)
             const { data: existingData } = await supabase
                 .from('app_settings')
-                .select('id')
+                .select('id, qris_image_url, show_qris')
                 .limit(1)
                 .maybeSingle();
+
+            const existingQrisUrl = existingData?.qris_image_url ?? this.rawSettings?.qris_image_url ?? '';
+            const existingShowQris = existingData?.show_qris !== undefined ? existingData.show_qris : (this.rawSettings?.show_qris !== false);
 
             // Collect all settings
             const settings = {
@@ -387,10 +493,10 @@ _____________________________
                 whatsapp_number: whatsapp,
                 support_email: document.getElementById('email-input').value.trim(),
                 office_address: document.getElementById('address-input').value.trim(),
-                offline_payment_name: document.getElementById('offline-name-input').value.trim(),
-                offline_payment_address: document.getElementById('offline-address-input').value.trim(),
-                qris_image_url: qrisUrl,
-                show_qris: document.getElementById('show-qris-input').checked,
+                offline_payment_name: document.getElementById('offline-name-input')?.value.trim() ?? (existingData?.offline_payment_name ?? this.rawSettings?.offline_payment_name ?? ''),
+                offline_payment_address: document.getElementById('offline-address-input')?.value.trim() ?? (existingData?.offline_payment_address ?? this.rawSettings?.offline_payment_address ?? ''),
+                qris_image_url: existingQrisUrl,
+                show_qris: existingShowQris,
                 theme_color: document.getElementById('theme-color-text').value.trim(),
                 background_color: document.getElementById('bg-color-text').value.trim(),
                 updated_at: new Date().toISOString()
@@ -423,11 +529,14 @@ _____________________________
             // Save GenieACS settings
             await this.saveGenieACSSettings();
 
+            // Save receipt footer
+            await this.saveReceiptFooter();
+
             alert('✅ Pengaturan berhasil disimpan!\n\nRefresh browser (F5) untuk melihat semua perubahan.');
             window.location.href = 'profile.html';
 
             // Reset uploaded files
-            this.uploadedFiles = { logo: null, favicon: null, icon192: null, icon512: null, qris: null };
+            this.uploadedFiles = { logo: null, favicon: null, icon192: null, icon512: null };
 
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -500,7 +609,7 @@ _____________________________
 
     applySettings(settings) {
         // Update title
-        const appName = settings.app_name || 'REVAM NET';
+        const appName = settings.app_name || 'WiFi Billing System';
         document.title = `Pengaturan Aplikasi - ${appName}`;
 
         // Update favicon
@@ -560,7 +669,9 @@ _____________________________
 
     async saveWhatsAppSettings() {
         try {
-            const templateVal = document.getElementById('template-custom-message')?.value || '';
+            const templateFullVal = document.getElementById('template-payment-full')?.value || '';
+            const templateInstallmentVal = document.getElementById('template-payment-installment')?.value || '';
+            const templateCustomVal = document.getElementById('template-custom-message')?.value || '';
             const appUrlVal = document.getElementById('app-url-input')?.value.trim() || '';
             const fonnteTokenVal = document.getElementById('fonnte-token-input')?.value.trim() || '';
             const autoNotifVal = document.getElementById('auto-notification-toggle')?.checked ? 'true' : 'false';
@@ -579,13 +690,21 @@ _____________________________
                     setting_value: appUrlVal
                 },
                 {
+                    setting_key: 'template_payment_full',
+                    setting_value: templateFullVal
+                },
+                {
+                    setting_key: 'template_payment_installment',
+                    setting_value: templateInstallmentVal
+                },
+                {
                     setting_key: 'template_custom_message',
-                    setting_value: templateVal
+                    setting_value: templateCustomVal
                 }
             ];
 
             // 1. Selalu simpan ke localStorage sebagai backup pasti
-            const localMap = {};
+            const localMap = this.getLocalWhatsAppSettings() || {};
             whatsappSettings.forEach(s => localMap[s.setting_key] = s.setting_value);
             this.saveLocalWhatsAppSettings(localMap);
 
@@ -626,23 +745,33 @@ _____________________________
     }
 
     async resetWhatsAppTemplates() {
-        if (!confirm('Reset template WhatsApp ke format default?\n\nPerubahan belum disimpan ke server sebelum Anda mengklik tombol SIMPAN.')) {
+        if (!confirm('Reset semua template WhatsApp ke format default?\n\nPerubahan belum disimpan ke server sebelum Anda mengklik tombol SIMPAN.')) {
             return;
         }
 
         try {
-            const defaultTemplate = this.getDefaultWhatsAppTemplate();
+            const defFull = this.getDefaultTemplatePaymentFull();
+            const defInstallment = this.getDefaultTemplateInstallment();
+            const defCustom = this.getDefaultWhatsAppTemplate();
 
             // Update templates in form
-            const input = document.getElementById('template-custom-message');
-            if (input) input.value = defaultTemplate;
+            const inputFull = document.getElementById('template-payment-full');
+            if (inputFull) inputFull.value = defFull;
+
+            const inputInstallment = document.getElementById('template-payment-installment');
+            if (inputInstallment) inputInstallment.value = defInstallment;
+
+            const inputCustom = document.getElementById('template-custom-message');
+            if (inputCustom) inputCustom.value = defCustom;
 
             // Simpan ke local cache juga
             const localWa = this.getLocalWhatsAppSettings() || {};
-            localWa.template_custom_message = defaultTemplate;
+            localWa.template_payment_full = defFull;
+            localWa.template_payment_installment = defInstallment;
+            localWa.template_custom_message = defCustom;
             this.saveLocalWhatsAppSettings(localWa);
 
-            alert('✅ Template berhasil direset ke default!\n\nKlik tombol SIMPAN di bawah untuk menyimpan perubahan secara permanen.');
+            alert('✅ Semua template berhasil direset ke default!\n\nKlik tombol SIMPAN di bawah untuk menyimpan perubahan secara permanen.');
         } catch (error) {
             console.error('Error resetting templates:', error);
             alert('❌ Gagal reset template: ' + error.message);

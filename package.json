@@ -5,7 +5,17 @@
   "main": "index.html",
   "scripts": {
     "start": "echo \"Error: no start script specified\" && exit 1",
-    "build": "echo 'No build step required for static files'"
+    "build": "echo 'No build step required for static files'",
+    "supabase:login": "supabase login",
+    "supabase:link": "supabase link --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:functions": "supabase functions deploy --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:create-customer": "supabase functions deploy create-customer --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:create-tenant": "supabase functions deploy create-tenant --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:delete-user": "supabase functions deploy delete-user --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:genieacs-proxy": "supabase functions deploy genieacs-proxy --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:send-whatsapp": "supabase functions deploy send-whatsapp-notification --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:update-user-auth": "supabase functions deploy update-user-auth --project-ref oawsmjpibfwpiaebvhot",
+    "deploy:whatsapp-reminder": "supabase functions deploy whatsapp-reminder --no-verify-jwt --project-ref oawsmjpibfwpiaebvhot"
   },
   "keywords": [
     "isp",

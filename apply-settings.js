@@ -36,7 +36,36 @@ class ApplySettings {
         }
     }
 
+    getTenantSlugFromUrl() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('t') || params.get('tenant') || params.get('slug');
+            if (slug && slug.trim()) {
+                const clean = slug.trim().toLowerCase();
+                sessionStorage.setItem('current_tenant_slug', clean);
+                return clean;
+            }
+            return sessionStorage.getItem('current_tenant_slug') || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
     async fetchSettingsFromDB() {
+        // Cek apakah ada parameter slug tenant di URL (misal: index.html?t=apik atau index.html?t=selinggonet)
+        const slug = this.getTenantSlugFromUrl();
+        if (slug) {
+            try {
+                const { data: tenantBranding, error: rpcError } = await supabase
+                    .rpc('get_tenant_branding_by_slug', { p_slug: slug });
+
+                if (!rpcError && tenantBranding && tenantBranding.found) {
+                    return tenantBranding;
+                }
+            } catch (rpcErr) {
+                console.warn('[ApplySettings] Gagal memanggil get_tenant_branding_by_slug:', rpcErr);
+            }
+        }
         try {
             const { data, error } = await supabase
                 .from('app_settings')
@@ -58,7 +87,7 @@ class ApplySettings {
 
     applyAllSettings(settings) {
         const safeSettings = settings || {};
-        const appName = safeSettings.app_name || 'REVAM NET';
+        const appName = safeSettings.app_name || 'WiFi Billing System';
 
         // Apply to document head & meta tags
         this.applyTitle(appName);
@@ -77,13 +106,13 @@ class ApplySettings {
     }
 
     applyTitle(appName) {
-        const name = appName || 'REVAM NET';
+        const name = appName || 'WiFi Billing System';
         const currentPage = this.getCurrentPageName();
         document.title = currentPage ? `${currentPage} - ${name}` : name;
     }
 
     applyAppleMobileTitle(appName) {
-        const name = appName || 'REVAM NET';
+        const name = appName || 'WiFi Billing System';
         let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
         if (appleMeta) {
             appleMeta.setAttribute('content', name);
@@ -97,8 +126,9 @@ class ApplySettings {
 
     applyPWAIcons(settings) {
         const cb = '?v=3';
-        const icon512 = (settings?.icon_512_url || 'assets/logo_512x512.png') + (settings?.icon_512_url ? '' : cb);
-        const icon192 = (settings?.icon_192_url || 'assets/logo_192x192.png') + (settings?.icon_192_url ? '' : cb);
+        const fallbackIcon = settings?.logo_url || 'assets/logo_wifi.png';
+        const icon512 = (settings?.icon_512_url || fallbackIcon) + (settings?.icon_512_url ? '' : cb);
+        const icon192 = (settings?.icon_192_url || fallbackIcon) + (settings?.icon_192_url ? '' : cb);
 
         // 512x512 PWA Icon
         let link512 = document.querySelector('link[sizes="512x512"]');
@@ -158,15 +188,20 @@ class ApplySettings {
     }
 
     applyManifest(settings) {
-        const appName = settings?.app_name || 'REVAM NET';
+        const appName = settings?.app_name || 'WiFi Billing System';
         const appShortName = settings?.app_short_name || appName;
         const appDesc = settings?.app_description || 'Sistem Manajemen Billing & Pelanggan';
+        const slug = this.getTenantSlugFromUrl();
+        const startUrl = slug ? `/?t=${encodeURIComponent(slug)}` : "/";
+        const fallbackIcon = settings?.logo_url || "assets/logo_wifi.png";
+        const icon192 = settings?.icon_192_url || fallbackIcon;
+        const icon512 = settings?.icon_512_url || fallbackIcon;
 
         const manifestData = {
             name: appName,
             short_name: appShortName,
             description: appDesc,
-            start_url: "/",
+            start_url: startUrl,
             display: "standalone",
             background_color: settings?.background_color || "#667eea",
             theme_color: settings?.theme_color || "#667eea",
@@ -177,13 +212,13 @@ class ApplySettings {
             scope: "/",
             icons: [
                 {
-                    src: settings?.icon_192_url || "assets/logo_192x192.png",
+                    src: icon192,
                     sizes: "192x192",
                     type: "image/png",
                     purpose: "any"
                 },
                 {
-                    src: settings?.icon_512_url || "assets/logo_512x512.png",
+                    src: icon512,
                     sizes: "512x512",
                     type: "image/png",
                     purpose: "maskable"
@@ -205,8 +240,8 @@ class ApplySettings {
     }
 
     applyToLoginPage(settings) {
-        const appName = settings?.app_name || 'REVAM NET';
-        const defaultLogo = "assets/logo_rivamnet.jpg";
+        const appName = settings?.app_name || 'WiFi Billing System';
+        const defaultLogo = "assets/logo_wifi.png";
         const isOldDefaultLogo = !settings?.logo_url || settings.logo_url === 'assets/sn-blue.png' || settings.logo_url.startsWith('data:image/svg+xml');
         const logoUrl = isOldDefaultLogo ? defaultLogo : settings.logo_url;
 
@@ -220,6 +255,16 @@ class ApplySettings {
         }
         if (loginAppName) {
             loginAppName.textContent = appName;
+        }
+
+        const loginTagline = document.getElementById('login-app-tagline');
+        if (loginTagline) {
+            if (settings?.app_tagline && settings.app_tagline.trim()) {
+                loginTagline.textContent = settings.app_tagline.trim();
+                loginTagline.classList.remove('hidden');
+            } else {
+                loginTagline.classList.add('hidden');
+            }
         }
 
         // Register page (register.html)
@@ -290,7 +335,7 @@ class ApplySettings {
             'pelanggan_dashboard': 'Dashboard Pelanggan',
             'pelanggan_profile': 'Profil Pelanggan',
             'pelanggan_riwayat_lunas': 'Riwayat Pembayaran',
-            'pelanggan_info': 'Info Tagihan'
+            'pelanggan_info': 'Pusat Bantuan'
         };
 
         return pageNames[filename] || '';

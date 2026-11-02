@@ -1,233 +1,1174 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - REVAM NET</title>
+  <title>WiFi Billing System - Pembukuan & Cetak Struk RT/RW Net</title>
 
   <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#667eea">
+  <meta name="theme-color" content="#4f46e5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="REVAM NET">
-  <meta name="description" content="Sistem manajemen pelanggan ISP dengan integrasi Google Sheets">
+  <meta name="apple-mobile-web-app-title" content="WiFi Billing">
+  <meta name="description" content="Aplikasi pencatatan tagihan bulanan RT/RW Net dan cetak struk kasir thermal Bluetooth. Bebas ribet Excel, pantau pelanggan lunas & belum bayar.">
 
-  <!-- PWA Icons -->
+  <!-- Icons -->
   <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
   <link rel="apple-touch-icon" sizes="192x192" href="assets/logo_192x192.png">
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Fonts and Tailwind CSS -->
-  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
-  <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
-    href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 
   <style>
-    .gradient-bg {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-
-    .floating-animation {
-      animation: floating 3s ease-in-out infinite;
-    }
-
-    @keyframes floating {
-
-      0%,
-      100% {
-        transform: translateY(0px);
-      }
-
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.8s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .input-focus {
-      transition: all 0.3s ease;
-    }
-
-    .input-focus:focus {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(80, 30, 230, 0.15);
-    }
-
-    .btn-hover {
-      transition: all 0.3s ease;
-    }
-
-    .btn-hover:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 35px rgba(80, 30, 230, 0.3);
-    }
-  </style>
-
-  <!-- Mobile-First Layout Helper -->
-  <style id="mobile-first-styles">
     html {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
-      background-attachment: fixed !important;
+      scroll-behavior: smooth;
     }
-
     body {
-      max-width: 480px !important;
-      margin: 0 auto !important;
-      min-height: 100vh !important;
-      position: relative !important;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.3) !important;
-      background-color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
-
-    /* Override fixed positioning for mobile wrapper */
-    .fixed {
-      position: fixed !important;
-      max-width: 480px !important;
-      left: 50% !important;
-      right: auto !important;
-      transform: translateX(-50%) !important;
-      width: 100% !important;
+    .font-mono-receipt {
+      font-family: 'JetBrains Mono', monospace;
     }
-
-    /* Ensure overlay modals and loading elements still cover the whole mobile area */
-    .fixed.inset-0 {
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: 100% !important;
-      max-width: 480px !important;
+    .receipt-paper {
+      background: #faf8f5;
+      background-image: radial-gradient(#e5e1d8 1px, transparent 0);
+      background-size: 8px 8px;
+    }
+    .receipt-sawtooth {
+      background: linear-gradient(135deg, transparent 5px, #ffffff 5px), linear-gradient(-135deg, transparent 5px, #ffffff 5px);
+      background-size: 10px 10px;
+    }
+    .gradient-mesh {
+      background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                  radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                  radial-gradient(at 50% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
     }
   </style>
-
 </head>
 
-<body>
-  <div class="gradient-bg min-h-screen flex items-center justify-center p-4"
-    style='font-family: Manrope, "Noto Sans", sans-serif;'>
-    <div class="w-full max-w-md">
-      <!-- Logo and Brand -->
-      <div class="text-center mb-8 fade-in">
-        <div class="floating-animation">
-          <div class="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg p-1 overflow-hidden">
-            <img id="login-logo" src="assets/logo_rivamnet.jpg" alt="REVAM NET" class="w-full h-full object-cover rounded-full">
-          </div>
+<body class="bg-slate-50 text-slate-800 antialiased overflow-x-hidden">
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-11 h-11 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform overflow-hidden p-1.5">
+          <img src="assets/logo_wifi.png" alt="WiFi Billing" class="w-full h-full object-contain">
         </div>
-        <h1 id="login-app-name" class="text-3xl font-bold text-white mb-2">REVAM NET</h1>
+        <div>
+          <span class="text-xl font-extrabold text-slate-900 tracking-tight block leading-tight">WiFi Billing</span>
+          <span class="text-[11px] font-semibold text-indigo-600 tracking-wider uppercase block">RT/RW Net Solution</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#fitur" class="hover:text-indigo-600 transition-colors">Fitur</a>
+        <a href="#mockup" class="hover:text-indigo-600 transition-colors">Tampilan</a>
+        <a href="#tutorial" class="hover:text-indigo-600 transition-colors">Cara Memulai</a>
+        <a href="#pricing" class="hover:text-indigo-600 transition-colors">Harga Paket</a>
+        <a href="#download-apk" class="hover:text-indigo-600 transition-colors flex items-center gap-1.5 text-emerald-600 font-bold">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5511.4482-.9992.9993-.9992.5516 0 .9997.4481.9997.9992 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5511.4482-.9992.9993-.9992.5516 0 .9997.4481.9997.9992 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.775h24c-.3432-4.1161-2.6889-7.5883-6.1185-9.4536"/></svg>
+          Download APK
+        </a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="hidden md:flex items-center gap-3">
+        <a href="login.html" class="px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition-all">
+          Masuk
+        </a>
+        <a href="#pricing" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all hover:shadow-lg">
+          Daftar Sekarang
+        </a>
       </div>
 
-      <!-- Login Form -->
-      <div class="glass-effect rounded-2xl p-8 shadow-2xl fade-in">
-        <div class="text-center mb-6">
-          <h2 class="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-          <p class="text-white/70 text-sm">Silakan masuk ke akun Anda</p>
+      <!-- Mobile Menu Button -->
+      <button type="button" id="btn-toggle-mobile-menu" class="md:hidden p-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-100">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation Dropdown -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-100 bg-white px-4 py-4 space-y-3">
+      <a href="#fitur" class="block text-sm font-semibold text-slate-700 hover:text-indigo-600 py-1">Fitur</a>
+      <a href="#mockup" class="block text-sm font-semibold text-slate-700 hover:text-indigo-600 py-1">Tampilan</a>
+      <a href="#tutorial" class="block text-sm font-semibold text-slate-700 hover:text-indigo-600 py-1">Cara Memulai</a>
+      <a href="#pricing" class="block text-sm font-semibold text-slate-700 hover:text-indigo-600 py-1">Harga Paket</a>
+      <a href="wifibilling.apk" download class="block text-sm font-bold text-emerald-600 py-1 flex items-center gap-2">
+        <span>📲</span> Download APK Android (77 MB)
+      </a>
+      <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+        <a href="login.html" class="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-700">Masuk ke Akun</a>
+        <a href="#pricing" class="w-full text-center py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white">Daftar Tenant Baru</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden gradient-mesh">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- Left Column: Copywriting & CTAs -->
+        <div class="lg:col-span-7 text-center lg:text-left space-y-6">
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider shadow-sm">
+            <span>⚡</span>
+            <span>Bebas Ribet Catat Excel & Kertas</span>
+          </div>
+
+          <!-- Main Headline -->
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight md:leading-tight">
+            Kelola Tagihan WiFi <span class="whitespace-nowrap">RT/RW Net</span> Jadi Mudah & Otomatis
+          </h1>
+
+          <!-- Subheadline -->
+          <p class="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            Aplikasi pembukuan tagihan bulanan dan cetak struk kasir thermal Bluetooth. Pantau siapa yang belum bayar, simpan lokasi GPS pelanggan, dan buat nota pembayaran sah dalam hitungan detik.
+          </p>
+
+          <!-- CTA Buttons -->
+          <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
+            <a href="#pricing" class="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all transform hover:-translate-y-0.5">
+              🚀 Coba Gratis 14 Hari
+            </a>
+            <a href="wifibilling.apk" download class="w-full sm:w-auto px-7 py-4 rounded-xl text-base font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-sm transition-all flex items-center justify-center gap-2">
+              <svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5511.4482-.9992.9993-.9992.5516 0 .9997.4481.9997.9992 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5511.4482-.9992.9993-.9992.5516 0 .9997.4481.9997.9992 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.775h24c-.3432-4.1161-2.6889-7.5883-6.1185-9.4536"/></svg>
+              <span>Download APK (77 MB)</span>
+            </a>
+          </div>
+
+          <!-- Feature checkmarks -->
+          <div class="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-6 text-xs text-slate-500 font-semibold">
+            <span class="flex items-center gap-1.5"><span class="text-emerald-500 font-bold">✓</span> Tanpa kartu kredit</span>
+            <span class="flex items-center gap-1.5"><span class="text-emerald-500 font-bold">✓</span> Langsung aktif</span>
+            <span class="flex items-center gap-1.5"><span class="text-emerald-500 font-bold">✓</span> Support Printer 58mm & 80mm</span>
+          </div>
         </div>
 
-        <form id="login-form" class="space-y-6">
-          <!-- Email Input -->
-          <div class="space-y-2">
-            <label for="username" class="block text-sm font-medium text-white/90">Email</label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <input id="email" type="email" placeholder="Masukkan email"
-                class="input-focus w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent"
-                required />
+        <!-- Right Column: Hero Smartphone Preview -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="relative w-full max-w-[280px] sm:max-w-[310px]">
+            <!-- Decorative Back Glow -->
+            <div class="absolute -inset-4 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 rounded-[2.5rem] blur-2xl"></div>
+
+            <!-- Screenshot Image (Clean, No Black Frame) -->
+            <div class="relative rounded-[2rem] overflow-hidden shadow-2xl border border-slate-200/90 bg-white">
+              <img src="assets/ss_dashboard.webp" alt="Dasbor WiFi Billing" class="w-full h-auto block">
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-          <!-- Password Input -->
-          <div class="space-y-2">
-            <label for="password" class="block text-sm font-medium text-white/90">Password</label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+  <!-- Showcase Gallery Section (All 4 Screens Side-by-Side) -->
+  <section id="mockup" class="py-20 bg-slate-100 border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-extrabold text-indigo-600 uppercase tracking-widest mb-2">Tampilan Aplikasi</h2>
+        <h3 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">
+          Antarmuka Simpel, Bersih & Ramah Pengguna
+        </h3>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Tampilan mobile-first yang nyaman digunakan di HP saat di lapangan maupun dibuka di komputer kantor.
+        </p>
+      </div>
+
+      <!-- 4 Cards Grid Showcase -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+        <!-- Screen 1: Dashboard -->
+        <div class="flex flex-col items-center">
+          <div class="w-full max-w-[280px] rounded-[2rem] overflow-hidden shadow-xl border border-slate-200/90 bg-white hover:scale-105 transition-transform duration-300">
+            <img src="assets/ss_dashboard.webp" alt="Dasbor Ringkasan" class="w-full h-auto block">
+          </div>
+          <div class="text-center mt-5">
+            <h4 class="font-bold text-slate-900 text-base">📊 Dasbor Ringkasan</h4>
+            <p class="text-xs text-slate-500 mt-1">Pantau total pemasukan, laba bersih, dan jumlah pelanggan aktif harian.</p>
+          </div>
+        </div>
+
+        <!-- Screen 2: Tagihan -->
+        <div class="flex flex-col items-center">
+          <div class="w-full max-w-[280px] rounded-[2rem] overflow-hidden shadow-xl border border-slate-200/90 bg-white hover:scale-105 transition-transform duration-300">
+            <img src="assets/ss_tagihan.webp" alt="Kelola Tagihan" class="w-full h-auto block">
+          </div>
+          <div class="text-center mt-5">
+            <h4 class="font-bold text-slate-900 text-base">🧾 Kelola Tagihan</h4>
+            <p class="text-xs text-slate-500 mt-1">Daftar tagihan lunas, belum bayar, dan cicilan lengkap dengan filter periode.</p>
+          </div>
+        </div>
+
+        <!-- Screen 3: Pelanggan & GPS -->
+        <div class="flex flex-col items-center">
+          <div class="w-full max-w-[280px] rounded-[2rem] overflow-hidden shadow-xl border border-slate-200/90 bg-white hover:scale-105 transition-transform duration-300">
+            <img src="assets/ss_pelanggan.webp" alt="Data Pelanggan & GPS" class="w-full h-auto block">
+          </div>
+          <div class="text-center mt-5">
+            <h4 class="font-bold text-slate-900 text-base">📍 Pelanggan & GPS</h4>
+            <p class="text-xs text-slate-500 mt-1">Input data pelanggan baru dengan 1-klik ambil lokasi GPS dan peta rumah.</p>
+          </div>
+        </div>
+
+        <!-- Screen 4: Struk Thermal Bluetooth -->
+        <div class="flex flex-col items-center">
+          <div class="w-full max-w-[280px] rounded-[2rem] overflow-hidden shadow-xl border border-slate-200/90 bg-slate-50 p-4 hover:scale-105 transition-transform duration-300 flex items-center justify-center min-h-[520px]">
+            <div class="w-full bg-white rounded-xl p-4 font-mono-receipt text-xs text-slate-800 shadow-md border border-slate-200 receipt-paper">
+              <div class="text-center pb-3 border-b border-dashed border-slate-400">
+                <div class="text-sm font-extrabold tracking-wider text-slate-900 uppercase">SELINGGO NET</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">STRUK PEMBAYARAN TAGIHAN</div>
+                <div class="text-[9px] text-slate-400">Ref: INV-23C031CE</div>
+                <div class="text-[9px] text-slate-400 mt-0.5">02/11/2026 14:30 WIB</div>
               </div>
-              <input id="password" type="password" placeholder="Masukkan password"
-                class="input-focus w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent"
-                required />
+
+              <div class="py-3 border-b border-dashed border-slate-400 space-y-1 text-[11px]">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Pelanggan:</span>
+                  <span class="font-bold text-slate-900">Dedi Kurniawan</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">IDPL:</span>
+                  <span>PH996</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Periode:</span>
+                  <span>November 2026</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-500">Status:</span>
+                  <span class="font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-[10px]">LUNAS</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Metode:</span>
+                  <span>CASH</span>
+                </div>
+              </div>
+
+              <div class="py-3 border-b border-dashed border-slate-400 space-y-1 text-[11px]">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Total Tagihan:</span>
+                  <span class="font-bold">Rp 150.000</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Jumlah Bayar:</span>
+                  <span class="font-bold text-slate-900">Rp 150.000</span>
+                </div>
+              </div>
+
+              <div class="pt-3 text-center text-[10px] text-slate-500 space-y-1">
+                <p class="font-medium text-slate-700">Terima kasih atas pembayaran Anda.</p>
+                <p class="text-[9px] text-slate-400">Simpan struk ini sebagai bukti pembayaran sah.</p>
+                <p class="text-[9px] text-indigo-600 font-semibold pt-1">Bila ada gangguan: 0819-1417-0701</p>
+              </div>
             </div>
           </div>
+          <div class="text-center mt-5">
+            <h4 class="font-bold text-slate-900 text-base">🖨️ Struk Kasir Thermal</h4>
+            <p class="text-xs text-slate-500 mt-1">Cetak nota thermal Bluetooth 58mm/80mm rapi dengan pesan footer usaha Anda.</p>
+          </div>
+        </div>
 
-          <!-- Login Button -->
-          <button type="submit"
-            class="btn-hover w-full bg-white text-purple-600 font-bold py-3 px-4 rounded-xl hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300">
-            <span class="flex items-center justify-center">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-              </svg>
-              Masuk
-            </span>
-          </button>
+      </div>
+    </div>
+  </section>
 
-          <!-- Error Message -->
-          <p id="error-message" class="text-red-300 text-center text-sm mt-4 hidden"></p>
-        </form>
+  <!-- Problem vs Solution Section -->
+  <section class="py-16 bg-white border-y border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+          Sering Mengalami Masalah Ini Saat <span class="whitespace-nowrap">Kelola WiFi?</span>
+        </h2>
+        <p class="text-slate-500 text-sm sm:text-base mt-2">
+          Hentikan cara lama yang melelahkan dan sering bikin selisih uang kas.
+        </p>
+      </div>
 
-        <!-- Register Link -->
-        <div class="mt-6 text-center">
-          <p class="text-white/70 text-sm">
-            Belum punya akun admin?
-            <a href="register.html" class="text-white font-semibold hover:text-white/80 transition-colors">
-              Daftar Sekarang
-            </a>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <!-- Cara Lama -->
+        <div class="p-6 sm:p-8 rounded-2xl bg-rose-50/70 border border-rose-200">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-10 h-10 rounded-xl bg-rose-200 text-rose-700 flex items-center justify-center font-bold text-lg">✗</span>
+            <h3 class="text-lg font-bold text-rose-900">Cara Lama yang Melelahkan</h3>
+          </div>
+          <ul class="space-y-3 text-sm text-rose-800">
+            <li class="flex items-start gap-2">
+              <span class="text-rose-500 font-bold">•</span>
+              <span>Catatan di buku / Excel gampang hilang, typo desimal, atau lupa tersimpan.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-rose-500 font-bold">•</span>
+              <span>Bingung mana pelanggan yang sudah bayar lunas, bayar cicil, atau nunggak.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-rose-500 font-bold">•</span>
+              <span>Tulis nota kertas manual satu per satu setiap ada pelanggan yang bayar.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-rose-500 font-bold">•</span>
+              <span>Teknisi baru tersesat karena tidak tahu posisi tiang atau rumah pelanggan.</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Cara Baru -->
+        <div class="p-6 sm:p-8 rounded-2xl bg-emerald-50/80 border border-emerald-200 shadow-sm">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-10 h-10 rounded-xl bg-emerald-200 text-emerald-800 flex items-center justify-center font-bold text-lg">✓</span>
+            <h3 class="text-lg font-bold text-emerald-950">Dengan WiFi Billing System</h3>
+          </div>
+          <ul class="space-y-3 text-sm text-emerald-900">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">•</span>
+              <span>Sekali klik buat tagihan bulanan otomatis untuk semua pelanggan.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">•</span>
+              <span>Filter cepat: tahu pasti sisa tunggakan dan total uang yang sudah masuk.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">•</span>
+              <span>Cetak struk kasir Bluetooth 58mm/80mm instan & kirim bukti ke WhatsApp.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-600 font-bold">•</span>
+              <span>Otomatis simpan titik koordinat GPS rumah pelanggan dalam 1 klik.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features Grid Section -->
+  <section id="fitur" class="py-20 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-extrabold text-indigo-600 uppercase tracking-widest mb-2">Fitur Unggulan</h2>
+        <h3 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">
+          Semua yang Anda Butuhkan untuk Operasional Harian
+        </h3>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Dirancang simpel, tidak rumit, langsung bisa dipakai tanpa perlu keahlian teknis mikrotik.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="p-7 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mb-5">
+            🖨️
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Cetak Struk Kasir Thermal</h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Mendukung printer thermal Bluetooth (kertas 58mm & 80mm). Cetak nota kasir resmi dengan nama usaha Anda, status Lunas/Cicilan yang akurat, serta pesan footer dinamis.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="p-7 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-5">
+            📍
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Lokasi GPS 1-Klik & Peta</h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Teknisi di lapangan cukup tekan tombol "Ambil Lokasi Saya", sistem otomatis membaca koordinat GPS perangkat. Bisa juga pilih titik di peta interaktif atau tempel share-loc WA.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="p-7 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl mb-5">
+            💬
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Kirim Nota via WhatsApp</h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Tersedia tombol pintas untuk mengirim pesan rincian tagihan atau tanda terima pembayaran langsung ke WhatsApp pelanggan dengan template yang rapi.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="p-7 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-5">
+            📶
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Portal Mandiri Pelanggan</h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Pelanggan bisa login menggunakan ID Pelanggan untuk melihat riwayat pembayaran, status tagihan, dan tutorial bantuan secara transparan.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="p-7 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-5">
+            📊
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Laporan & Arus Kas</h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Catat pengeluaran operasional dan pantau laba bersih secara otomatis. Hasil laporan bisa langsung diunduh ke file resmi PDF atau Excel (CSV).
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="p-7 rounded-2xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mb-5">
+            📲
+          </div>
+          <h4 class="text-lg font-bold text-slate-900 mb-2">Aplikasi Android & Web</h4>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            Tersedia file APK siap pasang di smartphone Android untuk admin dan teknisi, serta dapat diakses melalui browser laptop/PC tanpa perlu instalasi rumit.
           </p>
         </div>
       </div>
+    </div>
+  </section>
 
-      <!-- Footer -->
-      <div class="text-center mt-8 fade-in">
-        <p class="text-white/60 text-xs">
-          © 2025 REVAM NET. Semua hak dilindungi.
+  <!-- Tutorial / Onboarding Section -->
+  <section id="tutorial" class="py-20 bg-white border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-extrabold text-indigo-600 uppercase tracking-widest mb-2">Alur Penggunaan</h2>
+        <h3 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900">
+          4 Langkah Mudah Memulai WiFi Billing
+        </h3>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Baru pertama kali daftar? Ikuti 4 urutan langkah praktis berikut agar pembukuan langsung jalan.
         </p>
       </div>
-    </div>
 
-    <!-- Background Decoration -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-      <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
-      <div
-        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Step 1 -->
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 relative group hover:border-indigo-300 transition-colors">
+          <div class="w-10 h-10 rounded-full bg-indigo-600 text-white font-extrabold flex items-center justify-center text-sm mb-4 shadow">
+            1
+          </div>
+          <h4 class="font-bold text-slate-900 text-base mb-2">Buat Paket Internet</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Masuk ke menu <strong>Kelola Paket</strong>. Tentukan nama paket & harga bulanan (misal: Paket 10 Mbps Rp 100.000).
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-200/80 text-[11px] text-amber-700 font-semibold flex items-center gap-1">
+            <span>⚠️</span> Wajib dibuat pertama kali
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 relative group hover:border-indigo-300 transition-colors">
+          <div class="w-10 h-10 rounded-full bg-indigo-600 text-white font-extrabold flex items-center justify-center text-sm mb-4 shadow">
+            2
+          </div>
+          <h4 class="font-bold text-slate-900 text-base mb-2">Atur Pembayaran Toko</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Masuk ke menu <strong>Metode Pembayaran</strong>. Masukkan rekening Bank Anda atau upload barcode QRIS usaha Anda.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-200/80 text-[11px] text-slate-500 font-medium">
+            Untuk rincian struk & transfer
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 relative group hover:border-indigo-300 transition-colors">
+          <div class="w-10 h-10 rounded-full bg-indigo-600 text-white font-extrabold flex items-center justify-center text-sm mb-4 shadow">
+            3
+          </div>
+          <h4 class="font-bold text-slate-900 text-base mb-2">Daftarkan Pelanggan</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Buka menu <strong>Pelanggan</strong>. Tambah data satu per satu dengan tombol GPS otomatis, atau import sekaligus via file CSV Excel.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-200/80 text-[11px] text-slate-500 font-medium">
+            Pilih paket yang dibuat di langkah 1
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 relative group hover:border-indigo-300 transition-colors">
+          <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-extrabold flex items-center justify-center text-sm mb-4 shadow">
+            4
+          </div>
+          <h4 class="font-bold text-slate-900 text-base mb-2">Tagih & Cetak Struk</h4>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Buka menu <strong>Tagihan</strong>. Buat tagihan bulan berjalan, catat pembayaran lunas/cicilan, dan cetak struk thermal kasir.
+          </p>
+          <div class="mt-4 pt-3 border-t border-slate-200/80 text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+            <span>🎉</span> Siap beroperasi rapi
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Table Section -->
+  <section id="pricing" class="py-20 bg-slate-100 border-t border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-4xl mx-auto mb-16">
+        <h2 class="text-xs font-extrabold text-indigo-600 uppercase tracking-widest mb-2">Pilihan Paket Berlangganan</h2>
+        <h3 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+          Harga Murah, Pas untuk Kantong <span class="whitespace-nowrap">RT/RW Net</span>
+        </h3>
+        <p class="text-slate-600 text-sm sm:text-base mt-3">
+          Pilih paket sesuai jumlah pelanggan Anda. Bisa upgrade kapan saja saat usaha makin besar.
+        </p>
+      </div>
+
+      <!-- Pricing Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-stretch">
+
+        <!-- Plan 1: Free Trial -->
+        <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-bold text-slate-900">Free Trial</h4>
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">14 Hari</span>
+            </div>
+            <div class="mb-6">
+              <span class="text-3xl font-extrabold text-slate-900">Rp 0</span>
+              <span class="text-xs text-slate-500 font-medium">/ 14 hari pertama</span>
+            </div>
+            <p class="text-xs text-slate-600 mb-6">Cocok untuk mencoba seluruh fitur cetak struk dan pembukuan tanpa resiko modal.</p>
+
+            <ul class="space-y-3 text-xs text-slate-700 pb-6 border-t border-slate-100 pt-6">
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Maks <strong>20 Pelanggan</strong></span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Cetak Struk Thermal Bluetooth</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Otomasi Lokasi GPS 1-Klik</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Kirim Nota WhatsApp</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Laporan PDF & Excel</span>
+              </li>
+            </ul>
+          </div>
+          <button type="button" class="btn-select-plan w-full py-3 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors" data-plan="Free Trial" data-plan-slug="free-trial" data-price="0" data-quota="20 Pelanggan">
+            Mulai Coba Gratis
+          </button>
+        </div>
+
+        <!-- Plan 2: Starter -->
+        <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between hover:border-indigo-300 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-bold text-slate-900">Starter</h4>
+              <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">Pemula</span>
+            </div>
+            <div class="mb-6">
+              <span class="text-3xl font-extrabold text-slate-900">Rp 10.000</span>
+              <span class="text-xs text-slate-500 font-medium">/ bulan</span>
+            </div>
+            <p class="text-xs text-slate-600 mb-6">Pilihan sangat hemat untuk pengelola RT/RW Net rumahan yang baru merintis.</p>
+
+            <ul class="space-y-3 text-xs text-slate-700 pb-6 border-t border-slate-100 pt-6">
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Maks <strong>100 Pelanggan</strong></span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Cetak Struk Thermal Bluetooth</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Otomasi Lokasi GPS 1-Klik</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Kirim Nota WhatsApp</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Laporan Arus Kas & Export</span>
+              </li>
+            </ul>
+          </div>
+          <button type="button" class="btn-select-plan w-full py-3 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors" data-plan="Starter" data-plan-slug="starter" data-price="10000" data-quota="100 Pelanggan">
+            Pilih Paket Starter
+          </button>
+        </div>
+
+        <!-- Plan 3: Pro (Best Value) -->
+        <div class="p-7 rounded-3xl bg-indigo-900 text-white shadow-xl shadow-indigo-950/20 flex flex-col justify-between relative transform lg:-translate-y-2 ring-2 ring-indigo-500">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 text-[10px] font-extrabold uppercase px-3 py-1 rounded-full shadow-md tracking-wider">
+            ⭐ Paling Populer
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-bold text-white">Paket Pro</h4>
+              <span class="text-xs font-bold text-indigo-200 bg-indigo-800 px-2.5 py-1 rounded-full">Best Value</span>
+            </div>
+            <div class="mb-6">
+              <span class="text-3xl font-extrabold text-white">Rp 25.000</span>
+              <span class="text-xs text-indigo-300 font-medium">/ bulan</span>
+            </div>
+            <p class="text-xs text-indigo-200 mb-6">Paling banyak dipilih untuk RT/RW Net yang sudah ramai puluhan hingga ratusan rumah.</p>
+
+            <ul class="space-y-3 text-xs text-indigo-100 pb-6 border-t border-indigo-800 pt-6">
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">✓</span>
+                <span>Maks <strong>300 Pelanggan</strong></span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">✓</span>
+                <span>Cetak Struk Thermal Bluetooth</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">✓</span>
+                <span>Otomasi Lokasi GPS 1-Klik</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">✓</span>
+                <span>Multi-Akun Login Teknisi</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">✓</span>
+                <span>Custom Pesan Footer Struk</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-amber-400 font-bold">✓</span>
+                <span>Prioritas Bantuan CS WhatsApp</span>
+              </li>
+            </ul>
+          </div>
+          <button type="button" class="btn-select-plan w-full py-3.5 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition-colors shadow-lg" data-plan="Pro" data-plan-slug="pro" data-price="25000" data-quota="300 Pelanggan">
+            Pilih Paket Pro
+          </button>
+        </div>
+
+        <!-- Plan 4: Unlimited -->
+        <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between hover:border-purple-300 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-bold text-slate-900">Unlimited</h4>
+              <span class="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full">👑 Skala Besar</span>
+            </div>
+            <div class="mb-6">
+              <span class="text-3xl font-extrabold text-slate-900">Rp 50.000</span>
+              <span class="text-xs text-slate-500 font-medium">/ bulan</span>
+            </div>
+            <p class="text-xs text-slate-600 mb-6">Bebas kuota tanpa batas untuk ISP lokal, sub-agen, dan jaringan antar-kampung.</p>
+
+            <ul class="space-y-3 text-xs text-slate-700 pb-6 border-t border-slate-100 pt-6">
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span><strong>Tanpa Batas Pelanggan (Unlimited)</strong></span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Semua Fitur Pro Lengkap</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Akses Penuh Fitur Update Baru</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Prioritas Support Langsung Owner</span>
+              </li>
+            </ul>
+          </div>
+          <button type="button" class="btn-select-plan w-full py-3 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors" data-plan="Unlimited" data-plan-slug="unlimited" data-price="50000" data-quota="Unlimited Pelanggan">
+            Pilih Unlimited
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Download APK Section -->
+  <section id="download-apk" class="py-16 bg-gradient-to-r from-emerald-600 to-teal-700 text-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+        <div class="space-y-2 max-w-xl">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold backdrop-blur-sm">
+            <span>📱</span> Versi Rilis Terbaru (Android)
+          </div>
+          <h3 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Download Aplikasi Android (.APK)
+          </h3>
+          <p class="text-sm text-emerald-100 leading-relaxed">
+            Pasang langsung di HP Anda atau teknisi di lapangan. Ringan, cepat, dan 100% langsung terhubung ke printer thermal Bluetooth.
+          </p>
+          <div class="text-[11px] text-emerald-200 pt-2 flex items-center justify-center md:justify-start gap-1">
+            <span>💡</span> Catatan: Jika muncul peringatan Play Protect di HP, pilih <strong>"Tetap Install"</strong> (100% aman).
+          </div>
+        </div>
+
+        <div class="flex-shrink-0">
+          <a href="wifibilling.apk" download class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white text-emerald-800 font-extrabold hover:bg-emerald-50 shadow-xl transition-all transform hover:-translate-y-0.5">
+            <svg class="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002 0-.5511.4482-.9992.9993-.9992.5516 0 .9997.4481.9997.9992 0 .5516-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002 0-.5511.4482-.9992.9993-.9992.5516 0 .9997.4481.9997.9992 0 .5516-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.775h24c-.3432-4.1161-2.6889-7.5883-6.1185-9.4536"/></svg>
+            <div class="text-left">
+              <span class="block text-xs uppercase tracking-wider text-slate-500 font-bold">1-Klik Unduh</span>
+              <span class="block text-sm sm:text-base font-extrabold text-slate-900 leading-none">wifibilling.apk (77 MB)</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 text-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center p-1.5 overflow-hidden">
+            <img src="assets/logo_wifi.png" alt="WiFi Billing" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <span class="text-base font-bold text-white block">WiFi Billing System</span>
+            <span class="text-xs text-slate-400">Pembukuan Tagihan RT/RW Net & Cetak Struk</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-6 text-xs font-semibold text-slate-300">
+          <a href="#fitur" class="hover:text-white transition">Fitur</a>
+          <a href="#tutorial" class="hover:text-white transition">Panduan</a>
+          <a href="#pricing" class="hover:text-white transition">Harga</a>
+          <a href="login.html" class="hover:text-white transition">Login Admin</a>
+          <a href="https://wa.me/6281914170701" target="_blank" class="hover:text-emerald-400 transition flex items-center gap-1">
+            <span>💬</span> WhatsApp CS: 0819-1417-0701
+          </a>
+        </div>
+      </div>
+
+      <div class="pt-6 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <p>© 2026 WiFi Billing System. Semua hak dilindungi.</p>
+        <p>Pengembang & Pengelola: Taufiq Aziz</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: REGISTRASI CALON TENANT                          -->
+  <!-- ======================================================== -->
+  <div id="modal-register" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden my-auto flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-between flex-shrink-0">
+        <div>
+          <h3 class="font-extrabold text-lg text-white">Daftar Akun Baru</h3>
+          <p id="reg-plan-badge" class="text-xs text-indigo-100">Paket: Free Trial</p>
+        </div>
+        <button type="button" id="btn-close-register" class="text-white/80 hover:text-white text-2xl font-bold leading-none">&times;</button>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="tenant-register-form" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <!-- Hidden Plan Input -->
+        <input type="hidden" id="reg-plan-name" value="Free Trial">
+        <input type="hidden" id="reg-plan-slug" value="free-trial">
+        <input type="hidden" id="reg-plan-price" value="0">
+
+        <div class="p-6 space-y-4 overflow-y-auto flex-1">
+          <!-- Nama Usaha / Brand -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Usaha / RT RW Net *</label>
+            <input type="text" id="reg-company-name" required placeholder="Contoh: Selinggo Net, Maju Jaya WiFi"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+
+          <!-- Nama Pemilik -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Pemilik / Admin *</label>
+            <input type="text" id="reg-owner-name" required placeholder="Nama lengkap Anda"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+
+          <!-- Nomor WhatsApp -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor WhatsApp Aktif *</label>
+            <input type="tel" id="reg-phone" required placeholder="08xxxxxxxxxx"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+
+          <!-- Email Login -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email untuk Login *</label>
+            <input type="email" id="reg-email" required placeholder="emailanda@gmail.com"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+
+          <!-- Password Login -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password Login *</label>
+            <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+          </div>
+
+          <!-- Error Alert -->
+          <div id="reg-error-msg" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+        </div>
+
+        <!-- Solid Docked Footer -->
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex-shrink-0 space-y-2">
+          <button type="submit" id="btn-submit-reg" class="w-full py-3.5 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 shadow-md transition-all flex items-center justify-center gap-2">
+            <span id="btn-submit-reg-text">Lanjutkan Pendaftaran</span>
+          </button>
+
+          <p class="text-center text-xs text-slate-500">
+            Sudah punya akun? <a href="login.html" class="text-indigo-600 font-bold hover:underline">Masuk di sini</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: PEMBAYARAN (QRIS & DANA & KONFIRMASI WA)         -->
+  <!-- ======================================================== -->
+  <div id="modal-payment" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden my-auto flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-emerald-600 text-white flex items-center justify-between flex-shrink-0">
+        <div>
+          <h3 class="font-extrabold text-base text-white">Pembayaran Langganan</h3>
+          <p id="pay-summary-text" class="text-xs text-emerald-100">Paket Starter - Rp 10.000</p>
+        </div>
+        <button type="button" id="btn-close-payment" class="text-white/80 hover:text-white text-2xl font-bold leading-none">&times;</button>
+      </div>
+
+      <!-- Scrollable Content Body -->
+      <div class="p-6 space-y-4 overflow-y-auto flex-1">
+        <!-- Detail Tagihan Box -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Nama Tenant:</span>
+            <span id="pay-tenant-name" class="font-bold text-slate-800">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Paket Dipilih:</span>
+            <span id="pay-plan-name" class="font-bold text-indigo-600">-</span>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+            <span class="font-bold text-slate-700">Total Pembayaran:</span>
+            <span id="pay-total-amount" class="text-base font-extrabold text-emerald-600">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- Pilihan 1: QRIS -->
+        <div class="text-center p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <p class="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2">Metode 1: Scan QRIS (BCA / E-Wallet)</p>
+          <div class="w-48 h-48 mx-auto rounded-xl border border-slate-300 p-1 bg-white overflow-hidden shadow-inner flex items-center justify-center">
+            <img src="assets/qris_owner.jpg" alt="QRIS Pembayaran" class="w-full h-full object-contain">
+          </div>
+          <p class="text-[11px] text-slate-500 mt-2">Dapat di-scan dengan BCA, DANA, GoPay, OVO, ShopeePay, atau m-Banking apa saja.</p>
+        </div>
+
+        <!-- Pilihan 2: DANA Transfer -->
+        <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Metode 2: Transfer DANA</span>
+            <span class="text-sm font-extrabold text-slate-900 block font-mono">089609497390</span>
+            <span class="text-xs text-slate-600 block">a.n. Taufiq Aziz</span>
+          </div>
+          <button type="button" id="btn-copy-dana" class="px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition active:scale-95">
+            Salin Nomor
+          </button>
+        </div>
+      </div>
+
+      <!-- Solid Docked Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex-shrink-0 space-y-2">
+        <a id="btn-wa-confirm" href="#" target="_blank" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+          <span>📲</span> Konfirmasi Pembayaran via WhatsApp
+        </a>
+        <p class="text-[11px] text-center text-slate-500">
+          Kirimkan bukti transfer ke WhatsApp di atas, akun bapak akan langsung diaktifkan oleh admin.
+        </p>
       </div>
     </div>
   </div>
 
+  <!-- Scripts -->
   <script type="module" src="supabase-client.js"></script>
-  <script type="module" src="apply-settings.js"></script>
-  <script type="module" src="login.js"></script>
-  <script src="pwa-installer.js"></script>
+  <script type="module">
+    import { supabase } from './supabase-client.js';
+
+    // Konfigurasi Notifikasi & Owner
+    const FONNTE_TOKEN = 'q3yqhiRwa2UXzpwGydZ2';
+    const OWNER_PHONE = '6281914170701';
+
+    const normalizePhone = (phone) => {
+      if (!phone) return '';
+      let cleaned = String(phone).replace(/\D/g, '');
+      if (cleaned.startsWith('0')) {
+        cleaned = '62' + cleaned.substring(1);
+      } else if (cleaned.startsWith('8')) {
+        cleaned = '62' + cleaned;
+      }
+      return cleaned;
+    };
+
+    const getTenantLoginUrl = (slug) => {
+      const slugParam = slug ? `?t=${encodeURIComponent(slug)}` : '';
+      const currentOrigin = window.location.origin;
+      let pathname = window.location.pathname.replace(/(superadmin|index)\.html$/i, 'login.html');
+      if (!pathname.endsWith('login.html')) {
+        pathname = pathname.replace(/\/+$/, '') + '/login.html';
+      }
+      return `${currentOrigin}${pathname}${slugParam}`;
+    };
+
+    async function sendFonnteMessage(targetPhone, message) {
+      const cleanPhone = normalizePhone(targetPhone);
+      if (!cleanPhone || cleanPhone.length < 9) return null;
+      const formData = new FormData();
+      formData.append('target', cleanPhone);
+      formData.append('message', message);
+      formData.append('countryCode', '62');
+      try {
+        const res = await fetch('https://api.fonnte.com/send', {
+          method: 'POST',
+          headers: { 'Authorization': FONNTE_TOKEN },
+          body: formData
+        });
+        return await res.json();
+      } catch (e) {
+        console.warn('Fonnte dispatch error:', e);
+        return null;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Mobile Menu Toggle
+      const btnMenu = document.getElementById('btn-toggle-mobile-menu');
+      const mobileMenu = document.getElementById('mobile-menu');
+      btnMenu?.addEventListener('click', () => {
+        mobileMenu?.classList.toggle('hidden');
+      });
+
+      // Auto close mobile menu when clicking any navigation link
+      mobileMenu?.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          mobileMenu?.classList.add('hidden');
+        });
+      });
+
+      // 2. Modal Registration Flow
+      const modalReg = document.getElementById('modal-register');
+      const modalPay = document.getElementById('modal-payment');
+      const btnCloseReg = document.getElementById('btn-close-register');
+      const btnClosePay = document.getElementById('btn-close-payment');
+      const regForm = document.getElementById('tenant-register-form');
+      const regError = document.getElementById('reg-error-msg');
+      const regSubmitBtn = document.getElementById('btn-submit-reg');
+      const regSubmitText = document.getElementById('btn-submit-reg-text');
+
+      const planBtns = document.querySelectorAll('.btn-select-plan');
+      planBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const planName = btn.getAttribute('data-plan') || 'Free Trial';
+          const planSlug = btn.getAttribute('data-plan-slug') || 'free-trial';
+          const planPrice = btn.getAttribute('data-price') || '0';
+          const planQuota = btn.getAttribute('data-quota') || '';
+
+          document.getElementById('reg-plan-name').value = planName;
+          document.getElementById('reg-plan-slug').value = planSlug;
+          document.getElementById('reg-plan-price').value = planPrice;
+          document.getElementById('reg-plan-badge').textContent = `Paket: ${planName} (${planQuota})`;
+
+          regError.classList.add('hidden');
+          modalReg.classList.remove('hidden');
+        });
+      });
+
+      btnCloseReg?.addEventListener('click', () => modalReg.classList.add('hidden'));
+      btnClosePay?.addEventListener('click', () => modalPay.classList.add('hidden'));
+
+      // Close modal on backdrop click
+      [modalReg, modalPay].forEach(m => {
+        m?.addEventListener('click', (e) => {
+          if (e.target === m) {
+            m.classList.add('hidden');
+          }
+        });
+      });
+
+      // 4. Salin DANA
+      const btnCopyDana = document.getElementById('btn-copy-dana');
+      btnCopyDana?.addEventListener('click', () => {
+        navigator.clipboard.writeText('089609497390').then(() => {
+          btnCopyDana.textContent = '✓ Tersalin!';
+          btnCopyDana.className = 'px-3 py-2 rounded-lg bg-emerald-100 border border-emerald-300 text-xs font-bold text-emerald-800 shadow-sm transition';
+          setTimeout(() => {
+            btnCopyDana.textContent = 'Salin Nomor';
+            btnCopyDana.className = 'px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition active:scale-95';
+          }, 2000);
+        });
+      });
+
+      // 5. Submit Registration
+      regForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        regError.classList.add('hidden');
+
+        const companyName = document.getElementById('reg-company-name').value.trim();
+        const ownerName = document.getElementById('reg-owner-name').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const planName = document.getElementById('reg-plan-name').value;
+        const planSlug = document.getElementById('reg-plan-slug').value || 'free-trial';
+        const planPrice = parseInt(document.getElementById('reg-plan-price').value, 10);
+
+        if (!companyName || !ownerName || !email || !password) {
+          regError.textContent = 'Mohon lengkapi seluruh formulir.';
+          regError.classList.remove('hidden');
+          return;
+        }
+
+        regSubmitBtn.disabled = true;
+        regSubmitText.textContent = 'Mendaftarkan akun...';
+
+        try {
+          // Buat user di Supabase Auth (Trigger handle_new_user otomatis membuat tenant sesuai plan_slug)
+          const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: {
+                full_name: ownerName,
+                company_name: companyName,
+                phone: phone,
+                plan_name: planName,
+                plan_slug: planSlug
+              }
+            }
+          });
+
+          if (error) throw error;
+
+          // Ambil slug tenant yang baru saja dibuat
+          let tenantSlug = '';
+          if (data?.user?.id) {
+            try {
+              const { data: tenantData } = await supabase
+                .from('tenants')
+                .select('slug')
+                .eq('owner_id', data.user.id)
+                .maybeSingle();
+              if (tenantData?.slug) {
+                tenantSlug = tenantData.slug;
+              }
+            } catch (errSlug) {
+              console.warn('Gagal membaca slug tenant baru:', errSlug);
+            }
+          }
+
+          const loginUrl = getTenantLoginUrl(tenantSlug);
+          const superAdminUrl = `${window.location.origin}${window.location.pathname.replace(/(superadmin|index)\.html$/i, 'superadmin.html')}`;
+
+          // Susun pesan WhatsApp untuk Calon Mitra
+          const clientMsg =
+`🎉 *Pendaftaran Akun WiFi Billing Berhasil!*
+
+Halo Bapak/Ibu *${ownerName}*,
+Selamat! Usaha RT/RW Net Anda telah berhasil didaftarkan di platform WiFi Billing System.
+
+📋 *Rincian Akun Anda:*
+• Nama Usaha: *${companyName}*
+• Paket SaaS: *${planName}*
+• URL Slug: *${tenantSlug || '-'}*
+• Email Login: *${email}*
+• Password: *(sesuai yang Anda daftarkan)*
+
+🔗 *Link Login Khusus Mitra:*
+${loginUrl}
+
+${planPrice > 0 ? `💳 *Status Langganan:* Menunggu Konfirmasi Pembayaran (Rp ${planPrice.toLocaleString('id-ID')}/bln). Silakan selesaikan pembayaran agar akun langsung aktif penuh.\n\n` : `✨ *Status Langganan:* Aktif Free Trial 14 Hari.\n\n`}Jika butuh bantuan seputar aplikasi atau setting printer thermal, hubungi CS kami: https://wa.me/6281914170701
+Terima kasih dan sukses selalu untuk usaha internet Anda!`;
+
+          // Susun pesan WhatsApp untuk Owner / Super Admin
+          const ownerMsg =
+`🔔 *Notifikasi Calon Mitra Baru Mendaftar!*
+
+Ada mitra baru yang baru saja mendaftar di WiFi Billing System:
+
+🏢 *Data Usaha & Pemilik:*
+• Usaha: *${companyName}*
+• Pemilik: *${ownerName}*
+• No. WhatsApp: *${phone}*
+• Email: *${email}*
+• Paket Dipilih: *${planName}* (${planPrice > 0 ? 'Rp ' + planPrice.toLocaleString('id-ID') : 'Free Trial 14 Hari'})
+• URL Slug: *${tenantSlug || '-'}*
+• Waktu Daftar: *${new Date().toLocaleString('id-ID')}*
+
+${planPrice > 0 ? `⚠️ *Catatan:* Mitra memilih paket berbayar (${planName}). Menunggu konfirmasi bukti transfer.` : `ℹ️ *Catatan:* Mitra mendaftar Free Trial.`}
+
+Kelola mitra di Dashboard Super Admin:
+${superAdminUrl}`;
+
+          // Kirim notifikasi WhatsApp otomatis ke Calon Mitra & ke Owner
+          Promise.allSettled([
+            sendFonnteMessage(phone, clientMsg),
+            sendFonnteMessage(OWNER_PHONE, ownerMsg)
+          ]).then(res => {
+            console.log('Hasil dispatch WA Fonnte:', res);
+          });
+
+          // Tutup modal registrasi
+          modalReg.classList.add('hidden');
+
+          // Cek apakah paket berbayar atau free trial
+          if (planPrice > 0) {
+            // Tampilkan Modal Pembayaran
+            document.getElementById('pay-tenant-name').textContent = companyName;
+            document.getElementById('pay-plan-name').textContent = planName;
+            document.getElementById('pay-total-amount').textContent = 'Rp ' + planPrice.toLocaleString('id-ID');
+            document.getElementById('pay-summary-text').textContent = `Paket ${planName} - Rp ${planPrice.toLocaleString('id-ID')}`;
+
+            // Buat link konfirmasi WA otomatis
+            const message = `Halo Admin WiFi Billing, saya sudah mendaftar tenant:\n\n` +
+                            `• Nama Usaha: ${companyName}\n` +
+                            `• Nama Pemilik: ${ownerName}\n` +
+                            `• Email Login: ${email}\n` +
+                            `• Paket Dipilih: ${planName} (Rp ${planPrice.toLocaleString('id-ID')})\n` +
+                            `• No. WA: ${phone}\n` +
+                            `• Link Login: ${loginUrl}\n\n` +
+                            `Berikut bukti transfer pembayaran terlampir. Mohon akun saya diaktifkan ya. Terima kasih!`;
+
+            const waUrl = `https://wa.me/6281914170701?text=${encodeURIComponent(message)}`;
+            document.getElementById('btn-wa-confirm').href = waUrl;
+
+            modalPay.classList.remove('hidden');
+          } else {
+            // Free trial: Langsung aktifkan dan arahkan ke login khusus tenant
+            alert(`Selamat! Akun ${companyName} berhasil dibuat dengan paket Free Trial 14 Hari.\n\nRincian akun dan link login telah kami kirimkan juga ke WhatsApp ${phone}.\n\nSilakan klik OK untuk masuk ke halaman login.`);
+            window.location.href = loginUrl;
+          }
+
+        } catch (err) {
+          console.error('Registration error:', err);
+          let msg = err.message || 'Gagal mendaftar. Silakan coba lagi.';
+          if (msg.toLowerCase().includes('already registered')) {
+            msg = 'Email ini sudah terdaftar. Silakan gunakan email lain atau login.';
+          }
+          regError.textContent = msg;
+          regError.classList.remove('hidden');
+        } finally {
+          regSubmitBtn.disabled = false;
+          regSubmitText.textContent = 'Lanjutkan Pendaftaran';
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>

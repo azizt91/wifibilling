@@ -74,7 +74,7 @@ function displayHeader(profile) {
     if (customerEmail) customerEmail.textContent = currentUser.email;
 
     if (userAvatar) {
-        const defaultAvatar = (profile.gender === 'PEREMPUAN') ? 'assets/avatar_female.svg' : 'assets/avatar_male.svg';
+        const defaultAvatar = 'assets/avatar_male.svg';
         const avatarUrl = (profile.photo_url && !profile.photo_url.includes('sb-admin-pro.startbootstrap.com'))
             ? profile.photo_url
             : defaultAvatar;
@@ -333,7 +333,7 @@ async function handlePaymentConfirmation() {
     const customerName = currentProfile ? currentProfile.full_name : currentUser.email;
     const customerIdpl = currentProfile ? currentProfile.idpl : 'N/A';
 
-    const appName = getAppSettings()?.app_name || 'REVAM NET';
+    const appName = getAppSettings()?.app_name || 'WiFi Billing System';
     const message = `Halo Admin ${appName}, saya ingin mengkonfirmasi pembayaran tagihan:
 
 - *Nama:* ${customerName}

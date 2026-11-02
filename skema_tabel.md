@@ -1,118 +1,86 @@
--- WARNING: This schema is for context only and is not meant to be run.
--- Table order and constraints may not be valid for execution.
+# Skema Database SaaS Multi-Tenant (Billing RT/RW Net)
 
-CREATE TABLE public.app_settings (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  app_name text,
-  app_short_name text,
-  app_description text,
-  app_tagline text,
-  logo_url text,
-  favicon_url text,
-  icon_192_url text,
-  icon_512_url text,
-  whatsapp_number text,
-  support_email text,
-  office_address text,
-  offline_payment_name text,
-  offline_payment_address text,
-  qris_image_url text,
-  show_qris boolean DEFAULT true,
-  theme_color text,
-  background_color text,
-  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT app_settings_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.expenses (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  description text NOT NULL,
-  amount numeric NOT NULL,
-  expense_date date NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT expenses_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.invoices (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  customer_id uuid NOT NULL,
-  package_id integer,
-  invoice_period text NOT NULL,
-  amount numeric NOT NULL,
-  status USER-DEFINED NOT NULL DEFAULT 'unpaid'::invoice_status,
-  due_date date,
-  paid_at timestamp with time zone,
-  created_at timestamp with time zone DEFAULT now(),
-  total_due numeric,
-  amount_paid numeric DEFAULT 0,
-  payment_history jsonb DEFAULT '[]'::jsonb,
-  last_payment_date timestamp with time zone,
-  payment_method text DEFAULT 'cash'::text,
-  CONSTRAINT invoices_pkey PRIMARY KEY (id),
-  CONSTRAINT invoices_package_id_fkey FOREIGN KEY (package_id) REFERENCES public.packages(id),
-  CONSTRAINT invoices_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.notification_reads (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  notification_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  read_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT notification_reads_pkey PRIMARY KEY (id),
-  CONSTRAINT notification_reads_notification_id_fkey FOREIGN KEY (notification_id) REFERENCES public.notifications(id),
-  CONSTRAINT notification_reads_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.notifications (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  title text NOT NULL,
-  body text NOT NULL,
-  recipient_role text,
-  recipient_user_id uuid,
-  url text,
-  created_at timestamp with time zone DEFAULT now(),
-  type text,
-  data jsonb DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT notifications_pkey PRIMARY KEY (id),
-  CONSTRAINT notifications_recipient_user_id_fkey FOREIGN KEY (recipient_user_id) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.packages (
-  id integer NOT NULL DEFAULT nextval('packages_id_seq'::regclass),
-  package_name text NOT NULL,
-  price numeric NOT NULL,
-  speed_mbps integer,
-  description text,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT packages_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.payment_methods (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  bank_name text NOT NULL,
-  account_number text NOT NULL,
-  account_holder text NOT NULL,
-  sort_order integer DEFAULT 0,
-  is_active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT payment_methods_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.profiles (
-  id uuid NOT NULL,
-  idpl text UNIQUE,
-  full_name text,
-  address text,
-  gender text,
-  whatsapp_number text,
-  role text NOT NULL DEFAULT 'USER'::text,
-  photo_url text,
-  status USER-DEFINED DEFAULT 'AKTIF'::customer_status,
-  installation_date date,
-  device_type text,
-  ip_static_pppoe text,
-  created_at timestamp with time zone DEFAULT now(),
-  churn_date date,
-  package_id integer,
-  latitude numeric,
-  longitude numeric,
-  CONSTRAINT profiles_pkey PRIMARY KEY (id),
-  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id),
-  CONSTRAINT profiles_package_id_fkey FOREIGN KEY (package_id) REFERENCES public.packages(id)
-);
+Dokumen ini mendokumentasikan skema database **SaaS Multi-Tenant** berbasis Supabase (PostgreSQL) menggunakan pendekatan **Shared Database, Shared Schema** dengan isolasi `tenant_id` dan **Row Level Security (RLS)**.
+
+---
+
+## 1. Arsitektur Multi-Tenant
+
+- **Isolasi Data:** Setiap baris data operasional diikat dengan `tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE`.
+- **Default Function:** Kolom `tenant_id` memiliki nilai default `public.get_my_tenant_id()` sehingga kueri INSERT dari frontend tetap aman dan otomatis terisi.
+- **Standarisasi Role:**
+  - `super_admin`: Pemilik platform SaaS (akses lintas tenant).
+  - `admin` (disimpan `ADMIN`): Pemilik / pengelola RT-RW Net (hanya data miliknya).
+  - `pelanggan` (disimpan `USER`): Pelanggan WiFi akhir (hanya data miliknya).
+- **Default Tenant:** `a0000000-0000-4000-8000-000000000001` (*Rivamnet Default*) untuk menampung data single-tenant lama secara backward-compatible.
+
+---
+
+## 2. Tabel Inti SaaS
+
+### 2.1. `saas_plans`
+Menyimpan paket langganan untuk mitra RT/RW Net.
+| Kolom | Tipe | Keterangan |
+| :--- | :--- | :--- |
+| `id` | UUID (PK) | Default `gen_random_uuid()` |
+| `name` | VARCHAR(100) | Nama paket (*Starter*, *Pro*, *Unlimited*, *Free Trial*) |
+| `slug` | VARCHAR(100) | Unique slug |
+| `price_monthly` | NUMERIC(12,2) | Harga bulanan paket |
+| `max_customers` | INTEGER | Batas maksimal pelanggan aktif per tenant (`NULL` = unlimited) |
+| `features` | JSONB | Flag fitur (whatsapp_gateway, genieacs, custom_receipt) |
+| `is_active` | BOOLEAN | Status paket aktif / nonaktif |
+| `created_at`, `updated_at` | TIMESTAMPTZ | Waktu pembuatan / perbaruan |
+
+### 2.2. `tenants`
+Menyimpan data mitra ISP / RT-RW Net.
+| Kolom | Tipe | Keterangan |
+| :--- | :--- | :--- |
+| `id` | UUID (PK) | ID unik tenant |
+| `name` | VARCHAR(150) | Nama usaha WiFi |
+| `slug` | VARCHAR(100) | Slug unik URL / identifikasi |
+| `owner_id` | UUID (FK) | Referensi ke `auth.users(id)` |
+| `plan_id` | UUID (FK) | Referensi ke `saas_plans(id)` |
+| `subscription_status` | VARCHAR(20) | `'trial'`, `'active'`, `'past_due'`, `'suspended'` |
+| `subscription_expires_at` | TIMESTAMPTZ | Masa berlaku paket |
+| `logo_url`, `qris_url` | TEXT | URL aset tenant di storage |
+| `company_address`, `company_phone` | TEXT / VARCHAR | Alamat & kontak usaha |
+
+---
+
+## 3. Tabel Operasional Aplikasi (dengan `tenant_id`)
+
+Setiap tabel berikut memiliki kolom:
+`tenant_id UUID NOT NULL DEFAULT public.get_my_tenant_id() REFERENCES public.tenants(id) ON DELETE CASCADE`
+serta index performa `idx_<tabel>_tenant_id`.
+
+1. **`profiles`**: Pengguna & Pelanggan (FK `auth.users.id`). Constraint `UNIQUE (tenant_id, idpl)` untuk kode pelanggan per tenant.
+2. **`packages`**: Paket langganan WiFi yang dijual mitra ke pelanggannya.
+3. **`invoices`**: Tagihan internet pelanggan.
+4. **`expenses`**: Pengeluaran operasional usaha WiFi.
+5. **`payment_methods`**: Rekening bank / e-wallet mitra.
+6. **`notifications`**: Notifikasi sistem per tenant.
+7. **`notification_reads`**: Status baca notifikasi per user.
+8. **`app_settings`**: Pengaturan nama aplikasi, logo, tema (Constraint `UNIQUE (tenant_id)`).
+9. **`whatsapp_settings`**: Token API Fonnte & template pesan (Constraint `UNIQUE (tenant_id, setting_key)`).
+10. **`genieacs_settings`**: Kredensial ACS & URL server (Constraint `UNIQUE (tenant_id, setting_key)`).
+11. **`wifi_change_logs`**: Log pergantian SSID/Password pelanggan via TR-069.
+
+---
+
+## 4. Helper Stored Functions & Triggers
+
+- `public.get_my_tenant_id()`: Mengambil `tenant_id` dari JWT `app_metadata` dengan fallback tabel `profiles`.
+- `public.get_my_role()`: Mengambil role kanonik (`super_admin`, `admin`, `pelanggan`).
+- `public.is_tenant_active(tenant_id)`: Mengecek status `active`/`trial` dan tanggal kedaluwarsa.
+- `public.get_tenant_quota(tenant_id)`: Mengembalikan ringkasan kuota terpakai, batas paket, dan boolean `can_add_customer`.
+- `public.check_tenant_customer_quota()`: Trigger `BEFORE INSERT/UPDATE` pada `profiles` yang menolak penambahan pelanggan bila kuota paket habis atau tenant disuspend.
+- `public.handle_new_user()`: Trigger `AFTER INSERT` pada `auth.users` yang otomatis:
+  - Membuat tenant baru + trial saat pendaftaran dari `register.html`.
+  - Mengikat pelanggan baru ke tenant pembuatnya saat dipanggil dari Edge Function.
+
+---
+
+## 5. Storage Buckets
+
+1. **`avatars`** (Public): Foto profil pengguna.
+2. **`tenant-assets`** (Public read, tenant write): Logo usaha dan gambar QRIS dengan struktur folder `{tenant_id}/logo.png` dan `{tenant_id}/qris.png`.

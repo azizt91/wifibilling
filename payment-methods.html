@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Metode Pembayaran - REVAM NET</title>
+    <title>Metode Pembayaran - WiFi Billing System</title>
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#f9f8fb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="REVAM NET">
+    <meta name="apple-mobile-web-app-title" content="WiFi Billing System">
 
     <!-- PWA Icons -->
     <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
@@ -76,6 +76,48 @@
         <div id="payment-methods-view">
             <main class="flex-1 pb-6">
                 <div class="p-4 space-y-4">
+                    <!-- Section: QRIS Payment -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-[#110e1b] font-semibold flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
+                                    viewBox="0 0 256 256">
+                                    <path
+                                        d="M104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm0,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48ZM200,40H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-64,72V152a16,16,0,0,1,16-16h8a8,8,0,0,1,0,16h-8v24h24V160a8,8,0,0,1,16,0v16h8a8,8,0,0,1,0,16h-8v8a8,8,0,0,1-16,0v-8H160v8a8,8,0,0,1-16,0v-8h-8A8,8,0,0,1,136,176Z">
+                                    </path>
+                                </svg>
+                                Pembayaran QRIS
+                            </h3>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input id="show-qris-input" type="checkbox" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#683fe4]"></div>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">Tampilkan kode QRIS kepada pelanggan saat checkout pembayaran.</p>
+
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#683fe4] transition-colors bg-[#f9f8fb]">
+                            <label for="qris-upload" class="cursor-pointer block">
+                                <div class="flex flex-col items-center gap-2">
+                                    <img id="qris-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='300' height='300' fill='%23f8f9fa' rx='16'/><rect x='20' y='20' width='260' height='260' fill='none' stroke='%23cbd5e1' stroke-width='4' stroke-dasharray='8 8' rx='12'/><path d='M70 70h50v50H70zm20 20h10v10H90zm90-20h50v50h-50zm20 20h10v10h-10zm-110 90h50v50H70zm20 20h10v10H90zm70-40h20v20h-20zm30 0h20v20h-20zm-30 30h20v20h-20zm30 30h20v20h-20zm-30 0h20v20h-20z' fill='%2364748b'/><text x='50%' y='62%' text-anchor='middle' fill='%23475569' font-size='14' font-weight='bold' font-family='sans-serif'>BELUM ADA QRIS</text><text x='50%' y='70%' text-anchor='middle' fill='%2394a3b8' font-size='11' font-family='sans-serif'>Klik untuk upload QRIS</text></svg>" alt="QRIS Preview"
+                                        class="w-36 h-36 object-contain rounded-lg border border-gray-200 bg-white shadow-sm p-1">
+                                    <div class="text-center">
+                                        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#683fe4] hover:underline">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a12,12,0,1,1-12-12A12,12,0,0,1,176,88ZM64,168a8,8,0,0,1,8-8h112a8,8,0,0,1,6.4,12.8l-24,32a8,8,0,0,1-12.8,0L136,178.67l-17.6,23.47A8,8,0,0,1,112,208H72A8,8,0,0,1,64,168Z"></path></svg>
+                                            Ganti Gambar QRIS
+                                        </span>
+                                        <p class="text-xs text-gray-400 mt-0.5">Format JPG/PNG, maks 2MB</p>
+                                    </div>
+                                </div>
+                                <input id="qris-upload" type="file" class="hidden" accept="image/png,image/jpeg,image/jpg" />
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Header for Bank Accounts -->
+                    <div class="flex items-center justify-between pt-2">
+                        <h4 class="text-sm font-bold text-[#110e1b]">Transfer Bank & E-Wallet</h4>
+                    </div>
+
                     <!-- Add New Button -->
                     <button id="add-payment-btn" class="w-full flex items-center justify-center gap-2 rounded-lg h-12 px-5 bg-[#683fe4] text-white text-base font-bold hover:bg-[#501ee6] transition-colors shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
@@ -159,6 +201,6 @@
     <script type="module" src="supabase-client.js"></script>
     <script type="module" src="apply-settings.js"></script>
     <script type="module" src="auth.js"></script>
-    <script type="module" src="payment-methods.js"></script>
+    <script type="module" src="payment-methods.js?v=2"></script>
 </body>
 </html>

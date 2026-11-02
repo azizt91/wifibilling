@@ -1,0 +1,35 @@
+{
+  "name": "selinggonet-isp-management",
+  "version": "1.0.1",
+  "description": "ISP Customer Management System with Google Sheets Integration",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo \"Error: no start script specified\" && exit 1",
+    "build": "echo 'No build step required for static files'"
+  },
+  "keywords": [
+    "isp",
+    "customer-management",
+    "google-sheets",
+    "billing",
+    "netlify"
+  ],
+  "author": "Selinggonet",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "capacitor-native-biometric": "^4.2.2",
+    "crypto": "1.0.1",
+    "googleapis": "^126.0.1",
+    "supabase": "^2.40.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.0.0"
+  }
+}
