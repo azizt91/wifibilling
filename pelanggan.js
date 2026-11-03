@@ -1,10 +1,11 @@
 // pelanggan.js (Supabase Version - FINAL & COMPLETE with Event Delegation)
 import { supabase } from './supabase-client.js';
-import { requireRole } from './auth.js';
+import { requireRole, initLogout } from './auth.js';
 import { initializeCSVImport } from './csv-import.js?v=2.1';
 
 document.addEventListener('DOMContentLoaded', async () => {
     await requireRole('ADMIN');
+    initLogout('desktop-logout-btn');
 
     // State Management
     let allPackages = [];
@@ -184,19 +185,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            if (id === 'add-customer-btn') {
+            if (id === 'add-customer-btn' || id === 'desktop-add-customer-btn') {
                 closeFABMenu(); // Close FAB menu if open
                 openAddForm();
                 return;
             }
 
-            if (id === 'import-csv-btn') {
+            if (id === 'import-csv-btn' || id === 'desktop-import-csv-btn') {
                 closeFABMenu(); // Close FAB menu if open
-                // CSV modal will be opened by csv-import.js
+                const modal = document.getElementById('csv-import-modal');
+                if (modal) modal.classList.remove('hidden');
                 return;
             }
 
-            if (id === 'export-csv-btn') {
+            if (id === 'export-csv-btn' || id === 'desktop-export-csv-btn') {
                 closeFABMenu(); // Close FAB menu if open
                 handleExportCSV();
                 return;
@@ -325,46 +327,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderCustomerList(data) {
+        const desktopBadge = document.getElementById('desktop-customer-count-badge');
+        if (desktopBadge) {
+            desktopBadge.textContent = `${(data || []).length} Pelanggan`;
+        }
+
         customerList.innerHTML = '';
         if (!data || data.length === 0) {
             customerList.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-12 px-4">
-                    <img src="assets/no_data.svg" alt="No Data" class="w-64 h-64 mb-4 opacity-80">
-                    <p class="text-center text-gray-500 text-base font-medium">Tidak ada pelanggan ditemukan</p>
-                    <p class="text-center text-gray-400 text-sm mt-2">Coba ubah filter atau kata kunci pencarian</p>
+                <div class="col-span-full flex flex-col items-center justify-center py-12 px-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+                    <img src="assets/no_data.svg" alt="No Data" class="w-48 h-48 mb-4 opacity-80">
+                    <p class="text-center text-slate-700 text-base font-bold">Tidak ada pelanggan ditemukan</p>
+                    <p class="text-center text-slate-400 text-xs mt-1">Coba ubah filter atau kata kunci pencarian</p>
                 </div>
             `;
             return;
         }
         data.forEach(profile => {
-            // Status pills styling
-            const statusBadge = profile.status === 'AKTIF'
-                ? '<span class="px-3 py-1 rounded-full bg-green-500 text-white text-xs font-semibold">Aktif</span>'
-                : '<span class="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-semibold">Cabut</span>';
+            const isAktif = profile.status === 'AKTIF';
+            const statusBadge = isAktif
+                ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold">Aktif</span>'
+                : '<span class="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold">Cabut</span>';
 
-            // Untuk pelanggan nonaktif, tampilkan tanggal cabut. Untuk aktif, tampilkan tanggal terdaftar
             let dateInfo;
-            if (profile.status === 'NONAKTIF') {
+            if (!isAktif) {
                 const churnDate = profile.churn_date
-                    ? new Date(profile.churn_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-                    : 'Belum diatur'; // Teks pengganti jika tanggal kosong
+                    ? new Date(profile.churn_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : 'Belum diatur';
                 dateInfo = `Cabut: ${churnDate}`;
             } else {
-                const installDate = profile.installation_date ? new Date(profile.installation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A';
-                dateInfo = `Terdaftar: ${installDate}`;
+                const installDate = profile.installation_date
+                    ? new Date(profile.installation_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : 'N/A';
+                dateInfo = `Pasang: ${installDate}`;
             }
 
             const avatarUrl = getCustomerAvatar(profile);
             const customerItem = document.createElement('div');
-            customerItem.className = "flex items-center gap-4 bg-white px-4 min-h-[72px] py-2 justify-between border-b border-gray-100 cursor-pointer hover:bg-gray-50";
+            customerItem.className = "group flex items-center gap-3.5 bg-white p-3.5 sm:p-4 rounded-xl md:rounded-2xl border border-slate-200/80 hover:border-brand-300 hover:shadow-md transition-all duration-150 cursor-pointer";
             customerItem.innerHTML = `
-                <div class="flex items-center gap-4 w-full">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-14 shrink-0 shadow-sm" style="background-image: url('${avatarUrl}');"></div>
-                    <div class="flex flex-col justify-center overflow-hidden">
-                        <p class="text-[#110e1b] text-base font-medium truncate">${profile.full_name}</p>
-                        <p class="text-[#625095] text-sm">${dateInfo}</p>
+                <div class="relative shrink-0">
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 sm:h-13 sm:w-13 border border-slate-100 shadow-xs" style="background-image: url('${avatarUrl}');"></div>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${isAktif ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                </div>
+                <div class="flex flex-col justify-center min-w-0 flex-1">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-slate-900 text-sm sm:text-base font-bold truncate group-hover:text-brand-600 transition-colors">${profile.full_name}</p>
+                        <div class="shrink-0">${statusBadge}</div>
                     </div>
-                    <div class="shrink-0 ml-auto">${statusBadge}</div>
+                    <div class="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                        <span class="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] tracking-wide">${profile.idpl || '-'}</span>
+                        <span class="text-slate-300">•</span>
+                        <span class="truncate text-[11px]">${dateInfo}</span>
+                    </div>
+                    ${profile.address ? `
+                    <p class="text-[11px] text-slate-400 truncate mt-1 flex items-center gap-1">
+                        <svg class="w-3 h-3 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        </svg>
+                        <span class="truncate">${profile.address}</span>
+                    </p>` : ''}
                 </div>`;
             customerItem.addEventListener('click', () => openDetailView(profile.id));
             customerList.appendChild(customerItem);

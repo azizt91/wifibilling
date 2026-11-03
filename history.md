@@ -1083,3 +1083,24 @@ Telah diselesaikan pembaruan menyeluruh pada aplikasi mobile Flutter (`c:\larago
      - **Bottom Navigation Disembunyikan**: Di layar desktop, bottom nav bar disembunyikan (`md:hidden`) karena sudah digantikan oleh top navigation bar.
   2. **Tampilan Mobile (HP)**:
      - 100% mempertahankan kenyamanan mobile: header melengkung bawah (`rounded-b-3xl`), metrik kartu 2 kolom dengan Profit memanjang di atas, grafik vertikal 1 kolom, dan fixed bottom bar lengkap dengan floating button Tagihan (+).
+
+
+---
+
+## 👥 Transformasi Responsif Halaman Pelanggan (Tahap 2 - 3 November 2026)
+- **Tujuan**: Mengubah `pelanggan.html` dan `pelanggan.js` dari tampilan "Mobile-First Frame" menjadi **Responsive Web Dashboard** modern yang luas di layar PC/laptop namun tetap ergonomis di layar ponsel.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan `max-width: 480px` dan background gelap, beralih ke latar `bg-slate-50` berkelas SaaS.
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap (*Dasbor, Pelanggan, Tagihan, Pengeluaran, Laporan, Paket, Pengaturan*), lonceng notifikasi, profil, dan tombol logout yang aktif.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header desktop menampilkan judul "Manajemen Pelanggan", badge total pelanggan realtime, serta tombol aksi cepat (*Kelola Paket, Import CSV, Export CSV, dan Tambah Pelanggan*).
+     - **Pencarian & Filter Elegan**: Bar pencarian dan filter status (Semua, Aktif, Tidak Aktif) tersusun rapi horizontal di dalam kontainer putih berbayang halus.
+     - **Grid Kartu Pelanggan 3 Kolom**: Kartu data pelanggan ditata responsif 3 kolom (`md:grid-cols-2 lg:grid-cols-3`) berdesain modern dengan indikator status dot (hijau/merah), IDPL badge, tanggal registrasi/cabut, dan preview alamat.
+     - **Detail View & Form View Responsif**: Tampilan detail pelanggan dan formulir penambahan/pengeditan dibungkus dalam kontainer card terpusat (`max-w-4xl` dan `max-w-3xl`) dengan layout grid key-value yang proporsional.
+     - **FAB Menu Disembunyikan**: Floating action button (FAB) disembunyikan di desktop (`md:hidden`) karena semua fungsi sudah tersedia di baris tombol aksi atas.
+     - **Bottom Navigation Disembunyikan**: Navigasi bawah disembunyikan di layar desktop (`md:hidden`).
+  2. **Tampilan Mobile (HP)**:
+     - Tetap mempertahankan seluruh fitur touch-friendly mobile: mobile header, sticky search & filter pills, list pelanggan satu kolom, floating action button (FAB menu) untuk upload/export/tambah, serta fixed bottom navigation bar dengan tombol tengah melayang.
+     - Penyesuaian ukuran font dan ikon bottom nav (`text-[10px] sm:text-[11px]`) agar tidak meluap atau terpotong pada layar HP sempit (iPhone SE / 375px).
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.2.0` dan cache-busting script `pelanggan.js?v=2.3` agar perubahan langsung termuat tanpa cache lama.
