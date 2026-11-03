@@ -72,40 +72,44 @@
 
     <!-- Top Navigation Bar -->
     <header class="glass-header sticky top-0 z-30 border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
             
             <!-- Brand / Logo -->
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                 </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold text-slate-900 text-lg leading-tight">Super Admin SaaS</h1>
-                        <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">Owner</span>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-nowrap">
+                        <h1 class="font-extrabold text-slate-900 text-sm sm:text-base md:text-lg leading-tight whitespace-nowrap">
+                            <span class="sm:hidden">Super Admin</span>
+                            <span class="hidden sm:inline">Super Admin SaaS</span>
+                        </h1>
+                        <span class="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-extrabold bg-amber-100 text-amber-800 rounded-full border border-amber-200 flex-shrink-0">Owner</span>
                     </div>
-                    <p class="text-xs text-slate-500 hidden sm:block">Manajemen Mitra RT/RW Net & Kuota Pelanggan</p>
+                    <p class="text-[11px] sm:text-xs text-slate-500 hidden md:block truncate">Manajemen Mitra RT/RW Net & Kuota Pelanggan</p>
                 </div>
             </div>
 
             <!-- Actions / Profile -->
-            <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
 
-                <button type="button" id="btn-install-superadmin-header" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-sm transition active:scale-95" title="Install Super Admin ke HP / Laptop">
+                <button type="button" id="btn-install-superadmin-header" class="inline-flex items-center justify-center gap-1 p-1.5 sm:px-3 sm:py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-sm transition active:scale-95 flex-shrink-0" title="Install Super Admin ke HP / Laptop">
                     <span>📲</span>
-                    <span class="hidden sm:inline">Install App</span>
+                    <span class="hidden md:inline">Install App</span>
                 </button>
 
-                <button id="btn-add-tenant" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm shadow-brand-600/30 transition active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button id="btn-add-tenant" class="inline-flex items-center gap-1 px-2 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm shadow-brand-600/30 transition active:scale-95 whitespace-nowrap flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Tambah Mitra</span>
+                    <span class="hidden sm:inline">Tambah Mitra</span>
+                    <span class="sm:hidden">Mitra</span>
                 </button>
 
-                <button id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                <button id="btn-logout" title="Logout" class="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
@@ -116,10 +120,10 @@
     </header>
 
     <!-- Main Content Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
 
         <!-- Welcome Banner -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-7 text-white shadow-xl relative overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-xl sm:rounded-2xl p-4 sm:p-7 text-white shadow-xl relative overflow-hidden">
             <div class="relative z-10 max-w-2xl">
                 <span class="inline-block px-2.5 py-1 text-xs font-bold bg-white/10 text-indigo-200 rounded-md mb-2">Panel Kontrol Platform</span>
                 <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">Kelola Seluruh Klien RT/RW Net Anda</h2>
@@ -134,81 +138,81 @@
         </div>
 
         <!-- Metric Statistics Cards -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
             
             <!-- Total Tenants -->
-            <div class="stat-gradient-1 text-white p-4 sm:p-5 rounded-xl shadow-sm">
-                <div class="flex items-center justify-between opacity-80 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Total Mitra</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="stat-gradient-1 text-white p-3.5 sm:p-5 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between opacity-80 mb-1.5 sm:mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Total Mitra</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
                 <div class="text-2xl sm:text-3xl font-extrabold" id="stat-total-tenants">0</div>
-                <p class="text-[11px] text-indigo-100 mt-1">Usaha RT/RW Net Terdaftar</p>
+                <p class="text-[10px] sm:text-[11px] text-indigo-100 mt-1 truncate">Usaha RT/RW Net Terdaftar</p>
             </div>
 
             <!-- Total Customers across all tenants -->
-            <div class="stat-gradient-2 text-white p-4 sm:p-5 rounded-xl shadow-sm">
-                <div class="flex items-center justify-between opacity-80 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Total Pelanggan WiFi</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="stat-gradient-2 text-white p-3.5 sm:p-5 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between opacity-80 mb-1.5 sm:mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Total Pelanggan WiFi</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                     </svg>
                 </div>
                 <div class="text-2xl sm:text-3xl font-extrabold" id="stat-total-customers">0</div>
-                <p class="text-[11px] text-teal-100 mt-1">Semua Pelanggan Aktif</p>
+                <p class="text-[10px] sm:text-[11px] text-teal-100 mt-1 truncate">Semua Pelanggan Aktif</p>
             </div>
 
             <!-- Active / Lifetime Tenants -->
-            <div class="stat-gradient-3 text-white p-4 sm:p-5 rounded-xl shadow-sm">
-                <div class="flex items-center justify-between opacity-80 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Mitra Aktif</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="stat-gradient-3 text-white p-3.5 sm:p-5 rounded-xl shadow-sm">
+                <div class="flex items-center justify-between opacity-80 mb-1.5 sm:mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Mitra Aktif</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="text-2xl sm:text-3xl font-extrabold" id="stat-active-tenants">0</div>
-                <p class="text-[11px] text-amber-100 mt-1">Status Active / Lifetime</p>
+                <p class="text-[10px] sm:text-[11px] text-amber-100 mt-1 truncate">Status Active / Lifetime</p>
             </div>
 
             <!-- Jatuh Tempo (H-7) & Kedaluwarsa -->
-            <div id="card-filter-expiring" class="stat-gradient-4 text-white p-4 sm:p-5 rounded-xl shadow-sm cursor-pointer hover:ring-2 hover:ring-rose-300 transition" title="Klik untuk memfilter mitra yang mau jatuh tempo">
-                <div class="flex items-center justify-between opacity-90 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Jatuh Tempo (H-7)</span>
-                    <span class="text-base">⏳</span>
+            <div id="card-filter-expiring" class="stat-gradient-4 text-white p-3.5 sm:p-5 rounded-xl shadow-sm cursor-pointer hover:ring-2 hover:ring-rose-300 transition" title="Klik untuk memfilter mitra yang mau jatuh tempo">
+                <div class="flex items-center justify-between opacity-90 mb-1.5 sm:mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider">Jatuh Tempo (H-7)</span>
+                    <span class="text-sm sm:text-base">⏳</span>
                 </div>
                 <div class="flex items-baseline gap-2">
                     <div class="text-2xl sm:text-3xl font-extrabold" id="stat-expiring-tenants">0</div>
                     <span id="stat-expired-badge" class="text-[10px] font-bold bg-rose-950/40 text-rose-200 px-1.5 py-0.5 rounded hidden">0 expired</span>
                 </div>
-                <p class="text-[11px] text-rose-100 mt-1 flex items-center justify-between">
+                <p class="text-[10px] sm:text-[11px] text-rose-100 mt-1 flex items-center justify-between">
                     <span>Perlu Diingatkan WA</span>
-                    <span class="text-[10px] underline">Filter ➔</span>
+                    <span class="underline whitespace-nowrap">Filter ➔</span>
                 </p>
             </div>
 
         </div>
 
         <!-- Filter & Search Controls -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-2.5 sm:gap-3 items-stretch md:items-center justify-between">
             
             <!-- Search Bar -->
             <div class="relative flex-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input 
                     type="text" 
                     id="search-input" 
-                    placeholder="Cari nama usaha, nama pemilik, email, no wa..." 
-                    class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                    placeholder="Cari mitra, email, WA..." 
+                    class="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
                 >
             </div>
 
-            <!-- Filters -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <select id="filter-plan" class="text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:ring-brand-500 focus:border-brand-500">
+            <!-- Filters: grid on mobile so refresh button stays on same row -->
+            <div class="grid grid-cols-[1fr_1fr_auto] sm:flex items-center gap-1.5 sm:gap-2">
+                <select id="filter-plan" class="w-full text-xs py-2 px-2 sm:px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:ring-brand-500 focus:border-brand-500 truncate">
                     <option value="all">Semua Paket</option>
                     <option value="starter">Starter</option>
                     <option value="pro">Pro</option>
@@ -216,16 +220,16 @@
                     <option value="free-trial">Free Trial</option>
                 </select>
 
-                <select id="filter-status" class="text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:ring-brand-500 focus:border-brand-500">
+                <select id="filter-status" class="w-full text-xs py-2 px-2 sm:px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:ring-brand-500 focus:border-brand-500 truncate">
                     <option value="all">Semua Status</option>
-                    <option value="expiring">⏳ Mau Jatuh Tempo (≤ 7 Hari)</option>
-                    <option value="expired">🔴 Sudah Kedaluwarsa</option>
-                    <option value="active">🟢 Active (Aktif)</option>
+                    <option value="expiring">⏳ Mau Jatuh Tempo</option>
+                    <option value="expired">🔴 Kedaluwarsa</option>
+                    <option value="active">🟢 Active</option>
                     <option value="trial">Free Trial</option>
                     <option value="suspended">Suspended</option>
                 </select>
 
-                <button id="btn-refresh" title="Muat Ulang" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-600 transition">
+                <button id="btn-refresh" title="Muat Ulang" class="p-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-600 transition flex-shrink-0 flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>

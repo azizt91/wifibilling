@@ -599,23 +599,25 @@ function renderMobileCard(t) {
     const expiryDisplay = formatExpiryDisplay(t);
 
     return `
-        <div class="p-4 space-y-3 hover:bg-slate-50/50 transition">
-            <div class="flex items-start justify-between gap-3">
-                <div class="flex items-center gap-3">
+        <div class="p-3.5 sm:p-4 space-y-3 hover:bg-slate-50/50 transition border-b border-slate-100 last:border-b-0">
+            <div class="flex items-start justify-between gap-2.5">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 text-white font-black flex items-center justify-center text-sm shadow-sm flex-shrink-0">
                         ${escapeHtml((t.name || 'W').substring(0, 2).toUpperCase())}
                     </div>
-                    <div>
-                        <h4 class="font-bold text-slate-900 text-sm leading-snug">${escapeHtml(t.name)}</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(t.owner_name || 'Admin')} ${t.owner_email ? `• <span class="font-mono text-[11px]">${escapeHtml(t.owner_email)}</span>` : ''}</p>
-                        ${t.company_phone ? `<p class="text-[11px] text-emerald-600 font-mono mt-0.5">📞 ${escapeHtml(t.company_phone)}</p>` : ''}
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-bold text-slate-900 text-sm leading-snug truncate" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</h4>
+                        <p class="text-xs text-slate-500 mt-0.5 truncate">${escapeHtml(t.owner_name || 'Admin')} ${t.owner_email ? `• <span class="font-mono text-[11px]">${escapeHtml(t.owner_email)}</span>` : ''}</p>
+                        ${t.company_phone ? `<p class="text-[11px] text-emerald-600 font-mono mt-0.5 truncate">📞 ${escapeHtml(t.company_phone)}</p>` : ''}
                     </div>
                 </div>
-                ${planBadge}
+                <div class="flex-shrink-0">
+                    ${planBadge}
+                </div>
             </div>
 
             <!-- Kuota Pelanggan -->
-            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1.5">
+            <div class="bg-slate-50 p-2.5 sm:p-3 rounded-lg border border-slate-100 space-y-1.5">
                 <div class="flex items-center justify-between text-xs">
                     <span class="text-slate-500 font-medium">Kapasitas Pelanggan:</span>
                     <span class="font-bold text-slate-800">${quotaInfo.text}</span>
@@ -630,11 +632,11 @@ function renderMobileCard(t) {
             </div>
 
             <!-- Actions Bar -->
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-1.5">
-                <div class="flex items-center gap-1.5">
+            <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1.5 flex-wrap">
                     <button 
                         type="button" 
-                        class="btn-renew-tenant px-2.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition inline-flex items-center gap-1"
+                        class="btn-renew-tenant px-2.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition inline-flex items-center gap-1 active:scale-95"
                         data-tenant-id="${t.id}"
                     >
                         <span>➕</span>
@@ -642,7 +644,7 @@ function renderMobileCard(t) {
                     </button>
                     <button 
                         type="button" 
-                        class="btn-remind-wa px-2.5 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition inline-flex items-center gap-1"
+                        class="btn-remind-wa px-2.5 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition inline-flex items-center gap-1 active:scale-95"
                         data-tenant-id="${t.id}"
                     >
                         <span>📲</span>
@@ -650,12 +652,12 @@ function renderMobileCard(t) {
                     </button>
                 </div>
 
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-0.5 ml-auto">
                     <button 
                         type="button" 
-                        class="btn-edit-tenant p-1.5 text-slate-500 hover:text-brand-600 rounded-lg transition"
+                        class="btn-edit-tenant p-1.5 sm:p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition"
                         data-tenant-id="${t.id}"
-                        title="Edit"
+                        title="Edit Mitra"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -663,8 +665,8 @@ function renderMobileCard(t) {
                     </button>
                     <button 
                         type="button" 
-                        class="btn-copy-info p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition"
-                        title="Salin Data"
+                        class="btn-copy-info p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition"
+                        title="Salin Data Mitra"
                         data-name="${escapeHtml(t.name)}"
                         data-email="${escapeHtml(t.owner_email)}"
                         data-slug="${escapeHtml(t.slug)}"
@@ -675,10 +677,10 @@ function renderMobileCard(t) {
                     </button>
                     <button 
                         type="button" 
-                        class="btn-delete-tenant p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition"
+                        class="btn-delete-tenant p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
                         data-tenant-id="${t.id}"
                         data-name="${escapeHtml(t.name)}"
-                        title="Hapus"
+                        title="Hapus Mitra"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

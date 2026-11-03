@@ -1034,3 +1034,34 @@ Telah diselesaikan pembaruan menyeluruh pada aplikasi mobile Flutter (`c:\larago
      - Input pesan footer struk kasir yang tersinkronisasi ke printer Bluetooth & database `whatsapp_settings`.
   3. **Info Pengiriman Otomatis WhatsApp**:
      - Petunjuk Fonnte API Token & toggle notifikasi otomatis pada template lunas & cicilan.
+
+
+---
+
+## 🚀 Push Repositori ke GitHub Sukses (2 November 2026)
+- **Repository Remote**: `https://github.com/azizt91/wifibilling.git`
+- **Branch**: `main`
+- **Status**: Sukses 100% dipush (`origin/main`).
+- **Isi Commit**: Seluruh kode frontend Web, database schema & migrations, 7 Edge Functions, aplikasi Mobile Flutter (`mobile/`), standalone SuperAdmin PWA, serta file release APK terbaru (`wifibilling.apk`).
+
+
+---
+
+## 📱 Perbaikan Tampilan Mobile Super Admin (3 November 2026)
+- **Latar Belakang**: Tampilan dashboard Super Admin (`superadmin.html` & `superadmin.js`) pada layar HP (portrait ~360px-390px) mengalami masalah visual: teks header terlipat 3 baris, tombol refresh jatuh ke baris baru sendirian di bawah filter, dan kartu mitra serta tombol aksi mengalami ketatnya padding.
+- **Perbaikan yang Diterapkan**:
+  1. **Header Responsif ([superadmin.html](file:///c:/laragon\www\project-billing\superadmin.html))**:
+     - Judul otomatis ringkas `Super Admin` di mobile dan `Super Admin SaaS` di desktop/tablet.
+     - Diberi `whitespace-nowrap` sehingga judul tidak pernah terlipat menjadi 3 baris.
+     - Tombol `+ Tambah Mitra` ringkas menjadi `+ Mitra` di layar HP kecil.
+     - Tombol install app dibuat square icon `📲` yang kompak di mobile.
+  2. **Filter & Pencarian Bersih 1 Baris**:
+     - Placeholder input pencarian dipersingkat menjadi `"Cari mitra, email, WA..."` agar tidak terpotong di layar 360px.
+     - Kontainer dropdown filter dan tombol refresh diatur menggunakan CSS grid `grid-cols-[1fr_1fr_auto] sm:flex`. Dropdown paket dan status membagi ruang secara seimbang (`1fr`), dan tombol reload (`#btn-refresh`) tetap berada sejajar di **baris yang sama**, tidak pernah lagi melompat sendirian ke bawah.
+     - Opsi teks dropdown dipersingkat (`⏳ Mau Jatuh Tempo`, `🔴 Kedaluwarsa`) agar tidak meluap saat dibuka di ponsel.
+  3. **Kartu Statistik Ringkas**:
+     - Menyesuaikan padding kartu metrik (`p-3.5 sm:p-5`) dan ukuran tipografi sehingga grid 2 kolom muat dengan lega tanpa pembagian kata yang canggung.
+  4. **Kartu Mitra Mobile ([superadmin.js](file:///c:/laragon\www\project-billing\superadmin.js))**:
+     - Fungsi `renderMobileCard(t)` ditambahkan `truncate` pada nama usaha, nama pemilik, dan nomor kontak mitra.
+     - Tombol aksi (`➕ Perpanjang`, `📲 Ingatkan WA`) dan ikon aksi (`Edit`, `Salin`, `Hapus`) diposisikan dengan `flex-wrap` dan `ml-auto` sehingga tersusun rapi serta ramah sentuhan jari (*finger friendly*).
+     - Ditambahkan pemisah garis tipis antar kartu pada mode mobile list.
