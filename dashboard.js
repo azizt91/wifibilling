@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!user) return; // Stop execution if not authenticated
 
     initLogout('dashboard-logout-btn');
+    initLogout('desktop-logout-btn');
     populateUserInfo(user);
 
     // Inisialisasi ikon notifikasi dan badge
@@ -247,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             let cardClasses = 'card-hover rounded-3xl p-6 text-white shadow-lg animate-fadeInUp';
             
             if (index === 0) {
-                cardClasses += ' col-span-2';
+                cardClasses += ' col-span-2 lg:col-span-2';
             }
             cardElement.className = `${card.gradient} ${cardClasses}`;
             cardElement.style.animationDelay = `${index * 0.1}s`;
@@ -299,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const skeletonCard = document.createElement('div');
             skeletonCard.className = 'skeleton-card glass-card rounded-2xl p-4 min-h-[120px]';
             if (i === 0) {
-                skeletonCard.classList.add('col-span-2');
+                skeletonCard.classList.add('col-span-2', 'lg:col-span-2');
                 skeletonCard.className += ' min-h-[100px]';
             }
             skeletonCard.innerHTML = `
