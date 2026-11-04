@@ -9,29 +9,66 @@ class ApplySettings {
         this.init();
     }
 
+    isPublicPageWithoutSlug() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const hasSlug = params.has('t') || params.has('tenant') || params.has('slug');
+            const path = window.location.pathname.toLowerCase();
+            const isPublicPage = path.endsWith('login.html') || path.endsWith('login') || 
+                                 path.endsWith('index.html') || path === '/' || path === '';
+            return isPublicPage && !hasSlug;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    getDefaultPlatformSettings() {
+        return {
+            found: false,
+            app_name: 'WiFi Billing System',
+            app_short_name: 'WiFi Billing',
+            app_description: 'Sistem Manajemen Tagihan & Layanan Pelanggan Internet WiFi',
+            app_tagline: 'Sistem Manajemen Tagihan & Layanan Pelanggan Internet WiFi',
+            logo_url: 'assets/logo_wifi.png',
+            favicon_url: 'assets/logo_192x192.png',
+            icon_192_url: 'assets/logo_192x192.png',
+            icon_512_url: 'assets/logo_512x512.png',
+            theme_color: '#5324e0',
+            background_color: '#ffffff'
+        };
+    }
+
     async init() {
-        // 1. Try local settings immediately for zero-flicker loading
+        const isPublicNoSlug = this.isPublicPageWithoutSlug();
+
+        // 1. Coba local settings jika bukan halaman login publik tanpa slug
         const localSettings = this.getLocalSettings();
-        if (localSettings) {
+        if (localSettings && !isPublicNoSlug) {
             this.settings = localSettings;
             this.applyAllSettings(localSettings);
+        } else if (isPublicNoSlug) {
+            // Pada halaman login publik tanpa slug, wajib tampilkan default murni WiFi Billing System
+            const def = this.getDefaultPlatformSettings();
+            this.settings = def;
+            this.applyAllSettings(def);
         }
 
-        // 2. Fetch fresh data from Supabase
+        // 2. Fetch fresh data dari Supabase
         try {
             const freshSettings = await this.fetchSettingsFromDB();
             if (freshSettings) {
                 this.settings = freshSettings;
-                this.saveLocalSettings(freshSettings);
+                if (!isPublicNoSlug) {
+                    this.saveLocalSettings(freshSettings);
+                }
                 this.applyAllSettings(freshSettings);
             } else if (!localSettings) {
-                // Apply defaults if no settings exist in DB or localStorage
-                this.applyAllSettings({});
+                this.applyAllSettings(this.getDefaultPlatformSettings());
             }
         } catch (error) {
             console.error('Error fetching settings from database:', error);
             if (!localSettings) {
-                this.applyAllSettings({});
+                this.applyAllSettings(this.getDefaultPlatformSettings());
             }
         }
     }
@@ -45,6 +82,16 @@ class ApplySettings {
                 sessionStorage.setItem('current_tenant_slug', clean);
                 return clean;
             }
+
+            // Jika membuka halaman login/index publik tanpa parameter slug, hapus session slug lama
+            const path = window.location.pathname.toLowerCase();
+            const isPublicPage = path.endsWith('login.html') || path.endsWith('login') || 
+                                 path.endsWith('index.html') || path === '/' || path === '';
+            if (isPublicPage) {
+                sessionStorage.removeItem('current_tenant_slug');
+                return null;
+            }
+
             return sessionStorage.getItem('current_tenant_slug') || null;
         } catch (e) {
             return null;
@@ -52,7 +99,37 @@ class ApplySettings {
     }
 
     async fetchSettingsFromDB() {
-        // Cek apakah ada parameter slug tenant di URL (misal: index.html?t=apik atau index.html?t=selinggonet)
+        // 1. Cek sesi user yang sedang login (prioritas utama pada dasbor admin/pelanggan)
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.id) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('tenant_id')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                if (profile?.tenant_id) {
+                    // Ambil branding langsung dari app_settings tenant ini
+                    const { data: tenantSettings } = await supabase
+                        .from('app_settings')
+                        .select('*')
+                        .eq('tenant_id', profile.tenant_id)
+                        .maybeSingle();
+
+                    if (tenantSettings) {
+                        return {
+                            found: true,
+                            ...tenantSettings
+                        };
+                    }
+                }
+            }
+        } catch (authErr) {
+            // Abaikan jika belum login
+        }
+
+        // 2. Cek apakah ada parameter slug tenant di URL (misal: login.html?t=win-net-6e4545)
         let slug = this.getTenantSlugFromUrl();
         if (slug) {
             try {
@@ -67,60 +144,8 @@ class ApplySettings {
             }
         }
 
-        // Fallback: Jika tidak ada slug di URL, coba deteksi tenant dari sesi user yang sedang login
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user?.id) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('tenant_id')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-
-                if (profile?.tenant_id) {
-                    const { data: tenant } = await supabase
-                        .from('tenants')
-                        .select('slug, name, branding')
-                        .eq('id', profile.tenant_id)
-                        .maybeSingle();
-
-                    if (tenant) {
-                        if (tenant.slug) {
-                            sessionStorage.setItem('current_tenant_slug', tenant.slug);
-                        }
-                        const branding = tenant.branding || {};
-                        return {
-                            found: true,
-                            app_name: branding.app_name || tenant.name,
-                            app_short_name: branding.app_short_name || tenant.name,
-                            logo_url: branding.logo_url || null,
-                            theme_color: branding.theme_color || '#5324e0',
-                            ...branding
-                        };
-                    }
-                }
-            }
-        } catch (authErr) {
-            // Abaikan jika belum login atau session gagal
-        }
-
-        try {
-            const { data, error } = await supabase
-                .from('app_settings')
-                .select('*')
-                .limit(1)
-                .maybeSingle();
-
-            if (error) {
-                console.warn('Supabase app_settings fetch warning:', error.message);
-                return null;
-            }
-
-            return data || null;
-        } catch (error) {
-            console.error('Error querying app_settings table:', error);
-            return null;
-        }
+        // 3. Jika tidak ada slug URL dan belum login, gunakan default murni platform WiFi Billing
+        return this.getDefaultPlatformSettings();
     }
 
     applyAllSettings(settings) {
