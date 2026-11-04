@@ -1,8 +1,15 @@
 [build]
   publish = "."
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
+
+# API Serverless Endpoints
+[[redirects]]
+  from = "/api/send-wa"
+  to = "/.netlify/functions/send-wa"
+  status = 200
 
 # Clean URL routes
 [[redirects]]

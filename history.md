@@ -1437,3 +1437,18 @@ Telah diselesaikan pembaruan menyeluruh pada aplikasi mobile Flutter (`c:\larago
   1. Menambahkan fungsi kompatibilitas `export function addNotificationIconToHeader() {}` pada [notification-badge.js](file:///c:/laragon/www/project-billing/notification-badge.js).
   2. Merapikan [dashboard.js](file:///c:/laragon/www/project-billing/dashboard.js) dengan hanya mengimpor `initNotificationBadge` karena ikon notifikasi sudah tertanam secara native di HTML header.
   3. Menaikkan cache service worker ke `wifibilling-pwa-v3.0.4` di `sw.js` dan versi script dashboard ke `dashboard.js?v=8` pada `dashboard.html`.
+
+---
+
+## 🔒 Pengamanan Kredensial WhatsApp Gateway via Serverless Netlify Function (4 November 2026)
+- **Tujuan**: Mencegah kebocoran token Fonnte WhatsApp SuperAdmin dari inspeksi publik (F12 / View Source) di halaman landing page (`index.html`) dan portal SuperAdmin (`superadmin.js`).
+- **Implementasi yang Diterapkan**:
+  1. **Pembuatan Serverless Backend (`netlify/functions/send-wa.js`)**:
+     - Membangun endpoint serverless `/api/send-wa` yang berjalan di cloud Netlify.
+     - Token Fonnte diambil dari environment variable `process.env.FONNTE_TOKEN` di server, sehingga tidak pernah terekspos ke browser pengguna.
+  2. **Pembersihan Kode Frontend (`index.html` & `superadmin.js`)**:
+     - Menghapus konstanta `FONNTE_TOKEN` dari kode JavaScript browser.
+     - Mengubah fungsi `sendFonnteMessage(targetPhone, message)` agar mengirim permintaan ke proxy backend `/api/send-wa`.
+     - Siapapun yang memeriksa kode sumber halaman publik tidak akan lagi dapat melihat token Fonnte.
+  3. **Konfigurasi Routing Netlify (`netlify.toml`)**:
+     - Menambahkan konfigurasi `functions = "netlify/functions"` dan rewrite rule `from = "/api/send-wa" to = "/.netlify/functions/send-wa"`.

@@ -1,7 +1,6 @@
 import { supabase } from './supabase-client.js';
 
 // Konfigurasi Notifikasi & Owner
-const FONNTE_TOKEN = 'q3yqhiRwa2UXzpwGydZ2';
 const OWNER_DANA = '089609497390 (a.n. Taufiq Aziz)';
 const OWNER_WA = '0819-1417-0701';
 
@@ -145,29 +144,27 @@ const getExpiryInfo = (isoStr) => {
     }
 };
 
-// Kirim WhatsApp via API Fonnte
+// Kirim WhatsApp via Backend API Serverless
 async function sendFonnteMessage(targetPhone, message) {
     const cleanPhone = normalizePhone(targetPhone);
     if (!cleanPhone || cleanPhone.length < 9) {
         throw new Error('Nomor WhatsApp tujuan tidak valid. Masukkan nomor minimal 9 digit (contoh: 08123456789 atau 628123456789).');
     }
 
-    const formData = new FormData();
-    formData.append('target', cleanPhone);
-    formData.append('message', message);
-    formData.append('countryCode', '62');
-
-    const res = await fetch('https://api.fonnte.com/send', {
+    const res = await fetch('/api/send-wa', {
         method: 'POST',
         headers: {
-            'Authorization': FONNTE_TOKEN
+            'Content-Type': 'application/json'
         },
-        body: formData
+        body: JSON.stringify({
+            target: cleanPhone,
+            message: message
+        })
     });
 
     const data = await res.json();
     if (!res.ok || (data.status === false)) {
-        throw new Error(data.reason || data.message || 'Gagal mengirim pesan via Fonnte API.');
+        throw new Error(data.reason || data.message || data.error || 'Gagal mengirim pesan via WhatsApp Gateway.');
     }
 
     return data;
