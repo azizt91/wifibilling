@@ -1,9 +1,12 @@
 import { supabase } from './supabase-client.js';
+import { requireRole, initLogout } from './auth.js';
 import { getCurrentAdminName, showNotificationResult, sendCustomerPaymentNotification } from './whatsapp-notification.js'; // Pastikan `sendCustomerPaymentNotification` ada di sini
 import { receiptPrinter } from './receipt-printer.js';
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    requireRole('ADMIN');
+    initLogout('desktop-logout-btn');
 
     // ===============================================
     // State Management & Global Variables
@@ -41,6 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalContainer = document.getElementById('total-container');
     const totalDisplay = document.getElementById('total-display');
     const filterInfo = document.getElementById('filter-info');
+
+    // Desktop button bindings
+    const desktopCreateInvoiceBtn = document.getElementById('desktop-create-invoice-btn');
+    if (desktopCreateInvoiceBtn && addInvoiceBtn) {
+        desktopCreateInvoiceBtn.addEventListener('click', () => {
+            addInvoiceBtn.click();
+        });
+    }
+
+    const desktopFilterBtn = document.getElementById('desktop-filter-btn');
+    if (desktopFilterBtn && filterModal) {
+        desktopFilterBtn.addEventListener('click', () => {
+            filterModal.classList.remove('hidden');
+        });
+    }
+
 
     // Detail view elements - akan diinisialisasi saat dibutuhkan
     let detailCustomerName, detailCustomerId, detailCustomerWhatsapp,
@@ -548,16 +567,28 @@ document.addEventListener('DOMContentLoaded', () => {
         paidTab.classList.remove('active');
 
         // Aktifkan tab yang dipilih
+        const desktopInvoiceBadge = document.getElementById('desktop-invoice-badge');
+        const dFilterBtn = document.getElementById('desktop-filter-btn');
+        const dCreateBtn = document.getElementById('desktop-create-invoice-btn');
+
         if (tab === 'unpaid') {
             unpaidTab.classList.add('active');
             if (addInvoiceBtn) addInvoiceBtn.style.display = 'flex';
+            if (dCreateBtn) dCreateBtn.classList.remove('hidden');
+            if (dFilterBtn) dFilterBtn.classList.add('hidden');
+            if (desktopInvoiceBadge) desktopInvoiceBadge.textContent = `${unpaidData.length} Belum Bayar`;
         } else if (tab === 'installment') {
             installmentTab.classList.add('active');
             if (addInvoiceBtn) addInvoiceBtn.style.display = 'none';
+            if (dCreateBtn) dCreateBtn.classList.add('hidden');
+            if (dFilterBtn) dFilterBtn.classList.add('hidden');
+            if (desktopInvoiceBadge) desktopInvoiceBadge.textContent = `${installmentData.length} Cicilan`;
         } else if (tab === 'paid') {
             paidTab.classList.add('active');
             if (addInvoiceBtn) addInvoiceBtn.style.display = 'none';
-            // Show filter button only on paid tab
+            if (dCreateBtn) dCreateBtn.classList.add('hidden');
+            if (dFilterBtn) dFilterBtn.classList.remove('hidden');
+            if (desktopInvoiceBadge) desktopInvoiceBadge.textContent = `${filteredPaidData.length} Lunas`;
             if (filterBtn) filterBtn.classList.remove('hidden');
         }
 
@@ -924,10 +955,10 @@ Menunggu jeda aman ${delaySec} detik sebelum nomor berikutnya...`);
             }
 
             invoiceList.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-12 px-4">
-                    <img src="assets/no_data.svg" alt="No Data" class="w-64 h-64 mb-4 opacity-80">
-                    <p class="text-center text-gray-500 text-base font-medium">${message}</p>
-                    <p class="text-center text-gray-400 text-sm mt-2">${submessage}</p>
+                <div class="col-span-full flex flex-col items-center justify-center py-12 px-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+                    <img src="assets/no_data.svg" alt="No Data" class="w-48 h-48 mb-4 opacity-80">
+                    <p class="text-center text-slate-700 text-base font-bold">${message}</p>
+                    <p class="text-center text-slate-400 text-xs mt-1">${submessage}</p>
                 </div>
             `;
             return;
@@ -946,7 +977,7 @@ Menunggu jeda aman ${delaySec} detik sebelum nomor berikutnya...`);
             const pillClasses = getMonthPillClass(period);
             const invoiceDiv = document.createElement('div');
             invoiceDiv.id = `invoice-item-${invoiceId}`;
-            invoiceDiv.className = 'flex items-center gap-4 bg-[#f9f8fb] px-4 min-h-[72px] py-2 justify-between border-b border-gray-200';
+            invoiceDiv.className = 'group flex items-center gap-3.5 bg-white p-3.5 sm:p-4 rounded-xl md:rounded-2xl border border-slate-200/80 hover:border-brand-300 hover:shadow-md transition-all duration-150 justify-between';
 
             if (currentTab === 'unpaid') {
                 const broadcastCount = item.broadcast_count || 0;

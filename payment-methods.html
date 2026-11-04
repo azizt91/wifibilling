@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Metode Pembayaran - WiFi Billing System</title>
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#f9f8fb">
+    <meta name="theme-color" content="#5324e0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="WiFi Billing System">
@@ -17,190 +17,284 @@
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
     <link rel="stylesheet" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-    <!-- Mobile-First Layout Helper -->
-    <style id="mobile-first-styles">
-        html {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
-            background-attachment: fixed !important;
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#683fe4',
+              700: '#5324e0',
+              800: '#4c1d95',
+              900: '#3b0764',
+            }
+          }
         }
-        body {
-            max-width: 480px !important;
-            margin: 0 auto !important;
-            min-height: 100vh !important;
-            position: relative !important;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3) !important;
-            background-color: #ffffff;
-        }
-        /* Override fixed positioning for mobile wrapper */
-        .fixed {
-            position: fixed !important;
-            max-width: 480px !important;
-            left: 50% !important;
-            right: auto !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-        }
-        /* Ensure overlay modals and loading elements still cover the whole mobile area */
-        .fixed.inset-0 {
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-            max-width: 480px !important;
-        }
-    </style>
-
+      }
+    }
+    </script>
 </head>
-<body>
-    <!-- Header List View (Sticky) -->
-    <header id="payment-methods-header" class="flex items-center bg-white p-4 justify-between border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <button id="payment-methods-back-btn" class="text-[#110e1b] flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-gray-100 rounded-full transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+<body class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-brand-500 selection:text-white" style='font-family: Manrope, "Noto Sans", sans-serif; overflow-x: hidden;'>
+
+    <!-- Top Desktop Navigation Bar (Only visible on md screens and up) -->
+    <header class="hidden md:block sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <!-- Brand / Logo -->
+            <div class="flex items-center gap-3">
+                <div id="desktop-brand-logo" class="desktop-brand-logo w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 id="desktop-brand-title" class="desktop-brand-title font-extrabold text-slate-900 text-base leading-tight">WiFi Billing</h1>
+                    <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200 uppercase tracking-wider">Panel Admin</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex items-center gap-1">
+                <a href="dashboard.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Dasbor</a>
+                <a href="pelanggan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pelanggan</a>
+                <a href="tagihan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Tagihan</a>
+                <a href="pengeluaran.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pengeluaran</a>
+                <a href="laporan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Laporan</a>
+                <a href="paket.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Paket</a>
+                <a href="app-settings.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 transition">Pengaturan</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+                <a href="notifikasi.html" class="relative p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition" title="Notifikasi">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span class="notification-badge-count hidden absolute -top-0.5 -right-0.5 min-w-[1.125rem] h-4.5 px-1 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center border-2 border-white shadow-xs">0</span>
+                </a>
+                <a href="profile.html" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition" title="Profil Admin">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </a>
+                <button type="button" id="desktop-logout-btn" title="Keluar / Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Header List View Mobile (< md) -->
+    <header id="payment-methods-header" class="flex md:hidden items-center bg-white p-4 justify-between border-b border-slate-200/80 shadow-xs sticky top-0 z-30">
+        <button id="payment-methods-back-btn" class="text-slate-700 flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-slate-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
         </button>
-        <h2 class="text-[#110e1b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Metode Pembayaran</h2>
+        <h2 class="text-slate-900 text-base font-bold leading-tight tracking-tight flex-1 text-center">Metode Pembayaran</h2>
         <div class="w-10"></div>
     </header>
 
-    <!-- Header Form View (Sticky) -->
-    <header id="payment-form-header" class="hidden flex items-center bg-white p-4 justify-between border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <button id="payment-form-back-btn" class="text-[#110e1b] flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-gray-100 rounded-full transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+    <!-- Header Form View Mobile (< md) -->
+    <header id="payment-form-header" class="hidden flex md:hidden items-center bg-white p-4 justify-between border-b border-slate-200/80 shadow-xs sticky top-0 z-30">
+        <button id="payment-form-back-btn" class="text-slate-700 flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-slate-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
         </button>
-        <h2 id="payment-form-title" class="text-[#110e1b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Tambah Bank Baru</h2>
+        <h2 id="payment-form-title" class="text-slate-900 text-base font-bold leading-tight tracking-tight flex-1 text-center">Tambah Bank Baru</h2>
         <div class="w-10"></div>
     </header>
 
-    <div class="relative flex h-auto min-h-screen w-full flex-col bg-[#f9f8fb] justify-between group/design-root overflow-x-hidden" style='font-family: Manrope, "Noto Sans", sans-serif;'>
-        
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20">
+
         <!-- Payment Methods List View -->
         <div id="payment-methods-view">
-            <main class="flex-1 pb-6">
-                <div class="p-4 space-y-4">
-                    <!-- Section: QRIS Payment -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-[#110e1b] font-semibold flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                                    viewBox="0 0 256 256">
-                                    <path
-                                        d="M104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm0,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48ZM200,40H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-64,72V152a16,16,0,0,1,16-16h8a8,8,0,0,1,0,16h-8v24h24V160a8,8,0,0,1,16,0v16h8a8,8,0,0,1,0,16h-8v8a8,8,0,0,1-16,0v-8H160v8a8,8,0,0,1-16,0v-8h-8A8,8,0,0,1,136,176Z">
-                                    </path>
+            
+            <!-- Desktop Header Bar (>= md) -->
+            <div class="hidden md:flex items-center justify-between mb-6">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <a href="app-settings.html" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition" title="Kembali ke Pengaturan">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+                        </a>
+                        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Metode Pembayaran & QRIS</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200">Pengaturan Pembayaran</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-1 pl-11">Atur QRIS statis dan rekening bank/e-wallet untuk instruksi pembayaran tagihan pelanggan</p>
+                </div>
+                <button id="desktop-add-payment-btn" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs rounded-xl shadow-md shadow-brand-500/25 hover:from-brand-700 hover:to-indigo-700 transition-all active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Tambah Bank Baru
+                </button>
+            </div>
+
+            <!-- 2-Column Responsive Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-start">
+                
+                <!-- Left Card: QRIS Payment (5 cols on lg) -->
+                <div class="lg:col-span-5 bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-purple-50 text-brand-600 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                    <path d="M104,40H56A16,16,0,0,0,40,56v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,104,40Zm0,64H56V56h48v48Zm0,32H56a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V152A16,16,0,0,0,104,136Zm0,64H56V152h48v48ZM200,40H152a16,16,0,0,0-16,16v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V56A16,16,0,0,0,200,40Zm0,64H152V56h48v48Zm-64,72V152a16,16,0,0,1,16-16h8a8,8,0,0,1,0,16h-8v24h24V160a8,8,0,0,1,16,0v16h8a8,8,0,0,1,0,16h-8v8a8,8,0,0,1-16,0v-8H160v8a8,8,0,0,1-16,0v-8h-8A8,8,0,0,1,136,176Z"></path>
                                 </svg>
-                                Pembayaran QRIS
-                            </h3>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input id="show-qris-input" type="checkbox" class="sr-only peer" checked>
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#683fe4]"></div>
-                            </label>
+                            </div>
+                            <h3 class="text-slate-900 font-bold text-base">Pembayaran QRIS</h3>
                         </div>
-                        <p class="text-xs text-gray-500 mb-3">Tampilkan kode QRIS kepada pelanggan saat checkout pembayaran.</p>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input id="show-qris-input" type="checkbox" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                        </label>
+                    </div>
 
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#683fe4] transition-colors bg-[#f9f8fb]">
-                            <label for="qris-upload" class="cursor-pointer block">
-                                <div class="flex flex-col items-center gap-2">
-                                    <img id="qris-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='300' height='300' fill='%23f8f9fa' rx='16'/><rect x='20' y='20' width='260' height='260' fill='none' stroke='%23cbd5e1' stroke-width='4' stroke-dasharray='8 8' rx='12'/><path d='M70 70h50v50H70zm20 20h10v10H90zm90-20h50v50h-50zm20 20h10v10h-10zm-110 90h50v50H70zm20 20h10v10H90zm70-40h20v20h-20zm30 0h20v20h-20zm-30 30h20v20h-20zm30 30h20v20h-20zm-30 0h20v20h-20z' fill='%2364748b'/><text x='50%' y='62%' text-anchor='middle' fill='%23475569' font-size='14' font-weight='bold' font-family='sans-serif'>BELUM ADA QRIS</text><text x='50%' y='70%' text-anchor='middle' fill='%2394a3b8' font-size='11' font-family='sans-serif'>Klik untuk upload QRIS</text></svg>" alt="QRIS Preview"
-                                        class="w-36 h-36 object-contain rounded-lg border border-gray-200 bg-white shadow-sm p-1">
-                                    <div class="text-center">
-                                        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#683fe4] hover:underline">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a12,12,0,1,1-12-12A12,12,0,0,1,176,88ZM64,168a8,8,0,0,1,8-8h112a8,8,0,0,1,6.4,12.8l-24,32a8,8,0,0,1-12.8,0L136,178.67l-17.6,23.47A8,8,0,0,1,112,208H72A8,8,0,0,1,64,168Z"></path></svg>
-                                            Ganti Gambar QRIS
-                                        </span>
-                                        <p class="text-xs text-gray-400 mt-0.5">Format JPG/PNG, maks 2MB</p>
-                                    </div>
+                    <p class="text-xs text-slate-500 mb-4">Tampilkan kode QRIS dinamis/statis kepada pelanggan saat proses pembayaran tagihan.</p>
+
+                    <!-- QRIS Upload Area -->
+                    <div class="border-2 border-dashed border-slate-200 rounded-2xl p-5 hover:border-brand-500 transition-colors bg-slate-50/70 text-center">
+                        <label for="qris-upload" class="cursor-pointer block">
+                            <div class="flex flex-col items-center gap-3">
+                                <img id="qris-preview" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'><rect width='300' height='300' fill='%23f8f9fa' rx='16'/><rect x='20' y='20' width='260' height='260' fill='none' stroke='%23cbd5e1' stroke-width='4' stroke-dasharray='8 8' rx='12'/><path d='M70 70h50v50H70zm20 20h10v10H90zm90-20h50v50h-50zm20 20h10v10h-10zm-110 90h50v50H70zm20 20h10v10H90zm70-40h20v20h-20zm30 0h20v20h-20zm-30 30h20v20h-20zm30 30h20v20h-20zm-30 0h20v20h-20z' fill='%2364748b'/><text x='50%' y='62%' text-anchor='middle' fill='%23475569' font-size='14' font-weight='bold' font-family='sans-serif'>BELUM ADA QRIS</text><text x='50%' y='70%' text-anchor='middle' fill='%2394a3b8' font-size='11' font-family='sans-serif'>Klik untuk upload QRIS</text></svg>" alt="QRIS Preview" class="w-48 h-48 object-contain rounded-xl border border-slate-200 bg-white shadow-xs p-2 mx-auto">
+                                <div>
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 shadow-xs rounded-xl text-xs font-bold text-brand-700 hover:bg-brand-50 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a12,12,0,1,1-12-12A12,12,0,0,1,176,88ZM64,168a8,8,0,0,1,8-8h112a8,8,0,0,1,6.4,12.8l-24,32a8,8,0,0,1-12.8,0L136,178.67l-17.6,23.47A8,8,0,0,1,112,208H72A8,8,0,0,1,64,168Z"></path></svg>
+                                        Pilih Gambar QRIS Baru
+                                    </span>
+                                    <p class="text-[11px] text-slate-400 mt-1">Mendukung format PNG / JPG / JPEG (Maks. 2MB)</p>
                                 </div>
-                                <input id="qris-upload" type="file" class="hidden" accept="image/png,image/jpeg,image/jpg" />
-                            </label>
+                            </div>
+                            <input id="qris-upload" type="file" class="hidden" accept="image/png,image/jpeg,image/jpg" />
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Right Card: Bank Accounts & E-Wallet (7 cols on lg) -->
+                <div class="lg:col-span-7 bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                    <path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-slate-900 font-bold text-base">Rekening Bank & E-Wallet</h3>
+                                <p class="text-xs text-slate-500">Daftar tujuan transfer manual pelanggan</p>
+                            </div>
                         </div>
+
+                        <!-- Mobile Add Button -->
+                        <button id="add-payment-btn" class="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white font-bold text-xs rounded-xl shadow-xs hover:bg-brand-700">
+                            + Tambah Bank
+                        </button>
                     </div>
 
-                    <!-- Header for Bank Accounts -->
-                    <div class="flex items-center justify-between pt-2">
-                        <h4 class="text-sm font-bold text-[#110e1b]">Transfer Bank & E-Wallet</h4>
-                    </div>
-
-                    <!-- Add New Button -->
-                    <button id="add-payment-btn" class="w-full flex items-center justify-center gap-2 rounded-lg h-12 px-5 bg-[#683fe4] text-white text-base font-bold hover:bg-[#501ee6] transition-colors shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
-                        <span>Tambah Bank Baru</span>
-                    </button>
-
-                    <!-- Payment Methods List -->
+                    <!-- Payment Methods Dynamic List -->
                     <div id="payment-methods-list" class="space-y-3">
-                        <!-- Will be populated dynamically -->
+                        <!-- Populated dynamically by JS -->
                     </div>
 
                     <!-- Empty State -->
                     <div id="empty-state" class="hidden text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada metode pembayaran</h3>
-                        <p class="mt-1 text-sm text-gray-500">Mulai dengan menambahkan bank atau e-wallet</p>
+                        <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
+                            <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-1">Belum Ada Rekening Bank</h4>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Tambahkan rekening bank atau e-wallet untuk menerima pembayaran dari pelanggan.</p>
                     </div>
                 </div>
-            </main>
+
+            </div>
         </div>
 
         <!-- Payment Method Form View (Add/Edit) -->
-        <div id="payment-method-form-view" class="hidden">
-            <main class="flex-1 pb-6">
-                <div class="p-4 space-y-4">
-                    <!-- Form -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nama Bank/E-Wallet *</p>
-                            <input id="pm-bank-name" type="text" class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm" placeholder="BCA, BNI, DANA, GoPay, dll" required />
-                        </label>
+        <div id="payment-method-form-view" class="hidden max-w-xl mx-auto">
+            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 md:p-8">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+                    <button id="desktop-payment-form-back-btn" class="text-slate-600 flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-slate-100 rounded-xl transition-colors" title="Kembali">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path>
+                        </svg>
+                    </button>
+                    <h3 id="desktop-payment-form-title" class="text-lg font-extrabold text-slate-900 text-center flex-1">Tambah Bank Baru</h3>
+                    <div class="w-10"></div>
+                </div>
 
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nomor Rekening *</p>
-                            <input id="pm-account-number" type="text" class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm" placeholder="1234567890" required />
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nama Pemilik *</p>
-                            <input id="pm-account-holder" type="text" class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm" placeholder="Nama Pemilik Rekening" required />
-                        </label>
-
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Urutan Tampilan</p>
-                            <input id="pm-sort-order" type="number" class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm" placeholder="1" min="1" />
-                            <small class="text-xs text-gray-400 mt-1">Urutan tampilan di halaman customer (1 = paling atas)</small>
-                        </label>
-
-                        <label class="flex items-center gap-2">
-                            <input id="pm-is-active" type="checkbox" class="w-4 h-4 text-[#683fe4] border-gray-300 rounded focus:ring-[#683fe4]" checked />
-                            <span class="text-sm text-gray-700">Aktif (tampilkan di halaman customer)</span>
-                        </label>
+                <!-- Form Controls -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Bank / E-Wallet <span class="text-rose-500">*</span></label>
+                        <input id="pm-bank-name" type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="Contoh: BCA, Mandiri, BRI, DANA, GoPay" required />
                     </div>
 
-                    <!-- Hidden field for edit mode -->
-                    <input id="pm-id" type="hidden" />
-
-                    <!-- Buttons -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="pm-cancel-btn" class="w-full rounded-lg h-12 px-5 bg-[#eae8f3] text-[#110e1b] text-base font-bold hover:bg-[#d6d0e7] transition-colors">BATAL</button>
-                        <button id="pm-save-btn" class="w-full rounded-lg h-12 px-5 bg-[#501ee6] text-[#f9f8fc] text-base font-bold hover:bg-[#3d14b8] transition-colors">SIMPAN</button>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nomor Rekening / No. HP E-Wallet <span class="text-rose-500">*</span></label>
+                        <input id="pm-account-number" type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5 font-mono" placeholder="1234567890" required />
                     </div>
 
-                    <!-- Delete Button (only shown in edit mode) -->
-                    <button id="pm-delete-btn" class="w-full rounded-lg h-12 px-5 bg-red-500 text-white text-base font-bold hover:bg-red-600 transition-colors hidden">
-                        HAPUS BANK
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Pemilik Rekening (A/N) <span class="text-rose-500">*</span></label>
+                        <input id="pm-account-holder" type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="Nama Pemilik Rekening" required />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Urutan Tampilan</label>
+                        <input id="pm-sort-order" type="number" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="1" min="1" />
+                        <small class="text-xs text-slate-400 mt-1 block">Urutan tampilan di halaman pelanggan (angka 1 = paling atas)</small>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input id="pm-is-active" type="checkbox" class="w-4 h-4 text-brand-600 border-slate-300 rounded focus:ring-brand-500" checked />
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Status Aktif</p>
+                                <p class="text-xs text-slate-500">Tampilkan rekening ini sebagai opsi pembayaran pelanggan</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Hidden field for edit mode -->
+                <input id="pm-id" type="hidden" />
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-6 mt-6 border-t border-slate-100">
+                    <button id="pm-cancel-btn" class="flex-1 px-5 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm hover:bg-slate-200 transition-colors">
+                        Batal
+                    </button>
+                    <button id="pm-save-btn" class="flex-1 px-5 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-sm hover:from-brand-700 hover:to-indigo-700 shadow-md shadow-brand-500/20 transition-all active:scale-95">
+                        Simpan Rekening
                     </button>
                 </div>
-            </main>
+
+                <!-- Delete Button (Only in edit mode) -->
+                <button id="pm-delete-btn" class="w-full mt-3 px-5 py-2.5 rounded-xl bg-rose-50 text-rose-700 font-bold text-xs hover:bg-rose-100 hover:text-rose-800 border border-rose-200 transition-colors hidden">
+                    🗑️ Hapus Rekening Ini
+                </button>
+            </div>
         </div>
 
-        <!-- Toast Notification -->
-        <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 invisible transition-all duration-300 z-50">
-            <p id="toast-message" class="text-sm font-medium"></p>
-        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed top-6 right-6 px-4 py-3 rounded-xl shadow-lg opacity-0 invisible transition-all duration-300 z-50 max-w-sm">
+        <p id="toast-message" class="text-sm font-medium"></p>
     </div>
 
     <!-- Scripts -->
     <script type="module" src="supabase-client.js"></script>
     <script type="module" src="apply-settings.js"></script>
     <script type="module" src="auth.js"></script>
-    <script type="module" src="payment-methods.js?v=2"></script>
+    <script type="module" src="payment-methods.js?v=3.1.0"></script>
 </body>
 </html>

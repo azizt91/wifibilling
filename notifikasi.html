@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifikasi - WiFi Billing System</title>
+    <title>Pusat Notifikasi - WiFi Billing System</title>
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#5324e0">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,76 +14,139 @@
     <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
     <link rel="apple-touch-icon" sizes="192x192" href="assets/logo_192x192.png">
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link rel="stylesheet" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style>
-        .notification-item:hover {
-            transform: translateX(4px);
-            background-color: #f0f5ff;
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#683fe4',
+              700: '#5324e0',
+              800: '#4c1d95',
+              900: '#3b0764',
+            }
+          }
         }
-    </style>
-
-    <!-- Mobile-First Layout Helper -->
-    <style id="mobile-first-styles">
-        html {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
-            background-attachment: fixed !important;
-        }
-        body {
-            max-width: 480px !important;
-            margin: 0 auto !important;
-            min-height: 100vh !important;
-            position: relative !important;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3) !important;
-            background-color: #ffffff;
-        }
-        /* Override fixed positioning for mobile wrapper */
-        .fixed {
-            position: fixed !important;
-            max-width: 480px !important;
-            left: 50% !important;
-            right: auto !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-        }
-        /* Ensure overlay modals and loading elements still cover the whole mobile area */
-        .fixed.inset-0 {
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-            max-width: 480px !important;
-        }
-    </style>
-
+      }
+    }
+    </script>
 </head>
-<body class="bg-gray-50">
-    <div class="relative flex h-screen w-full flex-col bg-[#f9f8fb] group/design-root overflow-x-hidden" style='font-family: Manrope, "Noto Sans", sans-serif;'>
-        <header class="flex items-center bg-white/95 backdrop-blur-sm p-4 justify-between shadow-md z-10">
-            <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
-            </a>
-            <h2 class="text-lg font-bold text-center flex-1">Pusat Notifikasi</h2>
-            <div class="w-6"></div>
-        </header>
+<body class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-brand-500 selection:text-white" style='font-family: Manrope, "Noto Sans", sans-serif; overflow-x: hidden;'>
 
-        <main class="flex-1 overflow-y-auto p-4 pb-24">
-                <div id="notification-list" class="space-y-3">
-                    </div>
-                <div class="flex gap-2 mt-6">
-                    <button id="mark-all-read" class="flex-1 text-center text-sm text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors">
-                        Tandai Semua Sudah Dibaca
-                    </button>
-                    <button id="clear-notifications" class="flex-1 text-center text-sm text-red-500 hover:text-red-700 font-semibold py-2 px-4 rounded-lg border border-red-200 hover:bg-red-50 transition-colors">
-                        Hapus Semua Notifikasi
-                    </button>
+    <!-- Top Desktop Navigation Bar (Only visible on md screens and up) -->
+    <header class="hidden md:block sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <!-- Brand / Logo -->
+            <div class="flex items-center gap-3">
+                <div id="desktop-brand-logo" class="desktop-brand-logo w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
                 </div>
-        </main>
+                <div>
+                    <h1 id="desktop-brand-title" class="desktop-brand-title font-extrabold text-slate-900 text-base leading-tight">WiFi Billing</h1>
+                    <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200 uppercase tracking-wider">Panel Admin</span>
+                </div>
+            </div>
 
-        <footer class="bg-white border-t z-50">
-             </footer>
-    </div>
+            <!-- Nav Links -->
+            <nav class="flex items-center gap-1">
+                <a href="dashboard.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Dasbor</a>
+                <a href="pelanggan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pelanggan</a>
+                <a href="tagihan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Tagihan</a>
+                <a href="pengeluaran.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pengeluaran</a>
+                <a href="laporan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Laporan</a>
+                <a href="paket.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Paket</a>
+                <a href="app-settings.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pengaturan</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+                <a href="notifikasi.html" class="relative p-2 text-brand-600 bg-brand-50 rounded-xl transition" title="Notifikasi (Halaman Ini)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </a>
+                <a href="profile.html" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition" title="Profil Admin">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </a>
+                <button type="button" id="desktop-logout-btn" title="Keluar / Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Header (< md) -->
+    <header class="flex md:hidden items-center bg-white p-4 justify-between border-b border-slate-200/80 shadow-xs sticky top-0 z-30">
+        <a href="dashboard.html" class="text-slate-700 flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-slate-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"></path></svg>
+        </a>
+        <h2 class="text-slate-900 text-base font-bold leading-tight tracking-tight flex-1 text-center">Pusat Notifikasi</h2>
+        <div class="w-10"></div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20">
+
+        <!-- Desktop Header Bar (>= md) -->
+        <div class="hidden md:flex items-center justify-between mb-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Pusat Notifikasi & Log Aktivitas</h2>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200">Aktivitas</span>
+                </div>
+                <p class="text-sm text-slate-500 mt-1">Pantau pemberitahuan sistem, konfirmasi pembayaran, dan aktivitas transaksi pelanggan</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <button id="desktop-mark-all-read" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white border border-slate-200/80 text-brand-700 font-bold text-xs rounded-xl shadow-xs hover:bg-brand-50 hover:border-brand-200 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Tandai Semua Dibaca
+                </button>
+                <button id="desktop-clear-notifications" class="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white border border-slate-200/80 text-rose-600 font-bold text-xs rounded-xl shadow-xs hover:bg-rose-50 hover:border-rose-200 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Hapus Semua
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Action Buttons -->
+        <div class="flex gap-2.5 mb-4 md:hidden">
+            <button id="mark-all-read" class="flex-1 h-10 rounded-xl bg-white border border-slate-200 text-brand-700 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs hover:bg-brand-50 transition-colors">
+                ✓ Tandai Semua Dibaca
+            </button>
+            <button id="clear-notifications" class="flex-1 h-10 rounded-xl bg-white border border-slate-200 text-rose-600 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs hover:bg-rose-50 transition-colors">
+                🗑️ Hapus Semua
+            </button>
+        </div>
+
+        <!-- Notification List -->
+        <div id="notification-list" class="space-y-3">
+            <!-- Populated dynamically by notifikasi.js -->
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
     <script type="module" src="supabase-client.js"></script>
     <script type="module" src="apply-settings.js"></script>
-    <script type="module" src="notifikasi.js"></script>
+    <script type="module" src="notifikasi.js?v=2.1.0"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // payment-methods.js - Payment Methods Management (CRUD)
 import { supabase } from './supabase-client.js';
-import { requireRole } from './auth.js';
+import { requireRole, initLogout } from './auth.js';
 
 export default class PaymentMethodsManager {
     constructor() {
@@ -10,24 +10,31 @@ export default class PaymentMethodsManager {
     }
 
     init() {
+        initLogout('desktop-logout-btn');
         this.initializeEventListeners();
         this.loadQrisSettings();
         this.loadPaymentMethods(); // Load immediately on page load
     }
 
     initializeEventListeners() {
-        // Back button from list view - go to profile.html
+        // Back button from list view - go to app-settings.html
         document.getElementById('payment-methods-back-btn')?.addEventListener('click', () => {
-            window.location.href = 'profile.html';
+            window.location.href = 'app-settings.html';
         });
 
         // Back button from form view - go back to list view
         document.getElementById('payment-form-back-btn')?.addEventListener('click', () => {
             this.hideFormView();
         });
+        document.getElementById('desktop-payment-form-back-btn')?.addEventListener('click', () => {
+            this.hideFormView();
+        });
 
         // Add new payment method
         document.getElementById('add-payment-btn')?.addEventListener('click', () => {
+            this.showAddForm();
+        });
+        document.getElementById('desktop-add-payment-btn')?.addEventListener('click', () => {
             this.showAddForm();
         });
 
@@ -80,7 +87,7 @@ export default class PaymentMethodsManager {
 
     hidePaymentMethodsView() {
         // Not needed on separate page - just navigate
-        window.location.href = 'profile.html';
+        window.location.href = 'app-settings.html';
     }
 
     showAddForm() {
@@ -88,14 +95,17 @@ export default class PaymentMethodsManager {
         this.resetForm();
         
         // Set title to "Tambah"
-        document.getElementById('payment-form-title').textContent = 'Tambah Bank Baru';
+        const titleMobile = document.getElementById('payment-form-title');
+        const titleDesktop = document.getElementById('desktop-payment-form-title');
+        if (titleMobile) titleMobile.textContent = 'Tambah Bank Baru';
+        if (titleDesktop) titleDesktop.textContent = 'Tambah Bank Baru';
         
         // Hide delete button (add mode)
-        document.getElementById('pm-delete-btn').classList.add('hidden');
+        document.getElementById('pm-delete-btn')?.classList.add('hidden');
         
         // Hide list view, show form view
-        document.getElementById('payment-methods-view').classList.add('hidden');
-        document.getElementById('payment-method-form-view').classList.remove('hidden');
+        document.getElementById('payment-methods-view')?.classList.add('hidden');
+        document.getElementById('payment-method-form-view')?.classList.remove('hidden');
         // Toggle headers
         document.getElementById('payment-methods-header')?.classList.add('hidden');
         document.getElementById('payment-form-header')?.classList.remove('hidden');
@@ -114,10 +124,13 @@ export default class PaymentMethodsManager {
         document.getElementById('pm-is-active').checked = method.is_active;
         
         // Set title to "Edit"
-        document.getElementById('payment-form-title').textContent = 'Edit Bank';
+        const titleMobile = document.getElementById('payment-form-title');
+        const titleDesktop = document.getElementById('desktop-payment-form-title');
+        if (titleMobile) titleMobile.textContent = 'Edit Rekening Bank';
+        if (titleDesktop) titleDesktop.textContent = 'Edit Rekening Bank';
         
         // Show delete button (edit mode)
-        document.getElementById('pm-delete-btn').classList.remove('hidden');
+        document.getElementById('pm-delete-btn')?.classList.remove('hidden');
         
         // Hide list view, show form view
         document.getElementById('payment-methods-view').classList.add('hidden');
@@ -185,22 +198,24 @@ export default class PaymentMethodsManager {
         }
 
         container.innerHTML = methods.map(method => `
-            <div class="flex items-start gap-3 bg-white px-4 py-3 rounded-lg border ${method.is_active ? 'border-gray-200' : 'border-gray-300 bg-gray-50'} cursor-pointer hover:border-[#683fe4] transition-colors" onclick="window.paymentMethodsManager.showEditForm(${JSON.stringify(method).replace(/"/g, '&quot;')})">
-                <div class="text-[#110e1b] flex items-center justify-center rounded-lg bg-[#f0f2f4] shrink-0 size-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
+            <div class="flex items-center gap-3.5 bg-white p-4 rounded-xl border ${method.is_active ? 'border-slate-200/80 hover:border-brand-300 shadow-xs' : 'border-slate-200 bg-slate-50/60 opacity-75'} cursor-pointer hover:shadow-md transition-all group" onclick="window.paymentMethodsManager.showEditForm(${JSON.stringify(method).replace(/"/g, '&quot;')})">
+                <div class="text-brand-600 flex items-center justify-center rounded-xl bg-brand-50 shrink-0 size-11 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor" viewBox="0 0 256 256">
                         <path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Z"></path>
                     </svg>
                 </div>
-                <div class="flex flex-col flex-1">
-                    <div class="flex items-center gap-2">
-                        <p class="text-[#110e1b] text-sm font-semibold leading-normal">${method.bank_name}</p>
-                        ${!method.is_active ? '<span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Nonaktif</span>' : ''}
+                <div class="flex flex-col flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <p class="text-slate-900 text-sm font-bold truncate group-hover:text-brand-600 transition-colors">${method.bank_name}</p>
+                        ${method.is_active 
+                            ? '<span class="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">Aktif</span>'
+                            : '<span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">Nonaktif</span>'
+                        }
                     </div>
-                    <p class="text-[#110e1b] text-sm font-normal leading-normal">${method.account_number}</p>
-                    <p class="text-[#110e1b] text-sm font-normal leading-normal">${method.account_holder}</p>
-                    <p class="text-gray-500 text-xs mt-1">Urutan: ${method.sort_order || '-'}</p>
+                    <p class="text-slate-900 text-sm font-mono font-bold tracking-tight">${method.account_number}</p>
+                    <p class="text-slate-500 text-xs mt-0.5 truncate">A/N: ${method.account_holder} <span class="text-slate-300">|</span> Urutan: ${method.sort_order || '-'}</p>
                 </div>
-                <svg class="text-gray-400" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
+                <svg class="text-slate-400 group-hover:text-brand-600 group-hover:translate-x-1 transition-all" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor" viewBox="0 0 256 256">
                     <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
                 </svg>
             </div>

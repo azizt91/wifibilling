@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengaturan Aplikasi - WiFi Billing System</title>
-    <link rel="icon" type="image/png" href="assets/logo_192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/logo_512x512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/logo_192x192.png">
     <link rel="manifest" href="manifest.json">
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#5324e0">
@@ -16,195 +17,256 @@
     <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
         href="https://fonts.googleapis.com/css2?display=swap&family=Manrope%3Awght%40400%3B500%3B700%3B800&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-    <!-- Mobile-First Layout Helper -->
-    <style id="mobile-first-styles">
-        html {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
-            background-attachment: fixed !important;
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#683fe4',
+              700: '#5324e0',
+              800: '#4c1d95',
+              900: '#3b0764',
+            }
+          }
         }
-
-        body {
-            max-width: 480px !important;
-            margin: 0 auto !important;
-            min-height: 100vh !important;
-            position: relative !important;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3) !important;
-            background-color: #ffffff;
-        }
-
-        /* Override fixed positioning for mobile wrapper */
-        .fixed {
-            position: fixed !important;
-            max-width: 480px !important;
-            left: 50% !important;
-            right: auto !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-        }
-
-        /* Ensure overlay modals and loading elements still cover the whole mobile area */
-        .fixed.inset-0 {
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: 100% !important;
-            max-width: 480px !important;
-        }
-    </style>
-
+      }
+    }
+    </script>
 </head>
 
-<body>
-    <!-- Header (Sticky) -->
-    <header class="flex items-center bg-white p-4 justify-between border-b border-gray-200 shadow-sm sticky top-0 z-50">
+<body class="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-brand-500 selection:text-white" style='font-family: Manrope, "Noto Sans", sans-serif; overflow-x: hidden;'>
+
+    <!-- Top Desktop Navigation Bar (Only visible on md screens and up) -->
+    <header class="hidden md:block sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <!-- Brand / Logo -->
+            <div class="flex items-center gap-3">
+                <div id="desktop-brand-logo" class="desktop-brand-logo w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 id="desktop-brand-title" class="desktop-brand-title font-extrabold text-slate-900 text-base leading-tight">WiFi Billing</h1>
+                    <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200 uppercase tracking-wider">Panel Admin</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex items-center gap-1">
+                <a href="dashboard.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Dasbor</a>
+                <a href="pelanggan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pelanggan</a>
+                <a href="tagihan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Tagihan</a>
+                <a href="pengeluaran.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Pengeluaran</a>
+                <a href="laporan.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Laporan</a>
+                <a href="paket.html" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition">Paket</a>
+                <a href="app-settings.html" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-50 text-brand-700 transition">Pengaturan</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+                <a href="notifikasi.html" class="relative p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition" title="Notifikasi">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span class="notification-badge-count hidden absolute -top-0.5 -right-0.5 min-w-[1.125rem] h-4.5 px-1 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center border-2 border-white shadow-xs">0</span>
+                </a>
+                <a href="profile.html" class="p-2 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-xl transition" title="Profil Admin">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </a>
+                <button type="button" id="desktop-logout-btn" title="Keluar / Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Header (Sticky on < md) -->
+    <header class="flex md:hidden items-center bg-white p-4 justify-between border-b border-slate-200/80 shadow-xs sticky top-0 z-30">
         <button id="settings-back-btn"
-            class="text-[#110e1b] flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-gray-100 rounded-full transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor"
+            class="text-slate-700 flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-slate-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor"
                 viewBox="0 0 256 256">
                 <path
                     d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z">
                 </path>
             </svg>
         </button>
-        <h2 class="text-[#110e1b] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Pengaturan
-            Aplikasi</h2>
+        <h2 class="text-slate-900 text-base font-bold leading-tight tracking-tight flex-1 text-center">Pengaturan Aplikasi</h2>
         <div class="w-10"></div>
     </header>
 
-    <div class="relative flex h-auto min-h-screen w-full flex-col bg-[#f9f8fb] justify-between group/design-root overflow-x-hidden"
-        style='font-family: Manrope, "Noto Sans", sans-serif;'>
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20">
 
-        <main class="flex-1 pb-6">
-            <div class="p-4 space-y-4">
+        <!-- Desktop Header Bar (>= md) -->
+        <div class="hidden md:flex items-center justify-between mb-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Pengaturan Aplikasi & Branding</h2>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200">Konfigurasi</span>
+                </div>
+                <p class="text-sm text-slate-500 mt-1">Sesuaikan identitas aplikasi, branding, template WhatsApp, dan integrasi teknis sistem</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+                <button id="desktop-cancel-btn" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200/80 text-slate-700 font-bold text-xs rounded-xl shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all">
+                    Batal
+                </button>
+                <button id="desktop-save-btn" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs rounded-xl shadow-md shadow-brand-500/25 hover:from-brand-700 hover:to-indigo-700 transition-all active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+
+        <!-- 2-Column Responsive Grid on Desktop -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 items-start">
+
+            <!-- LEFT COLUMN: Identitas, Branding, Kontak, Struk, Tema -->
+            <div class="space-y-5 md:space-y-6">
+
+                <!-- Section: Metode Pembayaran & QRIS -->
+                <div class="bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/30 p-5 md:p-6 rounded-2xl shadow-xs border border-emerald-200/90 relative overflow-hidden group hover:shadow-md hover:border-emerald-300 transition-all">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 flex-shrink-0 group-hover:scale-105 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22px" height="22px" fill="currentColor" viewBox="0 0 256 256">
+                                    <path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64Zm0,128H32V104H224v88Z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-slate-900 font-extrabold text-base leading-tight">Metode Pembayaran & QRIS</h3>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-wider">Keuangan</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Atur rekening bank (BCA, BRI, Mandiri, dll), e-wallet, dan QRIS statis untuk instruksi tagihan pelanggan</p>
+                            </div>
+                        </div>
+                        <a href="payment-methods.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-95 flex-shrink-0">
+                            <span>Kelola</span>
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Section: Informasi Aplikasi -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z">
-                            </path>
-                        </svg>
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path>
+                            </svg>
+                        </div>
                         Informasi Aplikasi
                     </h3>
-                    <div class="space-y-3">
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nama Aplikasi</p>
-                            <input id="app-name-input"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                placeholder="AI.NET" />
-                            <small class="text-xs text-gray-400 mt-1">Nama lengkap untuk judul browser & aplikasi</small>
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nama Pendek</p>
-                            <input id="app-short-name-input"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                placeholder="AI.NET" />
-                            <small class="text-xs text-gray-400 mt-1">Untuk home screen (max 12 karakter)</small>
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Deskripsi</p>
-                            <textarea id="app-description-input"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2 text-sm"
-                                rows="2" placeholder="Sistem manajemen pelanggan ISP"></textarea>
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Tagline</p>
-                            <input id="app-tagline-input"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                placeholder="Kelola pelanggan dengan mudah" />
-                            <small class="text-xs text-gray-400 mt-1">Muncul di halaman login</small>
-                        </label>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Aplikasi <span class="text-rose-500">*</span></label>
+                            <input id="app-name-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="AI.NET" />
+                            <small class="text-xs text-slate-400 mt-1 block">Nama lengkap untuk judul browser & aplikasi</small>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Pendek</label>
+                            <input id="app-short-name-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="AI.NET" />
+                            <small class="text-xs text-slate-400 mt-1 block">Untuk home screen smartphone (max 12 karakter)</small>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tagline</label>
+                            <input id="app-tagline-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="Kelola pelanggan dengan mudah" />
+                            <small class="text-xs text-slate-400 mt-1 block">Muncul di halaman login</small>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Deskripsi</label>
+                            <textarea id="app-description-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all p-3" rows="2" placeholder="Sistem manajemen pelanggan ISP"></textarea>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Section: Logo & Icon -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V158.75l-26.07-26.06a16,16,0,0,0-22.63,0l-20,20-44-44a16,16,0,0,0-22.62,0L40,149.37V56ZM40,172l52-52,80,80H40Zm176,28H194.63l-36-36,20-20L216,181.38V200ZM144,100a12,12,0,1,1,12,12A12,12,0,0,1,144,100Z">
-                            </path>
-                        </svg>
-                        Logo & Icon
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V158.75l-26.07-26.06a16,16,0,0,0-22.63,0l-20,20-44-44a16,16,0,0,0-22.62,0L40,149.37V56ZM40,172l52-52,80,80H40Zm176,28H194.63l-36-36,20-20L216,181.38V200ZM144,100a12,12,0,1,1,12,12A12,12,0,0,1,144,100Z"></path>
+                            </svg>
+                        </div>
+                        Logo & Icon Branding
                     </h3>
 
                     <!-- Logo Besar -->
-                    <div class="mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-2">Logo Besar</p>
-                        <div class="flex items-center gap-4 mb-2">
-                            <div
-                                class="w-20 h-20 rounded-lg border-2 border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden">
-                                <img id="logo-preview" src="assets/logo_192x192.png" alt="Logo"
-                                    class="w-full h-full object-contain p-2">
+                    <div class="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200/60">
+                        <p class="text-slate-800 text-xs font-bold uppercase tracking-wider mb-2">Logo Besar (Login / Dashboard)</p>
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-20 h-20 rounded-xl border border-slate-200 flex items-center justify-center bg-white overflow-hidden shadow-xs">
+                                <img id="logo-preview" src="assets/logo_512x512.png" alt="Logo" class="w-full h-full object-contain p-2">
                             </div>
                             <div class="flex-1">
-                                <p class="text-xs text-gray-600">Untuk halaman login/register</p>
-                                <p class="text-xs text-gray-400">512x512px (PNG/JPG)</p>
+                                <p class="text-xs font-semibold text-slate-700">Untuk halaman login, header, dan struk</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Rekomendasi 512x512px (Format PNG/JPG transparan)</p>
                             </div>
                         </div>
                         <input type="file" id="logo-upload" accept="image/png,image/jpeg,.png,.jpg" class="hidden">
-                        <label for="logo-upload"
-                            class="inline-block w-full text-center px-3 py-2 bg-[#eae8f3] text-[#683fe4] rounded-lg text-sm font-semibold hover:bg-[#d6d0e7] transition-colors cursor-pointer">
-                            Upload Logo
+                        <label for="logo-upload" class="inline-flex items-center justify-center gap-2 w-full px-3 py-2 bg-white text-brand-700 font-bold rounded-xl text-xs hover:bg-brand-50 transition-colors cursor-pointer border border-slate-200 shadow-xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            Pilih File Logo Baru
                         </label>
                     </div>
 
                     <!-- Favicon -->
-                    <div class="mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-2">Favicon</p>
-                        <div class="flex items-center gap-4 mb-2">
-                            <div
-                                class="w-12 h-12 rounded border-2 border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden">
-                                <img id="favicon-preview" src="assets/logo_192x192.png" alt="Favicon"
-                                    class="w-full h-full object-cover">
+                    <div class="mb-5 p-4 rounded-xl bg-slate-50 border border-slate-200/60">
+                        <p class="text-slate-800 text-xs font-bold uppercase tracking-wider mb-2">Favicon Browser</p>
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-12 h-12 rounded-lg border border-slate-200 flex items-center justify-center bg-white overflow-hidden shadow-xs">
+                                <img id="favicon-preview" src="assets/logo_192x192.png" alt="Favicon" class="w-full h-full object-cover">
                             </div>
                             <div class="flex-1">
-                                <p class="text-xs text-gray-600">Icon browser tab</p>
-                                <p class="text-xs text-gray-400">32x32px (PNG/ICO)</p>
+                                <p class="text-xs font-semibold text-slate-700">Icon tab browser</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">Ukuran 32x32px (Format PNG/ICO)</p>
                             </div>
                         </div>
                         <input type="file" id="favicon-upload" accept="image/png,image/x-icon,.png,.ico" class="hidden">
-                        <label for="favicon-upload"
-                            class="inline-block w-full text-center px-3 py-2 bg-[#eae8f3] text-[#683fe4] rounded-lg text-sm font-semibold hover:bg-[#d6d0e7] transition-colors cursor-pointer">
-                            Upload Favicon
+                        <label for="favicon-upload" class="inline-flex items-center justify-center gap-2 w-full px-3 py-2 bg-white text-brand-700 font-bold rounded-xl text-xs hover:bg-brand-50 transition-colors cursor-pointer border border-slate-200 shadow-xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                            Pilih File Favicon
                         </label>
                     </div>
 
                     <!-- PWA Icons -->
-                    <div>
-                        <p class="text-[#110e1b] text-sm font-medium pb-2">Icon PWA</p>
-                        <div class="grid grid-cols-2 gap-3 mb-2">
-                            <div>
-                                <div
-                                    class="w-full aspect-square rounded border-2 border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden mb-1">
-                                    <img id="icon-192-preview" src="assets/logo_192x192.png?v=2" alt="192"
-                                        class="w-full h-full object-contain p-2">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/60">
+                        <p class="text-slate-800 text-xs font-bold uppercase tracking-wider mb-2">Icon Aplikasi PWA (Mobile Install)</p>
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="text-center">
+                                <div class="w-full aspect-square rounded-xl border border-slate-200 flex items-center justify-center bg-white overflow-hidden mb-1.5 shadow-xs">
+                                    <img id="icon-192-preview" src="assets/logo_192x192.png?v=2" alt="192" class="w-full h-full object-contain p-2">
                                 </div>
-                                <p class="text-xs text-gray-600 text-center">192x192px</p>
-                            </div>
-                            <div>
-                                <div
-                                    class="w-full aspect-square rounded border-2 border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden mb-1">
-                                    <img id="icon-512-preview" src="assets/logo_512x512.png?v=2" alt="512"
-                                        class="w-full h-full object-contain p-2">
-                                </div>
-                                <p class="text-xs text-gray-600 text-center">512x512px</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
+                                <p class="text-[11px] font-semibold text-slate-600">192x192px</p>
                                 <input type="file" id="icon-192-upload" accept="image/png,.png" class="hidden">
-                                <label for="icon-192-upload"
-                                    class="inline-block w-full text-center px-2 py-2 bg-[#eae8f3] text-[#683fe4] rounded-lg text-xs font-semibold hover:bg-[#d6d0e7] transition-colors cursor-pointer">
+                                <label for="icon-192-upload" class="mt-1.5 inline-block w-full text-center px-2 py-1.5 bg-white text-brand-700 rounded-lg text-[11px] font-bold hover:bg-brand-50 transition-colors cursor-pointer border border-slate-200 shadow-xs">
                                     Upload 192
                                 </label>
                             </div>
-                            <div>
+                            <div class="text-center">
+                                <div class="w-full aspect-square rounded-xl border border-slate-200 flex items-center justify-center bg-white overflow-hidden mb-1.5 shadow-xs">
+                                    <img id="icon-512-preview" src="assets/logo_512x512.png?v=2" alt="512" class="w-full h-full object-contain p-2">
+                                </div>
+                                <p class="text-[11px] font-semibold text-slate-600">512x512px</p>
                                 <input type="file" id="icon-512-upload" accept="image/png,.png" class="hidden">
-                                <label for="icon-512-upload"
-                                    class="inline-block w-full text-center px-2 py-2 bg-[#eae8f3] text-[#683fe4] rounded-lg text-xs font-semibold hover:bg-[#d6d0e7] transition-colors cursor-pointer">
+                                <label for="icon-512-upload" class="mt-1.5 inline-block w-full text-center px-2 py-1.5 bg-white text-brand-700 rounded-lg text-[11px] font-bold hover:bg-brand-50 transition-colors cursor-pointer border border-slate-200 shadow-xs">
                                     Upload 512
                                 </label>
                             </div>
@@ -212,342 +274,257 @@
                     </div>
                 </div>
 
-                <!-- Section: Kontak -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M222.37,158.46l-47.11-21.11-.13-.06a16,16,0,0,0-15.17,1.4,8.12,8.12,0,0,0-.75.56L134.87,160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16,16,0,0,0,1.32-15.06l0-.12L97.54,33.64a16,16,0,0,0-16.62-9.52A56.26,56.26,0,0,0,32,80c0,79.4,64.6,144,144,144a56.26,56.26,0,0,0,55.88-48.92A16,16,0,0,0,222.37,158.46Z">
-                            </path>
-                        </svg>
-                        Kontak
+                <!-- Section: Tema Warna PWA -->
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M200.12,55.87A103.67,103.67,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.12,55.87Zm13.75,73.31A15.89,15.89,0,0,1,198.21,160H152a32,32,0,0,0-32,32,16,16,0,0,1-21.31,15.07C62.49,194.3,40,164,40,128a88,88,0,0,1,87.09-88h.9a88.35,88.35,0,0,1,88,87.25A88.86,88.86,0,0,1,213.87,129.18ZM140,76a12,12,0,1,1-12-12A12,12,0,0,1,140,76ZM96,100A12,12,0,1,1,84,88,12,12,0,0,1,96,100Zm0,56a12,12,0,1,1-12-12A12,12,0,0,1,96,156Zm88-56a12,12,0,1,1-12-12A12,12,0,0,1,184,100Z"></path>
+                            </svg>
+                        </div>
+                        Tema Warna PWA
                     </h3>
-                    <div class="space-y-3">
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Nomor WhatsApp</p>
-                            <input id="whatsapp-input" type="tel"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                placeholder="6281234567890" />
-                            <small class="text-xs text-gray-400 mt-1">Format: 628xxxxxxxxx (dengan kode negara)</small>
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Email Support</p>
-                            <input id="email-input" type="email"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                placeholder="support@yourisp.com" />
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Alamat Kantor</p>
-                            <textarea id="address-input"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2 text-sm"
-                                rows="2" placeholder="Jl. Contoh No. 123, Kota"></textarea>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Section: Pengaturan Struk Kasir / Printer Thermal -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M216,40H40A16,16,0,0,0,24,56V184a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V88H40ZM216,184H40V104H216v80Zm-32-48a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,136Zm0,24a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,160Z">
-                            </path>
-                        </svg>
-                        Pengaturan Struk Kasir (Printer Thermal)
-                    </h3>
-                    <div class="space-y-3">
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Catatan / Pesan Footer Struk</p>
-                            <textarea id="receipt-footer-input"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2 text-sm"
-                                rows="2" placeholder="Contoh: Jika ada gangguan hubungi CS: 0812-XXXX-XXXX. Simpan struk ini sebagai bukti pembayaran sah."></textarea>
-                            <small class="text-xs text-gray-500 mt-1">Pesan ini akan dicetak di bagian paling bawah struk thermal (kasir/Bluetooth) pada aplikasi web dan mobile.</small>
-                        </label>
-                    </div>
-                </div>
-
-
-                <!-- Section: Tema PWA -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M200.12,55.87A103.67,103.67,0,0,0,128,24h-1.07A104,104,0,0,0,24,128c0,43,26.58,79.06,69.36,94.17A32,32,0,0,0,136,192a16,16,0,0,1,16-16h46.21a31.81,31.81,0,0,0,31.2-24.88,104.43,104.43,0,0,0,2.59-24A103.28,103.28,0,0,0,200.12,55.87Zm13.75,73.31A15.89,15.89,0,0,1,198.21,160H152a32,32,0,0,0-32,32,16,16,0,0,1-21.31,15.07C62.49,194.3,40,164,40,128a88,88,0,0,1,87.09-88h.9a88.35,88.35,0,0,1,88,87.25A88.86,88.86,0,0,1,213.87,129.18ZM140,76a12,12,0,1,1-12-12A12,12,0,0,1,140,76ZM96,100A12,12,0,1,1,84,88,12,12,0,0,1,96,100Zm0,56a12,12,0,1,1-12-12A12,12,0,0,1,96,156Zm88-56a12,12,0,1,1-12-12A12,12,0,0,1,184,100Z">
-                            </path>
-                        </svg>
-                        Tema PWA
-                    </h3>
-                    <div class="space-y-3">
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Theme Color</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Theme Color</label>
                             <div class="flex gap-2">
-                                <input id="theme-color-input" type="color"
-                                    class="w-12 h-10 rounded border border-[#d6d0e7] cursor-pointer" value="#6a5acd" />
-                                <input id="theme-color-text" type="text"
-                                    class="flex-1 form-input rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                    placeholder="#6a5acd" />
+                                <input id="theme-color-input" type="color" class="w-12 h-10 rounded-xl border border-slate-200 cursor-pointer p-0.5 bg-white" value="#5324e0" />
+                                <input id="theme-color-text" type="text" class="flex-1 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white px-3 py-2 font-mono" placeholder="#5324e0" />
                             </div>
-                            <small class="text-xs text-gray-400 mt-1">Warna status bar & header</small>
-                        </label>
-                        <label class="flex flex-col">
-                            <p class="text-[#110e1b] text-sm font-medium pb-1">Background Color</p>
+                            <small class="text-xs text-slate-400 mt-1 block">Warna status bar mobile</small>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Background Color</label>
                             <div class="flex gap-2">
-                                <input id="bg-color-input" type="color"
-                                    class="w-12 h-10 rounded border border-[#d6d0e7] cursor-pointer" value="#f8f9fe" />
-                                <input id="bg-color-text" type="text"
-                                    class="flex-1 form-input rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                                    placeholder="#f8f9fe" />
+                                <input id="bg-color-input" type="color" class="w-12 h-10 rounded-xl border border-slate-200 cursor-pointer p-0.5 bg-white" value="#f8f9fe" />
+                                <input id="bg-color-text" type="text" class="flex-1 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white px-3 py-2 font-mono" placeholder="#f8f9fe" />
                             </div>
-                            <small class="text-xs text-gray-400 mt-1">Warna background PWA</small>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Info Card -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div class="flex gap-2">
-                        <svg class="text-blue-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="16px"
-                            height="16px" fill="currentColor" viewBox="0 0 256 256">
-                            <path
-                                d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z">
-                            </path>
-                        </svg>
-                        <div class="flex-1">
-                            <p class="text-xs font-medium text-blue-900 mb-1">Penting</p>
-                            <p class="text-xs text-blue-700">Refresh browser (F5) setelah save untuk melihat perubahan.
-                                Settings berlaku untuk semua user.</p>
+                            <small class="text-xs text-slate-400 mt-1 block">Warna background splash PWA</small>
                         </div>
                     </div>
                 </div>
 
+                <!-- Section: Kontak & Kantor -->
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M222.37,158.46l-47.11-21.11-.13-.06a16,16,0,0,0-15.17,1.4,8.12,8.12,0,0,0-.75.56L134.87,160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16,16,0,0,0,1.32-15.06l0-.12L97.54,33.64a16,16,0,0,0-16.62-9.52A56.26,56.26,0,0,0,32,80c0,79.4,64.6,144,144,144a56.26,56.26,0,0,0,55.88-48.92A16,16,0,0,0,222.37,158.46Z"></path>
+                            </svg>
+                        </div>
+                        Kontak & Kantor
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nomor WhatsApp Resmi</label>
+                            <input id="whatsapp-input" type="tel" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="6281234567890" />
+                            <small class="text-xs text-slate-400 mt-1 block">Format: 628xxxxxxxxx (dengan kode negara tanpa +)</small>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Support</label>
+                            <input id="email-input" type="email" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="support@yourisp.com" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Alamat Kantor</label>
+                            <textarea id="address-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all p-3" rows="2" placeholder="Jl. Contoh No. 123, Kota"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Struk Kasir (Printer Thermal) -->
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M216,40H40A16,16,0,0,0,24,56V184a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V88H40ZM216,184H40V104H216v80Zm-32-48a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,136Zm0,24a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h96A8,8,0,0,1,184,160Z"></path>
+                            </svg>
+                        </div>
+                        Pengaturan Struk Kasir (Printer Thermal)
+                    </h3>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Catatan / Pesan Footer Struk</label>
+                        <textarea id="receipt-footer-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all p-3" rows="2" placeholder="Contoh: Jika ada gangguan hubungi CS: 0812-XXXX-XXXX. Simpan struk ini sebagai bukti pembayaran sah."></textarea>
+                        <small class="text-xs text-slate-400 mt-1 block">Pesan ini akan tercetak otomatis di bagian paling bawah struk thermal (Bluetooth / USB) pada portal tagihan.</small>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Notifikasi WhatsApp, Template Pesan, GenieACS -->
+            <div class="space-y-5 md:space-y-6">
+
                 <!-- Section: WhatsApp Notification Settings -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M187.58,144.84l-32-16a8,8,0,0,0-8,.5l-14.69,9.8a40.55,40.55,0,0,1-16-16l9.8-14.69a8,8,0,0,0,.5-8l-16-32A8,8,0,0,0,104,64a40,40,0,0,0-40,40,88.1,88.1,0,0,0,88,88,40,40,0,0,0,40-40A8,8,0,0,0,187.58,144.84ZM152,176a72.08,72.08,0,0,1-72-72A24,24,0,0,1,99.29,80.46l11.48,23L101,118a8,8,0,0,0-.73,7.51,56.47,56.47,0,0,0,30.15,30.15A8,8,0,0,0,138,155l14.61-9.74,23,11.48A24,24,0,0,1,152,176ZM128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z">
-                            </path>
-                        </svg>
-                        Notifikasi WhatsApp
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M187.58,144.84l-32-16a8,8,0,0,0-8,.5l-14.69,9.8a40.55,40.55,0,0,1-16-16l9.8-14.69a8,8,0,0,0,.5-8l-16-32A8,8,0,0,0,104,64a40,40,0,0,0-40,40,88.1,88.1,0,0,0,88,88,40,40,0,0,0,40-40A8,8,0,0,0,187.58,144.84ZM152,176a72.08,72.08,0,0,1-72-72A24,24,0,0,1,99.29,80.46l11.48,23L101,118a8,8,0,0,0-.73,7.51,56.47,56.47,0,0,0,30.15,30.15A8,8,0,0,0,138,155l14.61-9.74,23,11.48A24,24,0,0,1,152,176ZM128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"></path>
+                            </svg>
+                        </div>
+                        Notifikasi Gateway WhatsApp
                     </h3>
 
                     <!-- Enable/Disable Auto Notification -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <p class="text-[#110e1b] text-sm font-medium">Notifikasi Otomatis</p>
-                                <p class="text-xs text-gray-500">Kirim WhatsApp otomatis saat pembayaran diterima</p>
-                            </div>
-                            <div class="relative">
-                                <input type="checkbox" id="auto-notification-toggle" class="sr-only peer">
-                                <div
-                                    class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#683fe4]">
-                                </div>
-                            </div>
+                    <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-900 text-sm font-bold">Notifikasi Otomatis</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Kirim WhatsApp otomatis saat pembayaran dicatat</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="auto-notification-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
                         </label>
                     </div>
 
                     <!-- Fonnte Token -->
-                    <label class="flex flex-col mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">Fonnte API Token</p>
-                        <input id="fonnte-token-input" type="password"
-                            class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm font-mono"
-                            placeholder="Masukkan token Fonnte (opsional)" />
-                        <small class="text-xs text-gray-400 mt-1">
-                            Token API dari <a href="https://fonnte.com" target="_blank"
-                                class="text-blue-600 hover:underline">fonnte.com</a>. Kosongkan jika sudah diatur di
-                            Supabase Secrets.
-                        </small>
-                        <button type="button" id="toggle-fonnte-token"
-                            class="text-xs text-gray-600 hover:text-gray-800 mt-1 text-left">
-                            👁️ Tampilkan/Sembunyikan Token
-                        </button>
-                    </label>
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Fonnte API Token</label>
+                            <button type="button" id="toggle-fonnte-token" class="text-xs font-bold text-brand-600 hover:text-brand-700">
+                                👁️ Tampilkan Token
+                            </button>
+                        </div>
+                        <input id="fonnte-token-input" type="password" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5 font-mono" placeholder="Masukkan token Fonnte gateway" />
+                        <small class="text-xs text-slate-400 mt-1 block">Token API dari akun <a href="https://fonnte.com" target="_blank" class="text-brand-600 hover:underline font-bold">fonnte.com</a></small>
+                    </div>
 
                     <!-- App URL -->
-                    <label class="flex flex-col mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">URL Aplikasi</p>
-                        <input id="app-url-input"
-                            class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                            placeholder="http://ai-net-billing.netlify.app/" />
-                        <small class="text-xs text-gray-400 mt-1">URL untuk login pelanggan di pesan WhatsApp</small>
-                    </label>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">URL Aplikasi Pelanggan</label>
+                        <input id="app-url-input" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="https://domain-anda.com" />
+                        <small class="text-xs text-slate-400 mt-1 block">Tautan login portal pelanggan yang dicantumkan pada pesan WhatsApp</small>
+                    </div>
 
                     <!-- Template 1: Pembayaran Lunas -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <label class="flex flex-col">
-                            <div class="flex items-center justify-between pb-1">
-                                <p class="text-[#110e1b] text-sm font-semibold flex items-center gap-1.5">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-green-500"></span>
-                                    Template Pembayaran Lunas
-                                </p>
-                                <span class="text-[11px] font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Lunas Otomatis</span>
-                            </div>
-                            <textarea id="template-payment-full"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2.5 text-xs font-mono leading-relaxed mt-1"
-                                rows="8" placeholder="Template pembayaran lunas..."></textarea>
-                            <small class="text-xs text-gray-500 mt-1">
-                                <span class="font-medium text-gray-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {total_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan}
-                            </small>
-                            <div class="mt-2.5 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-start gap-2">
-                                <span class="text-sm flex-shrink-0">💡</span>
-                                <div>
-                                    <strong>Info Pengiriman:</strong> Pesan ini akan terkirim otomatis ke WhatsApp pelanggan saat status tagihan dicatat <strong>Lunas</strong>, asalkan tombol <em>Notifikasi Otomatis</em> diaktifkan dan <em>Fonnte API Token</em> telah diisi.
-                                </div>
-                            </div>
-                        </label>
+                    <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-slate-900 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                Template Pembayaran Lunas
+                            </p>
+                            <span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">Lunas Otomatis</span>
+                        </div>
+                        <textarea id="template-payment-full" class="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-mono leading-relaxed" rows="6" placeholder="Template pembayaran lunas..."></textarea>
+                        <small class="text-[11px] text-slate-500 mt-1.5 block">
+                            <span class="font-bold text-slate-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {total_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan}
+                        </small>
                     </div>
 
                     <!-- Template 2: Pembayaran Cicilan -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <label class="flex flex-col">
-                            <div class="flex items-center justify-between pb-1">
-                                <p class="text-[#110e1b] text-sm font-semibold flex items-center gap-1.5">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
-                                    Template Pembayaran Cicilan
-                                </p>
-                                <span class="text-[11px] font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Cicilan Otomatis</span>
-                            </div>
-                            <textarea id="template-payment-installment"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2.5 text-xs font-mono leading-relaxed mt-1"
-                                rows="8" placeholder="Template pembayaran cicilan..."></textarea>
-                            <small class="text-xs text-gray-500 mt-1">
-                                <span class="font-medium text-gray-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {jumlah_dibayar}, {sisa_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan}
-                            </small>
-                            <div class="mt-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-start gap-2">
-                                <span class="text-sm flex-shrink-0">💡</span>
-                                <div>
-                                    <strong>Info Pengiriman:</strong> Pesan ini akan terkirim otomatis ke WhatsApp pelanggan saat pembayaran <strong>Cicilan</strong> dicatat, asalkan tombol <em>Notifikasi Otomatis</em> diaktifkan dan <em>Fonnte API Token</em> telah diisi.
-                                </div>
-                            </div>
-                        </label>
+                    <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-slate-900 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                Template Pembayaran Cicilan
+                            </p>
+                            <span class="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">Cicilan Otomatis</span>
+                        </div>
+                        <textarea id="template-payment-installment" class="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-mono leading-relaxed" rows="6" placeholder="Template pembayaran cicilan..."></textarea>
+                        <small class="text-[11px] text-slate-500 mt-1.5 block">
+                            <span class="font-bold text-slate-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {jumlah_dibayar}, {sisa_tagihan}, {metode_pembayaran}, {app_url}, {email_pelanggan}
+                        </small>
                     </div>
 
                     <!-- Template 3: Tagihan / Pesan Manual -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <label class="flex flex-col">
-                            <div class="flex items-center justify-between pb-1">
-                                <p class="text-[#110e1b] text-sm font-semibold flex items-center gap-1.5">
-                                    <span class="inline-block w-2 h-2 rounded-full bg-purple-500"></span>
-                                    Template Tagihan / Pesan Manual
-                                </p>
-                                <span class="text-[11px] font-medium bg-purple-100 text-[#683fe4] px-2 py-0.5 rounded-full">Tagihan & Manual</span>
-                            </div>
-                            <textarea id="template-custom-message"
-                                class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white p-2.5 text-xs font-mono leading-relaxed mt-1"
-                                rows="8" placeholder="Template tagihan / pesan manual..."></textarea>
-                            <small class="text-xs text-gray-500 mt-1">
-                                <span class="font-medium text-gray-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {total_tagihan}, {metode_pembayaran}, {pesan_custom}
-                            </small>
-                        </label>
+                    <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-slate-900 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="inline-block w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                                Template Tagihan / Pesan Manual
+                            </p>
+                            <span class="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full border border-purple-200">Tagihan & Manual</span>
+                        </div>
+                        <textarea id="template-custom-message" class="w-full rounded-xl border border-slate-200 bg-white p-3 text-xs font-mono leading-relaxed" rows="6" placeholder="Template tagihan / pesan manual..."></textarea>
+                        <small class="text-[11px] text-slate-500 mt-1.5 block">
+                            <span class="font-bold text-slate-700">Variabel:</span> {nama_pelanggan}, {idpl}, {periode}, {total_tagihan}, {metode_pembayaran}, {pesan_custom}
+                        </small>
                     </div>
 
                     <!-- Reset to Default Button -->
-                    <button id="reset-whatsapp-templates-btn"
-                        class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors">
-                        Reset Semua Template ke Default
+                    <button id="reset-whatsapp-templates-btn" class="w-full px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors border border-slate-200">
+                        🔄 Reset Semua Template WhatsApp ke Default
                     </button>
                 </div>
 
                 <!-- Section: GenieACS Configuration -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                    <h3 class="text-[#110e1b] font-semibold mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" fill="currentColor"
-                            viewBox="0 0 256 256">
-                            <path
-                                d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z">
-                            </path>
-                        </svg>
-                        Konfigurasi GenieACS
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-xs border border-slate-200/80">
+                    <h3 class="text-slate-900 font-bold text-base flex items-center gap-2.5 pb-3 border-b border-slate-100 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                                <path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path>
+                            </svg>
+                        </div>
+                        Konfigurasi TR-069 GenieACS
                     </h3>
 
                     <!-- Enable/Disable GenieACS -->
-                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <p class="text-[#110e1b] text-sm font-medium">Aktifkan GenieACS</p>
-                                <p class="text-xs text-gray-500">Izinkan pelanggan mengganti SSID & Password WiFi</p>
-                            </div>
-                            <div class="relative">
-                                <input type="checkbox" id="genieacs-enabled-toggle" class="sr-only peer">
-                                <div
-                                    class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#683fe4]">
-                                </div>
-                            </div>
+                    <div class="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200/60 flex items-center justify-between">
+                        <div>
+                            <p class="text-slate-900 text-sm font-bold">Aktifkan GenieACS</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Izinkan pelanggan mengganti SSID & Password WiFi mandiri</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="genieacs-enabled-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
                         </label>
                     </div>
 
                     <!-- GenieACS URL -->
-                    <label class="flex flex-col mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">URL GenieACS</p>
-                        <input id="genieacs-url-input" type="text"
-                            class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                            placeholder="http://192.168.1.10:7547" />
-                        <small class="text-xs text-gray-400 mt-1">URL server GenieACS Anda (contoh:
-                            http://192.168.1.10:7547 atau http://acs.bayardong.my.id)</small>
-                    </label>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">URL Server GenieACS</label>
+                        <input id="genieacs-url-input" type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5 font-mono" placeholder="http://192.168.1.10:7547" />
+                        <small class="text-xs text-slate-400 mt-1 block">Contoh: http://192.168.1.10:7547 atau http://acs.domain-anda.com</small>
+                    </div>
 
                     <!-- GenieACS Username (Optional) -->
-                    <label class="flex flex-col mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">Username (Opsional)</p>
-                        <input id="genieacs-username-input" type="text"
-                            class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                            placeholder="Kosongkan jika tidak ada autentikasi" />
-                        <small class="text-xs text-gray-400 mt-1">Username untuk akses GenieACS API (jika
-                            diperlukan)</small>
-                    </label>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Username (Opsional)</label>
+                        <input id="genieacs-username-input" type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5" placeholder="Kosongkan jika tidak ada autentikasi" />
+                    </div>
 
                     <!-- GenieACS Password (Optional) -->
-                    <label class="flex flex-col mb-4">
-                        <p class="text-[#110e1b] text-sm font-medium pb-1">Password (Opsional)</p>
-                        <input id="genieacs-password-input" type="password"
-                            class="form-input w-full rounded-lg text-[#110e1b] border border-[#d6d0e7] bg-white h-10 p-2 text-sm"
-                            placeholder="Kosongkan jika tidak ada autentikasi" />
-                        <small class="text-xs text-gray-400 mt-1">Password untuk akses GenieACS API (jika
-                            diperlukan)</small>
-                        <button type="button" id="toggle-genieacs-password"
-                            class="text-xs text-gray-600 hover:text-gray-800 mt-1 text-left">
-                            👁️ Tampilkan/Sembunyikan Password
-                        </button>
-                    </label>
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password (Opsional)</label>
+                            <button type="button" id="toggle-genieacs-password" class="text-xs font-bold text-brand-600 hover:text-brand-700">
+                                👁️ Tampilkan Password
+                            </button>
+                        </div>
+                        <input id="genieacs-password-input" type="password" class="w-full rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:border-brand-500 focus:ring-brand-500 focus:bg-white transition-all px-3.5 py-2.5 font-mono" placeholder="Kosongkan jika tidak ada autentikasi" />
+                    </div>
 
                     <!-- Info Box -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div class="flex gap-2">
-                            <svg class="text-blue-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg"
-                                width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256">
-                                <path
-                                    d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z">
-                                </path>
-                            </svg>
-                            <div class="flex-1">
-                                <p class="text-xs font-medium text-blue-900 mb-1">Informasi</p>
-                                <p class="text-xs text-blue-700">Jika GenieACS diaktifkan, pelanggan dapat mengganti
-                                    SSID dan Password WiFi mereka sendiri dari halaman profil.</p>
-                            </div>
+                    <div class="bg-blue-50 border border-blue-200/80 rounded-xl p-3.5 text-xs text-blue-800 flex items-start gap-2.5 mb-2">
+                        <svg class="text-blue-600 flex-shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path>
+                        </svg>
+                        <div>
+                            Jika GenieACS diaktifkan, pelanggan dapat mengganti SSID dan Password WiFi ONT/modem mereka sendiri secara aman dari profil akun pelanggan.
                         </div>
                     </div>
-
-                    <!-- Action Buttons -->
-                    <div class="grid grid-cols-2 gap-3 pt-2">
-                        <button id="settings-cancel-btn"
-                            class="w-full rounded-lg h-12 px-5 bg-[#eae8f3] text-[#110e1b] text-base font-bold hover:bg-[#d6d0e7] transition-colors">CANCEL</button>
-                        <button id="settings-save-btn"
-                            class="w-full rounded-lg h-12 px-5 bg-[#501ee6] text-[#f9f8fc] text-base font-bold hover:bg-[#3d14b8] transition-colors">SIMPAN</button>
-                    </div>
                 </div>
-        </main>
-    </div>
+
+                <!-- Action Buttons (Mobile & Bottom Helper) -->
+                <div class="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 flex gap-3">
+                    <button id="settings-cancel-btn" class="flex-1 rounded-xl h-12 px-5 bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 transition-colors">
+                        Batal
+                    </button>
+                    <button id="settings-save-btn" class="flex-1 rounded-xl h-12 px-5 bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-sm font-bold hover:from-brand-700 hover:to-indigo-700 shadow-md shadow-brand-500/20 transition-all active:scale-95">
+                        Simpan Pengaturan
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
 
     <!-- Scripts -->
     <script type="module" src="supabase-client.js"></script>
     <script type="module" src="auth.js"></script>
     <script type="module" src="apply-settings.js"></script>
-    <script type="module" src="app-settings.js"></script>
+    <script type="module" src="app-settings.js?v=2.1.0"></script>
 </body>
 
 </html>

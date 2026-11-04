@@ -1,6 +1,6 @@
 // pengeluaran.js (Supabase Version)
 import { supabase } from './supabase-client.js';
-import { requireRole } from './auth.js';
+import { requireRole, initLogout } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Pengeluaran page loaded, checking authentication...');
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         console.log('Authentication successful for user:', user.id);
+        initLogout('desktop-logout-btn');
     } catch (error) {
         console.error('Authentication error:', error);
         return;
@@ -109,6 +110,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         resetFilterBtn.addEventListener('click', handleResetFilter);
 
         expenseDate.value = new Date().toISOString().split('T')[0];
+
+        // Desktop button bindings
+        const desktopAddExpenseBtn = document.getElementById('desktop-add-expense-btn');
+        if (desktopAddExpenseBtn) {
+            desktopAddExpenseBtn.addEventListener('click', openAddExpenseModal);
+        }
+
+        const desktopFilterBtn = document.getElementById('desktop-filter-btn');
+        if (desktopFilterBtn) {
+            desktopFilterBtn.addEventListener('click', () => filterModal.classList.remove('hidden'));
+        }
+
     }
 
     // ===============================================
@@ -226,10 +239,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             expenseList.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-12 px-4">
-                    <img src="assets/no_data.svg" alt="No Data" class="w-48 h-48 mb-4 opacity-50">
-                    <p class="text-center text-gray-500 text-lg font-medium">${message}</p>
-                    <p class="text-center text-gray-400 text-sm mt-2">${submessage}</p>
+                <div class="col-span-full flex flex-col items-center justify-center py-12 px-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+                    <img src="assets/no_data.svg" alt="No Data" class="w-48 h-48 mb-4 opacity-70">
+                    <p class="text-center text-slate-700 text-base font-bold">${message}</p>
+                    <p class="text-center text-slate-400 text-xs mt-1">${submessage}</p>
                 </div>
             `;
         } else {
@@ -249,19 +262,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const description = item.description || 'Deskripsi tidak tersedia';
 
         const expenseItem = document.createElement('div');
-        expenseItem.className = "flex items-center gap-4 bg-white px-4 min-h-[72px] py-2 justify-between border-b border-gray-200";
+        expenseItem.className = "group flex items-center gap-3.5 bg-white p-3.5 sm:p-4 rounded-xl md:rounded-2xl border border-slate-200/80 hover:border-brand-300 hover:shadow-md transition-all duration-150 justify-between";
         expenseItem.innerHTML = `
-            <div class="flex flex-col justify-center flex-1">
-                <p class="text-[#110e1b] text-base font-medium leading-normal line-clamp-1">${description}</p>
-                <p class="text-gray-500 text-sm font-normal leading-normal">${date}</p>
+            <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold text-base shrink-0">
+                    💸
+                </div>
+                <div class="flex flex-col justify-center min-w-0 flex-1">
+                    <p class="text-slate-900 text-sm sm:text-base font-bold leading-tight truncate group-hover:text-brand-600 transition-colors">${description}</p>
+                    <p class="text-slate-400 text-xs font-medium mt-0.5">${date}</p>
+                </div>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-                 <p class="text-red-600 text-base font-medium leading-normal">${amount}</p>
-                <div class="flex gap-1">
-                    <button class="edit-expense-btn text-blue-600 hover:text-blue-800 p-1" data-id="${item.id}" title="Edit">
+            <div class="flex items-center gap-3 shrink-0 ml-2">
+                <p class="text-rose-600 font-mono font-bold text-sm sm:text-base">${amount}</p>
+                <div class="flex items-center gap-1">
+                    <button class="edit-expense-btn p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" data-id="${item.id}" title="Edit Pengeluaran">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.69a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96A16,16,0,0,0,227.31,73.37ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.69,147.31,64l24-24L216,84.69Z"></path></svg>
                     </button>
-                    <button class="delete-expense-btn text-red-600 hover:text-red-800 p-1" data-id="${item.id}" title="Delete">
+                    <button class="delete-expense-btn p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" data-id="${item.id}" title="Hapus Pengeluaran">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
                     </button>
                 </div>
@@ -278,6 +296,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const total = filteredData.reduce((sum, item) => sum + (item.amount || 0), 0);
         const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
         totalExpenseDisplay.textContent = formatter.format(total);
+        const desktopBadge = document.getElementById('desktop-expense-badge');
+        if (desktopBadge) {
+            desktopBadge.textContent = `${filteredData.length} Pengeluaran`;
+        }
     }
 
     // ===============================================
@@ -390,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         expenseList.innerHTML = '';
         for (let i = 0; i < 10; i++) {
             const skeletonItem = document.createElement('div');
-            skeletonItem.className = 'skeleton-item flex items-center gap-4 bg-white px-4 min-h-[72px] py-2 justify-between border-b border-gray-200';
+            skeletonItem.className = 'skeleton-item flex items-center gap-3.5 bg-white p-3.5 sm:p-4 rounded-xl md:rounded-2xl border border-slate-200/80 justify-between';
             skeletonItem.innerHTML = `
                 <div class="flex flex-col justify-center flex-1 gap-2 py-2">
                     <div class="skeleton-line h-4 bg-gray-200 rounded w-3/4"></div>

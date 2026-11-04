@@ -1,93 +1,66 @@
 // notification-badge.js
-// Script untuk mengelola badge notifikasi di dashboard
+// Script universal untuk mengelola badge angka notifikasi di semua halaman admin
 
 import { getUnreadNotificationCount } from './notification-service.js';
 
+let badgeIntervalId = null;
+
 /**
- * Inisialisasi badge notifikasi di dashboard
+ * Inisialisasi badge notifikasi untuk user yang sedang login
  */
 export function initNotificationBadge(userId) {
-    // Update badge saat halaman dimuat
+    if (!userId) return;
+
+    // Update badge saat halaman pertama kali siap
     updateNotificationBadge(userId);
     
-    // Update badge setiap 30 detik
-    setInterval(() => {
+    // Clear interval sebelumnya jika ada agar tidak double
+    if (badgeIntervalId) clearInterval(badgeIntervalId);
+
+    // Update badge berkala setiap 30 detik
+    badgeIntervalId = setInterval(() => {
         updateNotificationBadge(userId);
     }, 30000);
     
-    // Update badge saat window focus (user kembali ke tab)
+    // Update badge saat window focus (misal admin kembali ke tab ini)
     window.addEventListener('focus', () => {
         updateNotificationBadge(userId);
     });
 }
 
 /**
- * Update tampilan badge notifikasi
+ * Update tampilan badge notifikasi di seluruh elemen (desktop & mobile)
  */
-async function updateNotificationBadge(userId) {
-    const badge = document.getElementById('notification-badge');
-    if (!badge) return;
+export async function updateNotificationBadge(userId) {
+    // Cari semua elemen badge notifikasi di halaman (desktop top bar maupun mobile header)
+    const badges = document.querySelectorAll('.notification-badge-count, #notification-badge');
+    if (!badges || badges.length === 0) return;
 
     try {
         const unreadCount = await getUnreadNotificationCount(userId);
         
-        if (unreadCount > 0) {
-            badge.textContent = unreadCount;
-            badge.classList.remove('hidden');
-            // Adjust badge style for number display
-            badge.classList.remove('w-3', 'h-3');
-            badge.classList.add('min-w-[1.25rem]', 'h-5', 'px-1', 'text-xs', 'flex', 'items-center', 'justify-center', 'top-0', 'right-0');
-        } else {
-            badge.classList.add('hidden');
-        }
+        badges.forEach(badge => {
+            if (unreadCount > 0) {
+                const displayText = unreadCount > 99 ? '99+' : String(unreadCount);
+                badge.textContent = displayText;
+                badge.classList.remove('hidden');
+                
+                // Pastikan styling pill merah menyala terlihat jelas
+                badge.className = 'notification-badge-count absolute -top-1 -right-1 min-w-[1.25rem] h-5 px-1 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center border-2 border-white shadow-xs';
+            } else {
+                badge.textContent = '0';
+                badge.classList.add('hidden');
+            }
+        });
     } catch (error) {
         console.error('Error updating notification badge:', error);
-        badge.classList.add('hidden');
+        badges.forEach(badge => badge.classList.add('hidden'));
     }
 }
 
 /**
- * Menambahkan HTML untuk ikon notifikasi di header dashboard
- * Panggil fungsi ini di dashboard.js setelah DOM loaded
+ * Kompatibilitas mundur jika ada modul yang memanggil addNotificationIconToHeader
  */
 export function addNotificationIconToHeader() {
-    // Cari header yang ada
-    const header = document.querySelector('header .flex.items-center.justify-between');
-    if (!header) {
-        console.warn('Header tidak ditemukan untuk menambah ikon notifikasi');
-        return;
-    }
-
-    // Cari div yang berisi tombol logout
-    const rightSection = header.querySelector('div:last-child');
-    if (!rightSection) {
-        console.warn('Right section header tidak ditemukan');
-        return;
-    }
-
-    // Cek apakah ikon notifikasi sudah ada
-    if (document.getElementById('notification-bell')) {
-        return; // Sudah ada, tidak perlu tambah lagi
-    }
-
-    // Buat elemen ikon notifikasi
-    const notificationIcon = document.createElement('a');
-    notificationIcon.href = 'notifikasi.html';
-    notificationIcon.id = 'notification-bell';
-    notificationIcon.className = 'relative w-10 h-10 flex items-center justify-center text-white rounded-full hover:bg-white/20 transition-colors mr-2';
-    
-    notificationIcon.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
-        </svg>
-        <span id="notification-badge" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full hidden"></span>
-    `;
-
-    // Sisipkan sebelum tombol logout
-    const logoutButton = rightSection.querySelector('button');
-    if (logoutButton) {
-        rightSection.insertBefore(notificationIcon, logoutButton);
-    } else {
-        rightSection.appendChild(notificationIcon);
-    }
+    // Ikon notifikasi sudah tertanam secara native di desktop navbar dan mobile header HTML
 }

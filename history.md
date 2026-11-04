@@ -1104,3 +1104,336 @@ Telah diselesaikan pembaruan menyeluruh pada aplikasi mobile Flutter (`c:\larago
      - Penyesuaian ukuran font dan ikon bottom nav (`text-[10px] sm:text-[11px]`) agar tidak meluap atau terpotong pada layar HP sempit (iPhone SE / 375px).
   3. **PWA & Cache Management**:
      - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.2.0` dan cache-busting script `pelanggan.js?v=2.3` agar perubahan langsung termuat tanpa cache lama.
+
+
+---
+
+## 💳 Transformasi Responsif Halaman Tagihan (Tahap 3 - 3 November 2026)
+- **Tujuan**: Mengubah `tagihan.html` dan `tagihan.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Web Dashboard** modern yang lebar dan lapang di layar PC/laptop tanpa mengurangi kepraktisan di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan `max-width: 480px` dan latar gelap, menggunakan kanvas modern `bg-slate-50`.
+     - **Top Navigation Bar**: Menu navigasi sticky atas lengkap dengan logo WiFi Billing, menu navigasi (*Dasbor, Pelanggan, Tagihan aktif, Pengeluaran, Laporan, Paket, Pengaturan*), notifikasi, profil, dan tombol logout.
+     - **Header Halaman Desktop**: Menampilkan judul "Manajemen Tagihan", badge status realtime jumlah tagihan pada tab yang aktif, tombol **➕ Buat Tagihan Bulanan** (`#desktop-create-invoice-btn`), dan tombol **Filter Pembayaran** (`#desktop-filter-btn`) yang otomatis muncul saat berada di tab Dibayar.
+     - **Tabs & Pencarian Segmented Modern**: Tab "Belum Dibayar", "Cicilan", dan "Dibayar" diubah menjadi segmented control desktop dengan efek tombol aktif berbayang halus di dalam card putih, berdampingan dengan kotak pencarian.
+     - **Grid Kartu Tagihan 3 Kolom**: Kontainer tagihan (`#invoice-list`) menggunakan CSS grid 3 kolom (`md:grid-cols-2 lg:grid-cols-3`) dengan card interaktif berbayang halus, badge periode warna-warni, nominal tagihan jelas, serta aksi lengkap (WhatsApp, Lunas, Cicil, Opsi menu titik tiga, dan Cetak Struk).
+     - **Detail Pembayaran Terpusat**: Tampilan detail pembayaran (`#detail-view`) dibungkus dalam card terpusat (`max-w-2xl`) yang elegan dan terstruktur.
+     - **Floating Button & Bottom Navigation**: Floating action button (FAB) dan footer navigasi otomatis disembunyikan di layar desktop (`md:hidden`).
+  2. **Tampilan Mobile (HP)**:
+     - 100% mempertahankan seluruh interaksi touch-friendly mobile: mobile header, tabs border bawah, search sticky, bar aksi broadcast massal, list kartu vertikal, floating button melayang ungu (+), dan fixed bottom navigation bar dengan tab Tagihan aktif.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.3.0` dan query parameter script `tagihan.js?v=2.0.0` agar browser langsung memuat versi terbaru tanpa terhalang cache.
+
+
+---
+
+## 💸 Transformasi Responsif Halaman Pengeluaran (Tahap 4 - 3 November 2026)
+- **Tujuan**: Mengubah `pengeluaran.html` dan `pengeluaran.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Web Dashboard** modern yang lebar dan lapang di layar PC/laptop tanpa mengurangi kepraktisan di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan `max-width: 480px` dan latar gelap, beralih ke latar `bg-slate-50` berkelas SaaS (`max-w-7xl mx-auto`).
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap (*Dasbor, Pelanggan, Tagihan, **Pengeluaran (Aktif)**, Laporan, Paket, Pengaturan*), lonceng notifikasi, profil, dan tombol logout yang aktif.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header desktop menampilkan judul "Manajemen Pengeluaran", badge total data pengeluaran realtime, tombol **Filter Tanggal** (`#desktop-filter-btn`), dan tombol **➕ Tambah Pengeluaran** (`#desktop-add-expense-btn`).
+     - **Pencarian & Total Pengeluaran Modern**: Input pencarian berada berdampingan dengan kartu ringkasan Total Pengeluaran (`#total-expense-container`) di dalam kontainer putih bersih.
+     - **Grid Kartu Pengeluaran 3 Kolom**: Kontainer pengeluaran (`#expense-list`) menggunakan CSS grid 3 kolom (`md:grid-cols-2 lg:grid-cols-3`) berdesain card modern dengan icon pengeluaran, deskripsi lengkap, tanggal terformat rapi, nominal merah bold, serta tombol edit dan hapus.
+     - **Skeleton Loader & Empty State**: Indikator loading skeleton dan pesan saat data kosong di-upgrade agar mengisi grid secara proporsional.
+     - **Floating Button & Bottom Navigation**: Floating action button (FAB) dan footer navigasi otomatis disembunyikan di layar desktop (`md:hidden`).
+  2. **Tampilan Mobile (HP)**:
+     - 100% mempertahankan seluruh interaksi touch-friendly mobile: mobile header, search sticky, list pengeluaran vertikal, floating button melayang ungu (+), dan fixed bottom navigation bar dengan tab Pengeluaran aktif.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.4.0` dan cache-busting script `pengeluaran.js?v=2.0.0` agar browser langsung memuat versi terbaru tanpa terhalang cache.
+
+
+---
+
+## 📊 Transformasi Responsif Halaman Laporan (Tahap 5 - 3 November 2026)
+- **Tujuan**: Mengubah `laporan.html` dan `laporan.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Web Dashboard & Data Table** modern yang luas di layar PC/laptop tanpa mengurangi fungsionalitas di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan `max-width: 480px` dan latar gelap, menggunakan kanvas modern `bg-slate-50` (`max-w-7xl mx-auto`).
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap (*Dasbor, Pelanggan, Tagihan, Pengeluaran, **Laporan (Aktif)**, Paket, Pengaturan*), lonceng notifikasi, profil, dan tombol logout yang aktif.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header desktop menampilkan judul "Laporan Keuangan & Transaksi", badge status filter aktif realtime (`#desktop-filter-badge`), tombol **Filter Laporan** (`#desktop-filter-btn`), tombol **Export Excel** (`#desktop-export-excel-btn`), dan tombol **Export PDF** (`#desktop-export-pdf-btn`).
+     - **Grid Metrik Summary 5 Kolom Berjajar**: 5 kartu metrik rekapitulasi (*Total Pendapatan, Lunas, Belum Bayar, Cicilan, dan Pengeluaran*) tersusun sejajar 5 kolom (`lg:grid-cols-5`) yang rapi, padat, dan elegan.
+     - **Data Table Luas & Bersih**: Tabel data tagihan dan pengeluaran (`table-container`) memanfaatkan lebar layar komputer secara leluasa dengan hover effect, status badges warna-warni, dan tipografi jelas.
+     - **Filter Modal Terpusat**: Modal filter laporan tersaji di tengah layar (centered modal) dengan backdrop blur lembut di mode desktop.
+  2. **Tampilan Mobile (HP)**:
+     - 100% mempertahankan mobile header dengan tombol kembali (`#back-btn`), judul halaman, tombol filter berserta badge notifikasi, metrik kartu 2 kolom (pengeluaran full width), tombol export PDF & Excel melintang, serta tabel data scrollable horizontal.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.6.0` dan query parameter script `laporan.js?v=2.1.0` agar browser langsung memuat versi terbaru tanpa terhalang cache.
+
+
+---
+
+## 📦 Transformasi Responsif Halaman Paket Internet (Tahap 6 - 3 November 2026)
+- **Tujuan**: Mengubah `paket.html` dan `paket.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Web Dashboard & Package Cards** modern yang responsif penuh di layar PC/laptop tanpa mengurangi fungsionalitas di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan `max-width: 480px` dan latar gelap, menggunakan kanvas modern `bg-slate-50` (`max-w-7xl mx-auto`).
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap (*Dasbor, Pelanggan, Tagihan, Pengeluaran, Laporan, **Paket (Aktif)**, Pengaturan*), lonceng notifikasi, profil, dan tombol logout aktif via `initLogout('desktop-logout-btn')`.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header desktop menampilkan judul "Manajemen Paket Internet", badge total paket realtime (`#desktop-package-badge`), dan tombol **➕ Tambah Paket** (`#desktop-add-package-btn`).
+     - **Search Bar Modern**: Input pencarian terintegrasi rapi di kontainer putih berbingkai lembut.
+     - **Grid Kartu Paket 3 Kolom Responsif**: Kontainer paket (`#package-list`) menggunakan CSS Grid (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5`) dengan kartu bergaya SaaS modern:
+       - Tag ID paket dan nama paket yang jelas.
+       - Badge kecepatan bandwidth (`X Mbps`) berwarna ungu brand.
+       - Deskripsi paket yang rapi.
+       - Tarif bulanan hijau bold di baris bawah kartu.
+       - Tombol aksi Edit (biru/brand) dan Hapus (merah lembut) yang terstruktur.
+     - **Formulir Paket Terpusat (Centered Form)**: Tampilan formulir (`#form-view`) pada desktop dibungkus dalam card terpusat (`max-w-2xl mx-auto`) dengan input fields 2 kolom untuk harga & kecepatan, tombol Batal dan Simpan yang elegan.
+     - **Floating Action Button & Bottom Navigation**: FAB (+ tambah paket) dan footer navigasi otomatis disembunyikan di layar desktop (`md:hidden`).
+  2. **Tampilan Mobile (HP)**:
+     - 100% mempertahankan mobile header dengan tombol kembali ke pelanggan (`#back-to-pelanggan`), judul halaman, sticky search bar, list paket touch-friendly, floating action button ungu (+), serta fixed bottom navigation bar.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.6.0` dan cache-busting script `paket.js?v=2.0.0` agar browser langsung memuat versi terbaru tanpa terhalang cache.
+
+
+---
+
+## ⚙️ Transformasi Responsif Halaman Pengaturan Aplikasi (Tahap 7 - 4 November 2026)
+- **Tujuan**: Mengubah `app-settings.html` dan `app-settings.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Web Dashboard & Settings Center** modern yang lapang di layar PC/laptop tanpa mengurangi kenyamanan di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan `max-width: 480px` dan latar gelap, menggunakan kanvas modern `bg-slate-50` (`max-w-7xl mx-auto`).
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap (*Dasbor, Pelanggan, Tagihan, Pengeluaran, Laporan, Paket, **Pengaturan (Aktif)** *), lonceng notifikasi, profil, dan tombol logout aktif via `initLogout('desktop-logout-btn')`.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header desktop menampilkan judul "Pengaturan Aplikasi & Branding", badge status konfigurasi, tombol **Batal** (`#desktop-cancel-btn`), dan tombol **Simpan Perubahan** (`#desktop-save-btn`).
+     - **Layout 2 Kolom Responsif (`grid grid-cols-1 lg:grid-cols-2 gap-6`)**:
+       - **Kolom Kiri**:
+         - *Informasi Aplikasi*: Nama aplikasi, nama pendek, tagline, dan deskripsi sistem.
+         - *Logo & Icon Branding*: Preview & upload logo besar (login/dashboard), favicon browser 32x32px, dan icon PWA 192x192 & 512x512px.
+         - *Tema Warna PWA*: Pemilih warna interaktif (color picker & hex input) untuk theme color dan background color.
+         - *Kontak & Kantor*: Nomor WhatsApp resmi, email support, dan alamat kantor.
+         - *Pengaturan Struk Kasir (Printer Thermal)*: Kustomisasi catatan/pesan footer struk thermal.
+       - **Kolom Kanan**:
+         - *Notifikasi Gateway WhatsApp*: Toggle notifikasi otomatis, token API Fonnte dengan tombol intip/sembunyikan, dan URL portal pelanggan.
+         - *Template Pesan WhatsApp*: Editor template untuk Pembayaran Lunas, Pembayaran Cicilan, dan Tagihan/Pesan Manual berserta daftar variabel dinamis.
+         - *Reset Template ke Default*: Tombol reset seluruh format pesan WhatsApp.
+         - *Konfigurasi TR-069 GenieACS*: Toggle aktif/nonaktif, URL server GenieACS, username, dan password API dengan tombol intip/sembunyikan.
+     - **Proteksi Autentikasi**: Memanggil `await requireRole('ADMIN')` di `app-settings.js` untuk memastikan keamanan data konfigurasi.
+  2. **Tampilan Mobile (HP)**:
+     - 100% mempertahankan seluruh interaksi touch-friendly mobile: mobile sticky header dengan tombol kembali (`#settings-back-btn`), layout card vertikal yang rapi, tombol upload touch-friendly, dan tombol Batal/Simpan di bagian bawah.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.7.0`, menyertakan `app-settings.js` dalam cache pre-load, dan query parameter script `app-settings.js?v=2.0.0` agar browser memuat versi terbaru tanpa terhalang cache.
+
+
+---
+
+## 👤 Transformasi Responsif Halaman Profil Admin (Tahap 8 - 4 November 2026)
+- **Tujuan**: Mengubah `profile.html` dan `profile.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Account & Profile Center** modern di layar PC/laptop tanpa mengurangi fungsionalitas di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan bingkai 480px dan latar hitam, beralih ke layout responsif modern `max-w-7xl mx-auto`.
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap, notifikasi, tombol logout, dan tombol profil yang ditandai aktif.
+     - **Hero Card Profil Terpusat (`max-w-3xl mx-auto`)**: Foto avatar besar dengan tombol upload kamera, nama admin, email akun, dan badge peran Administrator.
+     - **Grid Menu Navigasi Cepat 2 Kolom**: Card menu dengan hover micro-interaction untuk *Edit Profil & Password*, *Pengaturan Aplikasi*, *Metode Pembayaran*, dan *Laporan Keuangan*.
+     - **Pembersihan Kode Redundan**: Menghapus lebih dari 450 baris kode HTML duplikat yang sebelumnya tertanam di dalam `profile.html` (view settings & bank) karena sudah memiliki halaman tersendiri (`app-settings.html` dan `payment-methods.html`).
+     - **Formulir Edit Profil Terpusat**: Card edit nama lengkap dan password baru (`#edit-view`) yang elegan di layar komputer.
+  2. **Tampilan Mobile (HP)**:
+     - Mempertahankan mobile header, avatar touch-friendly, list menu vertikal, dan bottom navigation bar dengan tab Profil aktif.
+
+
+---
+
+## 💳 Transformasi Responsif Halaman Metode Pembayaran (Tahap 9 - 4 November 2026)
+- **Tujuan**: Mengubah `payment-methods.html` dan `payment-methods.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Payment Channel Dashboard** modern.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menggunakan kanvas luas `max-w-7xl mx-auto` dengan Top Navigation Bar sticky.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header menampilkan judul "Metode Pembayaran & QRIS" serta tombol **➕ Tambah Bank Baru** (`#desktop-add-payment-btn`).
+     - **Layout 2 Kolom Responsif (`grid grid-cols-12 gap-6`)**:
+       - *Kolom Kiri (5 kolom)*: Kartu pembayaran QRIS, upload gambar QRIS statis, preview, dan toggle switch on/off QRIS.
+       - *Kolom Kanan (7 kolom)*: Daftar rekening bank & e-wallet lengkap dengan badge status Aktif/Nonaktif, nomor rekening tebal, dan tombol aksi.
+     - **Formulir Tambah/Edit Bank Terpusat**: Modal/tampilan form terpusat (`max-w-xl mx-auto`) dengan input nama bank, nomor rekening, nama pemilik, urutan tampilan, toggle aktif, dan tombol Hapus Bank saat edit.
+  2. **Tampilan Mobile (HP)**:
+     - Mempertahankan mobile header dengan tombol kembali ke profil (`#payment-methods-back-btn`), form header, dan tombol tambah bank mobile.
+
+
+---
+
+## 🔔 Transformasi Responsif Halaman Pusat Notifikasi (Tahap 10 - 4 November 2026)
+- **Tujuan**: Mengubah `notifikasi.html` dan `notifikasi.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Notification Center** modern.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menggunakan layout modern `max-w-4xl mx-auto` dengan Top Navigation Bar sticky dan ikon lonceng notifikasi aktif.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header menampilkan judul "Pusat Notifikasi & Log Aktivitas", tombol **✓ Tandai Semua Dibaca** (`#desktop-mark-all-read`), dan tombol **🗑️ Hapus Semua** (`#desktop-clear-notifications`).
+     - **Desain Kartu Notifikasi Modern**:
+       - Notifikasi belum dibaca: Aksen garis tepi kiri ungu (`border-l-4 border-l-brand-600`), latar putih bersih, shadow lembut, dan titik indikator biru/ungu.
+       - Notifikasi sudah dibaca: Latar abu-abu terang halus (`bg-white/80 border-slate-200/70 opacity-85`).
+       - Tanggal terformat lengkap dengan jam dan menit.
+       - Tombol aksi cepat untuk menandai dibaca per-item atau menghapus notifikasi.
+  2. **Tampilan Mobile (HP)**:
+     - Mempertahankan mobile header dengan tombol panah kembali ke dasbor dan tombol aksi mobile di atas list notifikasi.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v3.0.0`, menyertakan `payment-methods.html`, `payment-methods.js`, `notifikasi.html`, dan `notifikasi.js` ke dalam pre-load cache.
+
+      - Memperbaiki padding container broadcast/checkbox "Pilih Semua" pada tagihan.html (px-5 md:px-6 py-3.5) agar checkbox rapi dan berjarak lega dari batas tepi kiri container.
+
+
+---
+
+## 👤 Transformasi Responsif Halaman Profil Admin (Tahap 8 - 4 November 2026)
+- **Tujuan**: Mengubah `profile.html` dan `profile.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Account & Profile Center** modern di layar PC/laptop tanpa mengurangi fungsionalitas di layar HP.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menghilangkan pembatasan bingkai 480px dan latar hitam, beralih ke layout responsif modern `max-w-7xl mx-auto`.
+     - **Top Navigation Bar**: Menu navigasi atas sticky dengan brand logo, navigasi menu lengkap, notifikasi, tombol logout, dan tombol profil yang ditandai aktif.
+     - **Hero Card Profil Terpusat (`max-w-3xl mx-auto`)**: Foto avatar besar dengan tombol upload kamera, nama admin, email akun, dan badge peran Administrator.
+     - **Grid Menu Navigasi Cepat 2 Kolom**: Card menu dengan hover micro-interaction untuk *Edit Profil & Password*, *Pengaturan Aplikasi*, *Metode Pembayaran*, dan *Laporan Keuangan*.
+     - **Pembersihan Kode Redundan**: Menghapus lebih dari 450 baris kode HTML duplikat yang sebelumnya tertanam di dalam `profile.html` (view settings & bank) karena sudah memiliki halaman tersendiri (`app-settings.html` dan `payment-methods.html`).
+     - **Formulir Edit Profil Terpusat**: Card edit nama lengkap dan password baru (`#edit-view`) yang elegan di layar komputer.
+  2. **Tampilan Mobile (HP)**:
+     - Mempertahankan mobile header, avatar touch-friendly, list menu vertikal, dan bottom navigation bar dengan tab Profil aktif.
+
+
+---
+
+## 💳 Transformasi Responsif Halaman Metode Pembayaran (Tahap 9 - 4 November 2026)
+- **Tujuan**: Mengubah `payment-methods.html` dan `payment-methods.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Payment Channel Dashboard** modern.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menggunakan kanvas luas `max-w-7xl mx-auto` dengan Top Navigation Bar sticky.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header menampilkan judul "Metode Pembayaran & QRIS" serta tombol **➕ Tambah Bank Baru** (`#desktop-add-payment-btn`).
+     - **Layout 2 Kolom Responsif (`grid grid-cols-12 gap-6`)**:
+       - *Kolom Kiri (5 kolom)*: Kartu pembayaran QRIS, upload gambar QRIS statis, preview, dan toggle switch on/off QRIS.
+       - *Kolom Kanan (7 kolom)*: Daftar rekening bank & e-wallet lengkap dengan badge status Aktif/Nonaktif, nomor rekening tebal, dan tombol aksi.
+     - **Formulir Tambah/Edit Bank Terpusat**: Modal/tampilan form terpusat (`max-w-xl mx-auto`) dengan input nama bank, nomor rekening, nama pemilik, urutan tampilan, toggle aktif, dan tombol Hapus Bank saat edit.
+  2. **Tampilan Mobile (HP)**:
+     - Mempertahankan mobile header dengan tombol kembali ke profil (`#payment-methods-back-btn`), form header, dan tombol tambah bank mobile.
+
+
+---
+
+## 🔔 Transformasi Responsif Halaman Pusat Notifikasi (Tahap 10 - 4 November 2026)
+- **Tujuan**: Mengubah `notifikasi.html` dan `notifikasi.js` dari tampilan "Mobile-First Frame" 480px menjadi **Responsive Notification Center** modern.
+- **Implementasi yang Diterapkan**:
+  1. **Tampilan Desktop (PC / Laptop >= 768px)**:
+     - Menggunakan layout modern `max-w-4xl mx-auto` dengan Top Navigation Bar sticky dan ikon lonceng notifikasi aktif.
+     - **Header Halaman & Tombol Aksi Cepat**: Baris header menampilkan judul "Pusat Notifikasi & Log Aktivitas", tombol **✓ Tandai Semua Dibaca** (`#desktop-mark-all-read`), dan tombol **🗑️ Hapus Semua** (`#desktop-clear-notifications`).
+     - **Desain Kartu Notifikasi Modern**:
+       - Notifikasi belum dibaca: Aksen garis tepi kiri ungu (`border-l-4 border-l-brand-600`), latar putih bersih, shadow lembut, dan titik indikator biru/ungu.
+       - Notifikasi sudah dibaca: Latar abu-abu terang halus (`bg-white/80 border-slate-200/70 opacity-85`).
+       - Tanggal terformat lengkap dengan jam dan menit.
+       - Tombol aksi cepat untuk menandai dibaca per-item atau menghapus notifikasi.
+  2. **Tampilan Mobile (HP)**:
+     - Mempertahankan mobile header dengan tombol panah kembali ke dasbor dan tombol aksi mobile di atas list notifikasi.
+  3. **PWA & Cache Management**:
+     - Memperbarui `CACHE_NAME` di `sw.js` menjadi `wifibilling-pwa-v2.8.0`, menyertakan `payment-methods.html`, `payment-methods.js`, `notifikasi.html`, dan `notifikasi.js` ke dalam pre-load cache.
+      - Menghapus tombol redundan "Kelola Paket" dari header desktop `pelanggan.html` agar header lebih bersih dan fokus pada aksi data pelanggan (Import, Export, Tambah Pelanggan).
+
+---
+
+## 🎨 Penataan Ulang Arsitektur Halaman Profil & Metode Pembayaran (4 November 2026)
+- **Tujuan**: Mengeliminasi duplikasi navigasi pada `profile.html` dan memindahkan `payment-methods.html` ke dalam modul `app-settings.html` sesuai standar arsitektur SaaS.
+- **Implementasi yang Diterapkan**:
+  1. **Halaman Profil (`profile.html` & `profile.js`)**:
+     - Menghapus 4 kartu pintasan yang redundan: *Pengaturan Aplikasi*, *Laporan Keuangan*, *Metode Pembayaran*, dan *Edit Profil & Password*.
+     - Menerapkan **Unified 2-Column Responsive SaaS Profile**:
+       - *Kolom Kiri (5 cols)*: Kartu Hero Akun (Cover gradient, avatar foto profil dengan tombol kamera/upload instan, nama, email, role badge Administrator, info hak akses sistem, dan tombol Logout berwarna soft red di bagian bawah).
+       - *Kolom Kanan (7 cols)*: Formulir Terpadu Info Profil & Keamanan (Input Nama Lengkap langsung terisi, Email read-only dengan info kredensial login, Password Baru dengan tombol intip/toggle password, dan tombol Simpan Perubahan).
+     - Menghapus flow bolak-balik view/modal terpisah; semua data profil dan password dapat langsung diedit di satu halaman.
+  2. **Integrasi Metode Pembayaran ke Pengaturan (`app-settings.html`, `payment-methods.html`, `payment-methods.js`)**:
+     - Menambahkan kartu khusus **Metode Pembayaran & QRIS** di kolom kiri `app-settings.html` dengan tombol aksi langsung "Kelola ➔" menuju `payment-methods.html`.
+     - Mengubah navigasi aktif `payment-methods.html` menjadi bagian dari tab **Pengaturan**.
+     - Mengubah tombol kembali (*back button*) pada desktop dan mobile `payment-methods.html` serta redirect di `payment-methods.js` agar kembali ke `app-settings.html`.
+  3. **PWA & Cache Management**:
+     - Cache Service Worker di-bump ke `wifibilling-pwa-v2.9.0` di `sw.js`.
+     - Script di-bump ke `profile.js?v=6.0.0`, `app-settings.js?v=2.1.0`, dan `payment-methods.js?v=3.1.0`.
+
+---
+
+## 🔔 Standarisasi Live Notification Badge di Seluruh Halaman Admin (4 November 2026)
+- **Tujuan**: Menjamin badge angka merah notifikasi belum dibaca (*unread count badge*) muncul secara konsisten di ikon lonceng pada desktop navigation bar dan mobile header di setiap halaman.
+- **Implementasi yang Diterapkan**:
+  1. Menambahkan elemen badge angka (`.notification-badge-count`) di dalam ikon lonceng Top Desktop Navigation Bar pada semua halaman admin (`dashboard.html`, `pelanggan.html`, `tagihan.html`, `pengeluaran.html`, `laporan.html`, `paket.html`, `app-settings.html`, `profile.html`, dan `payment-methods.html`).
+  2. Memperbarui `notification-badge.js` agar otomatis menyinkronkan badge secara menyeluruh:
+     - Jika ada notifikasi belum dibaca (`count > 0`): menampilkan badge bulat merah menyala dengan angka (misal: `1`, `5`, atau `99+`).
+     - Jika tidak ada notifikasi (`count === 0`): badge disembunyikan otomatis (`hidden`).
+     - Polling realtime setiap 30 detik dan auto-refresh saat tab browser kembali aktif (*window focus*).
+  3. Memasukkan auto-init `initNotificationBadge(user.id)` ke dalam modul utama `auth.js` sehingga setiap halaman admin langsung memiliki live notification badge aktif tanpa konfigurasi manual.
+  4. Menyinkronkan `notifikasi.js` agar saat notifikasi ditandai dibaca atau dihapus, badge di navbar langsung terupdate seketika.
+  5. Cache dinaikkan ke `wifibilling-pwa-v2.9.1` di `sw.js`.
+
+---
+
+## 🎨 Perbaikan Warna Teks Dropdown Bulan & Tahun di Dasbor (4 November 2026)
+- **Tujuan**: Memperbaiki masalah teks opsi dropdown (*Semua Bulan, Januari, Februari, s/d Desember & Tahun*) pada `dashboard.html` yang sebelumnya tidak terbaca karena teks berwarna putih di atas latar putih menu browser.
+- **Implementasi yang Diterapkan**:
+  1. Menambahkan aturan CSS khusus `.modern-select option { color: #0f172a !important; background-color: #ffffff !important; font-weight: 600; }` pada `dashboard.html`.
+  2. Menambahkan class warna eksplisit `text-slate-900 bg-white` saat pembuatan elemen `<option>` di `dashboard.js` agar kompatibel dengan seluruh browser (Chrome, Edge, Firefox, mobile webview).
+  3. Cache di-bump ke `wifibilling-pwa-v2.9.2` di `sw.js` dan script ke `dashboard.js?v=7`.
+
+---
+
+## 🏢 Multi-Tenant Dynamic Branding di Top Navigation Bar Admin (4 November 2026)
+- **Tujuan**: Mengubah teks "WiFi Billing" dan logo di *Top Navigation Bar* agar otomatis dan dinamis berubah sesuai nama usaha/tenant (`app_name` / `tenant.name`) saat admin login via link slug (misal: `?t=apik`) maupun sesi login normal.
+- **Implementasi yang Diterapkan**:
+  1. Menambahkan fungsi `applyToAdminPages(settings)` di `apply-settings.js` yang secara otomatis memperbarui elemen `.desktop-brand-title` / `#desktop-brand-title` dengan `app_name` dari tenant yang sedang aktif.
+  2. Mendukung penggantian logo brand (`#desktop-brand-logo`) jika tenant mengunggah logo kustom mereka sendiri.
+  3. Menambahkan fallback otomatis pada `apply-settings.js`: jika URL tidak membawa parameter `?t=slug`, sistem akan mendeteksi `tenant_id` dari profil pengguna yang sedang login dan otomatis mengambil data branding tenant terkait.
+  4. Menstandarisasikan elemen `#desktop-brand-title` dan `#desktop-brand-logo` di seluruh 10 halaman admin portal.
+  5. Cache dinaikkan ke `wifibilling-pwa-v3.0.0` di `sw.js`.
+
+---
+
+## 📱 Optimalisasi Akses Menu Manajemen Mobile di Halaman Profil (4 November 2026)
+- **Tujuan**: Menjawab dan mempermudah akses menu *Pengaturan Aplikasi*, *Metode Pembayaran & QRIS*, *Laporan Keuangan*, dan *Paket Internet* pada tampilan web mobile (HP) agar langsung terlihat dan mudah dijangkau.
+- **Latar Belakang**:
+  - Pada layar Desktop ($\ge 768px$), menu-menu manajemen sudah berada di Top Navigation Bar atas sehingga di halaman Profil tidak diperlukan menu dobel.
+  - Namun pada tampilan Mobile ($< 768px$), Top Navigation Bar tersembunyi dan Bottom Bar hanya memiliki 5 slot utama (*Dasbor, Pelanggan, Tagihan, Pengeluaran, Profil*).
+  - Sebelumnya, kartu pintasan navigasi mobile diletakkan di bawah formulir edit password yang panjang sehingga admin mengira menu tersebut hilang karena harus scroll jauh ke bawah dan tertutup tombol logout.
+- **Implementasi yang Diterapkan**:
+  1. **Reposisi Urutan Tampilan Mobile (`profile.html`)**:
+     - Di layar mobile, blok **Menu Manajemen Sistem** diletakkan **LANGSUNG DI BAWAH KARTU PROFIL AVATAR**:
+       - ⚙️ *Pengaturan Aplikasi* (Identitas, WhatsApp gateway, GenieACS)
+       - 💳 *Metode Pembayaran & QRIS* (Rekening bank transfer & QRIS)
+       - 📊 *Laporan Keuangan* (Rekapitulasi transaksi, export Excel & PDF)
+       - 📦 *Paket Internet* (Kelola paket langganan dan harga)
+     - Di bawah menu kartu tersebut, barulah terdapat formulir **Informasi Profil & Keamanan** (Ubah nama dan password baru).
+     - Tombol **Keluar / Logout** dipindahkan ke bagian paling bawah khusus di layar mobile (`#mobile-logout-btn`), sedangkan di layar desktop tetap berada di dalam kartu kiri hero.
+  2. **Integrasi Event Listener (`profile.js`)**:
+     - Menambahkan event listener `handleLogout` pada `#mobile-logout-btn` selain `#logout-btn` desktop.
+  3. **Cache & Versioning**:
+     - Cache dinaikkan ke `wifibilling-pwa-v3.0.2` di `sw.js` dan script ke `profile.js?v=6.1.0`.
+
+---
+
+## 🚀 Transformasi Modern Responsive Split-Screen Halaman Login (4 November 2026)
+- **Tujuan**: Mengubah halaman login utama (`login.html` & `login.js`) dari frame sempit mobile-first 480px menjadi **Modern Split-Screen SaaS Authentication Hub** yang luas, elegan, dan profesional di layar PC/Laptop (Desktop), sekaligus tetap 100% responsif, rapi, dan nyaman di layar smartphone (Mobile).
+- **Implementasi yang Diterapkan**:
+  1. **Penghapusan Frame Kuno 480px**:
+     - Menghapus aturan CSS lama `#mobile-first-styles` (`max-width: 480px !important`) agar seluruh layar desktop dimanfaatkan optimal tanpa bilah hitam di kanan-kiri.
+  2. **Tampilan Desktop ($\ge 1024px$ / Layar Lebar)**:
+     - Menggunakan arsitektur kartu SaaS ganda (*Dual-Panel Card* `max-w-5xl mx-auto rounded-3xl shadow-2xl overflow-hidden grid grid-cols-12`):
+       - **Panel Kiri (Branding & Feature Showcase - 5 Kolom)**:
+         - Background gradien modern (*Brand Indigo to Purple*).
+         - Logo dinamis (`#login-logo`), nama tenant (`#login-app-name`), dan tagline (`#login-app-tagline`) tersinkronisasi otomatis via `apply-settings.js`.
+         - Tiga kartu sorotan keunggulan sistem:
+           1. ⚡ *Otomatisasi Tagihan & Notifikasi WhatsApp*
+           2. 💳 *Multi-Payment & QRIS Statis/Dinamis*
+           3. 📡 *Integrasi TR-069 GenieACS & Router MikroTik*
+         - Badge keamanan sistem multi-tenant terisolasi SSL 256-bit.
+       - **Panel Kanan (Formulir Autentikasi - 7 Kolom)**:
+         - Header sapaan ramah *"Selamat Datang Kembali 👋"* dan tombol shortcut kembali ke beranda.
+         - Input Email / ID Pelanggan (`#email`) modern dengan ikon, helper text (pelanggan cukup memasukkan IDPL tanpa `@`), dan efek fokus lembut.
+         - Input Password (`#password`) dengan tombol intip/sembunyikan kata sandi (`#btn-toggle-password`).
+         - Tombol submit login bergradien dengan loading state *"Memproses..."*.
+         - Alert error dinamis (`#error-message`) berlatar soft rose.
+         - Tombol pasang aplikasi PWA (`#btn-install-pwa-login`).
+         - Tautan pendaftaran tenant baru (`index.html#pricing`).
+  3. **Tampilan Mobile ($< 1024px$ / Layar HP)**:
+     - Elemen tersusun vertikal secara alami:
+       - Header ringkas dengan logo dan identitas tenant di bagian atas kartu.
+       - Form input berukuran sentuh nyaman ($\ge 44px$) dengan keyboard hint `autocomplete="username"` dan `autocomplete="current-password"`.
+       - Tombol login dan install PWA mudah dijangkau satu jempol.
+  4. **Sinkronisasi Multi-Tenant Dinamis (`apply-settings.js`)**:
+     - Memperbarui `apply-settings.js` menggunakan selector ganda (`#login-logo, .login-logo`, `#login-app-name, .login-app-name`, `#login-app-tagline, .login-app-tagline`) sehingga logo dan nama tenant berganti otomatis baik di hero desktop maupun header mobile ketika dibuka dengan parameter `?t=slug` ataupun sesi login aktif.
+  5. **Cache & Versioning**:
+     - Cache dinaikkan ke `wifibilling-pwa-v3.0.3` di `sw.js` dan script ke `login.js?v=2.1`.
+
+---
+
+## 🛠️ Perbaikan SyntaxError Import addNotificationIconToHeader di Dasbor (4 November 2026)
+- **Masalah**: Pada console browser muncul pesan `Uncaught SyntaxError: The requested module './notification-badge.js' does not provide an export named 'addNotificationIconToHeader' (at dashboard.js:5:10)` yang menyebabkan eksekusi `dashboard.js` terhenti dan dasbor berhenti di status "Memuat...".
+- **Penyebab**: Fungsi `addNotificationIconToHeader` sebelumnya tertinggal saat konsolidasi universal script badge notifikasi.
+- **Solusi & Implementasi**:
+  1. Menambahkan fungsi kompatibilitas `export function addNotificationIconToHeader() {}` pada [notification-badge.js](file:///c:/laragon/www/project-billing/notification-badge.js).
+  2. Merapikan [dashboard.js](file:///c:/laragon/www/project-billing/dashboard.js) dengan hanya mengimpor `initNotificationBadge` karena ikon notifikasi sudah tertanam secara native di HTML header.
+  3. Menaikkan cache service worker ke `wifibilling-pwa-v3.0.4` di `sw.js` dan versi script dashboard ke `dashboard.js?v=8` pada `dashboard.html`.

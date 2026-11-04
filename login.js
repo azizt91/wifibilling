@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!passwordInput) return;
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            btnTogglePassword.classList.add('text-white');
-            btnTogglePassword.classList.remove('text-white/60');
+            btnTogglePassword.classList.add('text-brand-600');
+            btnTogglePassword.classList.remove('text-slate-400');
         } else {
             passwordInput.type = 'password';
-            btnTogglePassword.classList.remove('text-white');
-            btnTogglePassword.classList.add('text-white/60');
+            btnTogglePassword.classList.remove('text-brand-600');
+            btnTogglePassword.classList.add('text-slate-400');
         }
     });
 

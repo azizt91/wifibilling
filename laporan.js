@@ -1,6 +1,6 @@
 // laporan.js - Comprehensive Reports Module
 import { supabase } from './supabase-client.js';
-import { requireRole } from './auth.js';
+import { requireRole, initLogout } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('Laporan page loaded');
@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check authentication
     try {
         const user = await requireRole('ADMIN');
+        initLogout('desktop-logout-btn');
         if (!user) {
             console.log('Authentication failed');
             return;
@@ -80,26 +81,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event Listeners
     // ============================================
 
-    backBtn.addEventListener('click', () => {
+    backBtn?.addEventListener('click', () => {
         window.history.back();
     });
 
-    filterBtn.addEventListener('click', () => {
+    const openFilterModal = () => {
         filterModal.classList.remove('hidden');
-    });
+    };
 
-    closeFilterModal.addEventListener('click', () => {
+    filterBtn?.addEventListener('click', openFilterModal);
+    document.getElementById('desktop-filter-btn')?.addEventListener('click', openFilterModal);
+
+    closeFilterModal?.addEventListener('click', () => {
         filterModal.classList.add('hidden');
     });
 
     // Close modal when clicking outside
-    filterModal.addEventListener('click', (e) => {
+    filterModal?.addEventListener('click', (e) => {
         if (e.target === filterModal) {
             filterModal.classList.add('hidden');
         }
     });
 
-    periodeFilter.addEventListener('change', () => {
+    periodeFilter?.addEventListener('change', () => {
         if (periodeFilter.value === 'custom') {
             customDateRange.classList.remove('hidden');
         } else {
@@ -107,20 +111,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    resetFilterBtn.addEventListener('click', () => {
+    resetFilterBtn?.addEventListener('click', () => {
         resetFilters();
     });
 
-    applyFilterBtn.addEventListener('click', () => {
+    applyFilterBtn?.addEventListener('click', () => {
         applyFilters();
         filterModal.classList.add('hidden');
     });
 
-    exportPdfBtn.addEventListener('click', () => {
+    exportPdfBtn?.addEventListener('click', () => {
+        exportToPDF();
+    });
+    document.getElementById('desktop-export-pdf-btn')?.addEventListener('click', () => {
         exportToPDF();
     });
 
-    exportExcelBtn.addEventListener('click', () => {
+    exportExcelBtn?.addEventListener('click', () => {
+        exportToExcel();
+    });
+    document.getElementById('desktop-export-excel-btn')?.addEventListener('click', () => {
         exportToExcel();
     });
 
@@ -370,11 +380,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             val && val !== 'all' && val !== ''
         ).length;
 
+        const desktopFilterBadge = document.getElementById('desktop-filter-badge');
         if (activeFilters > 0) {
             filterBadge.textContent = activeFilters;
             filterBadge.classList.remove('hidden');
+            if (desktopFilterBadge) {
+                desktopFilterBadge.textContent = `${activeFilters} Filter Aktif`;
+                desktopFilterBadge.classList.remove('hidden');
+            }
         } else {
             filterBadge.classList.add('hidden');
+            if (desktopFilterBadge) {
+                desktopFilterBadge.classList.add('hidden');
+            }
         }
     }
 
@@ -468,26 +486,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         combinedData.forEach((item, index) => {
             const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-50 transition-colors';
+            row.className = 'hover:bg-slate-50/80 transition-colors border-b border-slate-100 last:border-none';
 
             const statusBadge = item.type === 'expense' ? 
-                '<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">Pengeluaran</span>' : 
+                '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">Pengeluaran</span>' : 
                 getStatusBadge(item.status);
 
-            const displayDate = new Date(item.date).toLocaleDateString('id-ID');
+            const displayDate = new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
             const amountText = item.type === 'expense' ? 
-                `<span class="text-purple-600">-${formatter.format(item.amount)}</span>` : 
-                `<span class="text-green-600">+${formatter.format(item.amount)}</span>`;
+                `<span class="font-bold text-purple-600">-${formatter.format(item.amount)}</span>` : 
+                `<span class="font-bold text-emerald-600">+${formatter.format(item.amount)}</span>`;
 
             row.innerHTML = `
-                <td class="px-4 py-3 whitespace-nowrap text-gray-900 font-medium">${index + 1}</td>
-                <td class="px-4 py-3 text-gray-900">${item.customerName}</td>
-                <td class="px-4 py-3 text-gray-600 text-xs">${item.customerIdpl}</td>
-                <td class="px-4 py-3 text-gray-900">${item.description}</td>
-                <td class="px-4 py-3 font-semibold whitespace-nowrap">${amountText}</td>
-                <td class="px-4 py-3">${statusBadge}</td>
-                <td class="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">${displayDate}</td>
-                <td class="px-4 py-3 text-gray-600 text-xs">${item.paymentMethod}</td>
+                <td class="px-4 py-3.5 whitespace-nowrap text-slate-500 font-medium">${index + 1}</td>
+                <td class="px-4 py-3.5 text-slate-900 font-semibold">${item.customerName}</td>
+                <td class="px-4 py-3.5 text-slate-500 font-mono text-[11px]">${item.customerIdpl}</td>
+                <td class="px-4 py-3.5 text-slate-700">${item.description}</td>
+                <td class="px-4 py-3.5 whitespace-nowrap">${amountText}</td>
+                <td class="px-4 py-3.5 whitespace-nowrap">${statusBadge}</td>
+                <td class="px-4 py-3.5 text-slate-500 whitespace-nowrap text-xs">${displayDate}</td>
+                <td class="px-4 py-3.5 text-slate-600 uppercase text-[11px] font-bold">${item.paymentMethod}</td>
             `;
 
             tableBody.appendChild(row);
@@ -496,12 +514,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function getStatusBadge(status) {
         const badges = {
-            'paid': '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Lunas</span>',
-            'unpaid': '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">Belum Bayar</span>',
-            'partially_paid': '<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded-full">Cicilan</span>',
-            'installment': '<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-semibold rounded-full">Cicilan</span>'
+            'paid': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Lunas</span>',
+            'unpaid': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Belum Bayar</span>',
+            'partially_paid': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Cicilan</span>',
+            'installment': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Cicilan</span>'
         };
-        return badges[status] || '<span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded-full">Unknown</span>';
+        return badges[status] || '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Unknown</span>';
     }
 
     function showLoading() {

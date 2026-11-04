@@ -2,7 +2,7 @@
 import { supabase } from './supabase-client.js';
 import { requireRole, initLogout } from './auth.js';
 import { getUnreadNotificationCount } from './notification-service.js';
-import { addNotificationIconToHeader, initNotificationBadge } from './notification-badge.js';
+import { initNotificationBadge } from './notification-badge.js';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Ensure the user is an ADMIN, otherwise redirect.
@@ -13,8 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initLogout('desktop-logout-btn');
     populateUserInfo(user);
 
-    // Inisialisasi ikon notifikasi dan badge
-    addNotificationIconToHeader();
+    // Inisialisasi badge notifikasi
     initNotificationBadge(user.id);
 
 
@@ -95,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const option = document.createElement('option');
             option.value = index; // Use 0 for "Semua Bulan"
             option.textContent = bulan;
+            option.className = 'text-slate-900 bg-white';
             if (index === bulanIni) {
                 option.selected = true;
             }
@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const option = document.createElement('option');
             option.value = tahun;
             option.textContent = tahun;
+            option.className = 'text-slate-900 bg-white';
             filterTahun.appendChild(option);
         }
     }

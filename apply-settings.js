@@ -53,7 +53,7 @@ class ApplySettings {
 
     async fetchSettingsFromDB() {
         // Cek apakah ada parameter slug tenant di URL (misal: index.html?t=apik atau index.html?t=selinggonet)
-        const slug = this.getTenantSlugFromUrl();
+        let slug = this.getTenantSlugFromUrl();
         if (slug) {
             try {
                 const { data: tenantBranding, error: rpcError } = await supabase
@@ -66,6 +66,44 @@ class ApplySettings {
                 console.warn('[ApplySettings] Gagal memanggil get_tenant_branding_by_slug:', rpcErr);
             }
         }
+
+        // Fallback: Jika tidak ada slug di URL, coba deteksi tenant dari sesi user yang sedang login
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user?.id) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('tenant_id')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                if (profile?.tenant_id) {
+                    const { data: tenant } = await supabase
+                        .from('tenants')
+                        .select('slug, name, branding')
+                        .eq('id', profile.tenant_id)
+                        .maybeSingle();
+
+                    if (tenant) {
+                        if (tenant.slug) {
+                            sessionStorage.setItem('current_tenant_slug', tenant.slug);
+                        }
+                        const branding = tenant.branding || {};
+                        return {
+                            found: true,
+                            app_name: branding.app_name || tenant.name,
+                            app_short_name: branding.app_short_name || tenant.name,
+                            logo_url: branding.logo_url || null,
+                            theme_color: branding.theme_color || '#5324e0',
+                            ...branding
+                        };
+                    }
+                }
+            }
+        } catch (authErr) {
+            // Abaikan jika belum login atau session gagal
+        }
+
         try {
             const { data, error } = await supabase
                 .from('app_settings')
@@ -97,7 +135,8 @@ class ApplySettings {
         this.applyThemeColor(safeSettings.theme_color);
         this.applyManifest(safeSettings);
 
-        // Apply to specific page elements (login, register, customer pages)
+        // Apply to specific page elements (admin, login, register, customer pages)
+        this.applyToAdminPages(safeSettings);
         this.applyToLoginPage(safeSettings);
         this.applyToCustomerPages(safeSettings);
 
@@ -239,6 +278,33 @@ class ApplySettings {
         localStorage.setItem('pwa_manifest', JSON.stringify(manifestData));
     }
 
+    applyToAdminPages(settings) {
+        const appName = settings?.app_name || settings?.app_short_name || 'WiFi Billing';
+
+        // 1. Update teks judul brand di desktop navbar ("WiFi Billing" -> Nama Tenant)
+        const brandTitleElements = document.querySelectorAll('.desktop-brand-title, #desktop-brand-title, header.hidden.md\\:block h1');
+        brandTitleElements.forEach(el => {
+            el.textContent = appName;
+            el.title = appName;
+        });
+
+        // 2. Update logo brand di navbar desktop jika tenant memiliki logo_url kustom
+        const defaultLogo = "assets/logo_wifi.png";
+        const hasCustomLogo = settings?.logo_url &&
+            settings.logo_url !== defaultLogo &&
+            settings.logo_url !== 'assets/sn-blue.png' &&
+            !settings.logo_url.startsWith('data:image/svg+xml');
+
+        if (hasCustomLogo) {
+            const logoContainers = document.querySelectorAll('.desktop-brand-logo, #desktop-brand-logo, header.hidden.md\\:block .w-10.h-10');
+            logoContainers.forEach(container => {
+                container.classList.remove('bg-gradient-to-tr', 'from-brand-600', 'to-indigo-600', 'text-white');
+                container.classList.add('bg-white', 'border', 'border-slate-200/80', 'p-1', 'overflow-hidden');
+                container.innerHTML = `<img src="${settings.logo_url}" alt="${appName}" class="w-full h-full object-contain rounded-lg">`;
+            });
+        }
+    }
+
     applyToLoginPage(settings) {
         const appName = settings?.app_name || 'WiFi Billing System';
         const defaultLogo = "assets/logo_wifi.png";
@@ -246,26 +312,21 @@ class ApplySettings {
         const logoUrl = isOldDefaultLogo ? defaultLogo : settings.logo_url;
 
         // Login page (index.html / login.html)
-        const loginLogo = document.getElementById('login-logo');
-        const loginAppName = document.getElementById('login-app-name');
-
-        if (loginLogo) {
-            loginLogo.src = logoUrl;
-            loginLogo.alt = appName;
-        }
-        if (loginAppName) {
-            loginAppName.textContent = appName;
-        }
-
-        const loginTagline = document.getElementById('login-app-tagline');
-        if (loginTagline) {
+        document.querySelectorAll('#login-logo, .login-logo').forEach(el => {
+            el.src = logoUrl;
+            el.alt = appName;
+        });
+        document.querySelectorAll('#login-app-name, .login-app-name').forEach(el => {
+            el.textContent = appName;
+        });
+        document.querySelectorAll('#login-app-tagline, .login-app-tagline').forEach(el => {
             if (settings?.app_tagline && settings.app_tagline.trim()) {
-                loginTagline.textContent = settings.app_tagline.trim();
-                loginTagline.classList.remove('hidden');
+                el.textContent = settings.app_tagline.trim();
+                el.classList.remove('hidden');
             } else {
-                loginTagline.classList.add('hidden');
+                el.classList.add('hidden');
             }
-        }
+        });
 
         // Register page (register.html)
         const registerLogo = document.getElementById('register-logo');

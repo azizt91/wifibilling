@@ -84,6 +84,13 @@ export async function requireRole(requiredRole) {
             await enforceTenantSubscription(profile.tenant_id, user);
         }
 
+        // Inisialisasi otomatis badge notifikasi di seluruh halaman admin
+        if (isAdmin) {
+            import('./notification-badge.js').then(({ initNotificationBadge }) => {
+                initNotificationBadge(user.id);
+            }).catch(err => console.warn('Could not initialize notification badge:', err));
+        }
+
         return user; // Return user object if authorized
     } catch (error) {
         console.error('Authorization Error:', error.message);

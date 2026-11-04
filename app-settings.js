@@ -1,4 +1,5 @@
 import { supabase } from './supabase-client.js';
+import { requireRole, initLogout } from './auth.js';
 
 // Extended App Settings Module with Logo, WhatsApp, PWA settings
 export default class AppSettings {
@@ -13,7 +14,13 @@ export default class AppSettings {
         this.init();
     }
 
-    init() {
+    async init() {
+        try {
+            await requireRole('ADMIN');
+            initLogout('desktop-logout-btn');
+        } catch (e) {
+            console.warn('Auth check in AppSettings:', e);
+        }
         this.initializeEventListeners();
         this.loadCurrentSettings();
     }
@@ -24,13 +31,19 @@ export default class AppSettings {
             window.location.href = 'profile.html';
         });
 
-        // Cancel button - navigate to profile.html
+        // Cancel buttons - navigate to profile.html
         document.getElementById('settings-cancel-btn')?.addEventListener('click', () => {
             window.location.href = 'profile.html';
         });
+        document.getElementById('desktop-cancel-btn')?.addEventListener('click', () => {
+            window.location.href = 'profile.html';
+        });
 
-        // Save button
+        // Save buttons
         document.getElementById('settings-save-btn')?.addEventListener('click', () => {
+            this.saveSettings();
+        });
+        document.getElementById('desktop-save-btn')?.addEventListener('click', () => {
             this.saveSettings();
         });
 
@@ -448,9 +461,18 @@ _____________________________
 
         // Show loading
         const saveBtn = document.getElementById('settings-save-btn');
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = 'MENYIMPAN...';
-        saveBtn.disabled = true;
+        const desktopSaveBtn = document.getElementById('desktop-save-btn');
+        const originalText = saveBtn ? saveBtn.textContent : 'SIMPAN';
+        const originalDesktopHtml = desktopSaveBtn ? desktopSaveBtn.innerHTML : 'Simpan Perubahan';
+
+        if (saveBtn) {
+            saveBtn.textContent = 'MENYIMPAN...';
+            saveBtn.disabled = true;
+        }
+        if (desktopSaveBtn) {
+            desktopSaveBtn.textContent = 'Menyimpan...';
+            desktopSaveBtn.disabled = true;
+        }
 
         try {
             // Upload all images if changed
@@ -542,8 +564,14 @@ _____________________________
             console.error('Error saving settings:', error);
             alert('❌ Gagal menyimpan pengaturan: ' + error.message);
         } finally {
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
+            if (saveBtn) {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+            if (desktopSaveBtn) {
+                desktopSaveBtn.innerHTML = originalDesktopHtml;
+                desktopSaveBtn.disabled = false;
+            }
         }
     }
 
