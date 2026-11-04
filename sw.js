@@ -1,5 +1,5 @@
 // Service Worker untuk PWA WiFi Billing System
-const CACHE_NAME = 'wifibilling-pwa-v3.0.5';
+const CACHE_NAME = 'wifibilling-pwa-v3.0.6';
 const urlsToCache = [
   './',
   './index.html',

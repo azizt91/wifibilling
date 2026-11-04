@@ -449,24 +449,59 @@ export default class PaymentMethodsManager {
         this.showToast('Mengupload QRIS...', 'info');
 
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `qris-${Date.now()}.${fileExt}`;
-            const filePath = `qris/${fileName}`;
+            let publicUrl = null;
 
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, file, {
-                    cacheControl: '3600',
-                    upsert: false
+            // 1. Coba upload ke Supabase Storage (bucket avatars)
+            try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `qris-${Date.now()}.${fileExt}`;
+                const filePath = `qris/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('avatars')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+
+                if (!uploadError) {
+                    const { data: urlData } = supabase.storage
+                        .from('avatars')
+                        .getPublicUrl(filePath);
+                    if (urlData?.publicUrl) publicUrl = urlData.publicUrl;
+                }
+            } catch (storageErr) {
+                console.warn('Storage QRIS upload warning, fallback to compressed image:', storageErr);
+            }
+
+            // 2. Fallback jika storage gagal / offline / RLS
+            if (!publicUrl) {
+                publicUrl = await new Promise((resolve) => {
+                    const r = new FileReader();
+                    r.onload = (ev) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let w = img.width, h = img.height;
+                            const maxDim = 600;
+                            if (w > maxDim || h > maxDim) {
+                                if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                                else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                            }
+                            canvas.width = w; canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', 0.85));
+                        };
+                        img.onerror = () => resolve(ev.target.result);
+                        img.src = ev.target.result;
+                    };
+                    r.onerror = () => resolve(null);
+                    r.readAsDataURL(file);
                 });
+            }
 
-            if (uploadError) throw uploadError;
-
-            const { data: urlData } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            const publicUrl = urlData.publicUrl;
+            if (!publicUrl) throw new Error('Gagal memproses gambar QRIS.');
 
             const updatePayload = {
                 qris_image_url: publicUrl,

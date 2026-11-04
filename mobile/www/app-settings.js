@@ -547,32 +547,86 @@ _____________________________
         }
     }
 
-    async uploadImage(file, folder) {
+    compressImage(file, maxDimension = 512, quality = 0.85) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h) {
+                        if (w > maxDimension) {
+                            h = Math.round((h * maxDimension) / w);
+                            w = maxDimension;
+                        }
+                    } else {
+                        if (h > maxDimension) {
+                            w = Math.round((w * maxDimension) / h);
+                            h = maxDimension;
+                        }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    const mimeType = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
+                    try {
+                        const dataUrl = canvas.toDataURL(mimeType, quality);
+                        resolve(dataUrl);
+                    } catch (err) {
+                        resolve(e.target.result);
+                    }
+                };
+                img.onerror = () => resolve(e.target.result);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async uploadImage(file, folder, maxDimension = 512) {
+        // 1. Siapkan fallback data URL terkompresi terlebih dahulu
+        const fallbackDataUrl = await this.compressImage(file, maxDimension);
+
         try {
-            const fileExt = file.name.split('.').pop();
+            const fileExt = (file.name || 'image.png').split('.').pop().toLowerCase();
             const fileName = `${folder}-${Date.now()}.${fileExt}`;
             const filePath = `${folder}/${fileName}`;
 
-            // Upload to Supabase Storage (using 'avatars' bucket)
+            // Coba upload ke Supabase Storage (menggunakan bucket 'avatars')
             const { data, error } = await supabase.storage
                 .from('avatars')
                 .upload(filePath, file, {
                     cacheControl: '3600',
-                    upsert: false
+                    upsert: true
                 });
 
-            if (error) throw error;
+            if (!error) {
+                // Ambil URL publik
+                const { data: urlData } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath);
 
-            // Get public URL
-            const { data: urlData } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            return urlData.publicUrl;
+                if (urlData?.publicUrl) {
+                    return urlData.publicUrl;
+                }
+            } else {
+                console.warn('Supabase Storage upload warning, fallback ke compressed data URL:', error);
+            }
         } catch (error) {
-            console.error('Error uploading image:', error);
-            throw new Error('Gagal upload gambar: ' + error.message);
+            console.warn('Gagal upload ke storage bucket, fallback ke compressed data URL:', error);
         }
+
+        // 2. Fallback kompresi langsung (Data URL) jika Supabase Storage gagal / RLS / network / cors
+        if (fallbackDataUrl) {
+            return fallbackDataUrl;
+        }
+
+        throw new Error('Gagal memproses file gambar. Pastikan format file PNG atau JPG.');
     }
 
     async updateManifest(settings) {
