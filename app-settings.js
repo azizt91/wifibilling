@@ -11,7 +11,29 @@ export default class AppSettings {
             icon512: null
         };
         this.rawSettings = null;
+        this.currentTenantId = null;
         this.init();
+    }
+
+    async getTenantId() {
+        if (this.currentTenantId) return this.currentTenantId;
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('tenant_id')
+                    .eq('id', user.id)
+                    .maybeSingle();
+                if (profile?.tenant_id) {
+                    this.currentTenantId = profile.tenant_id;
+                    return this.currentTenantId;
+                }
+            }
+        } catch (e) {
+            console.warn('Error fetching tenant_id in AppSettings:', e);
+        }
+        return null;
     }
 
     async init() {
@@ -106,11 +128,12 @@ export default class AppSettings {
 
     async loadCurrentSettings() {
         try {
-            // Try to get from Supabase
-            const { data, error } = await supabase
-                .from('app_settings')
-                .select('*')
-                .single();
+            const tenantId = await this.getTenantId();
+            let query = supabase.from('app_settings').select('*');
+            if (tenantId) {
+                query = query.eq('tenant_id', tenantId);
+            }
+            const { data, error } = await query.maybeSingle();
 
             if (data) {
                 this.rawSettings = data;
@@ -153,11 +176,13 @@ export default class AppSettings {
 
     async loadReceiptFooter() {
         try {
-            const { data } = await supabase
+            const tenantId = await this.getTenantId();
+            let query = supabase
                 .from('whatsapp_settings')
                 .select('setting_value')
-                .eq('setting_key', 'receipt_footer')
-                .maybeSingle();
+                .eq('setting_key', 'receipt_footer');
+            if (tenantId) query = query.eq('tenant_id', tenantId);
+            const { data } = await query.maybeSingle();
 
             if (data && data.setting_value !== undefined && data.setting_value !== null) {
                 const footerInput = document.getElementById('receipt-footer-input');
@@ -182,14 +207,18 @@ export default class AppSettings {
         const footerVal = footerInput.value.trim();
         try {
             localStorage.setItem('receipt_footer', footerVal);
+            const tenantId = await this.getTenantId();
+            const payload = {
+                setting_key: 'receipt_footer',
+                setting_value: footerVal,
+                is_enabled: true,
+                updated_at: new Date().toISOString()
+            };
+            if (tenantId) payload.tenant_id = tenantId;
+
             await supabase
                 .from('whatsapp_settings')
-                .upsert({
-                    setting_key: 'receipt_footer',
-                    setting_value: footerVal,
-                    is_enabled: true,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'tenant_id, setting_key' });
+                .upsert(payload, { onConflict: tenantId ? 'tenant_id, setting_key' : 'setting_key' });
         } catch (e) {
             console.warn('Error saving receipt_footer to DB:', e);
         }
@@ -315,9 +344,10 @@ _____________________________
 
         // 2. Ambil data terbaru dari Supabase
         try {
-            const { data, error } = await supabase
-                .from('whatsapp_settings')
-                .select('*');
+            const tenantId = await this.getTenantId();
+            let query = supabase.from('whatsapp_settings').select('*');
+            if (tenantId) query = query.eq('tenant_id', tenantId);
+            const { data, error } = await query;
 
             if (error) {
                 console.warn('Warning fetching whatsapp_settings from DB (menggunakan fallback):', error.message);
@@ -339,9 +369,10 @@ _____________________________
 
     async loadGenieACSSettings() {
         try {
-            const { data, error } = await supabase
-                .from('genieacs_settings')
-                .select('*');
+            const tenantId = await this.getTenantId();
+            let query = supabase.from('genieacs_settings').select('*');
+            if (tenantId) query = query.eq('tenant_id', tenantId);
+            const { data, error } = await query;
 
             if (error) throw error;
 
@@ -492,12 +523,16 @@ _____________________________
                 ? await this.uploadImage(this.uploadedFiles.icon512, 'icons', 512)
                 : document.getElementById('icon-512-preview').src;
 
-            // Fetch existing row to get ID (to prevent creating new rows)
-            const { data: existingData } = await supabase
+            const tenantId = await this.getTenantId();
+
+            // Fetch existing row for THIS tenant to get ID (to prevent updating wrong tenant)
+            let existingQuery = supabase
                 .from('app_settings')
-                .select('id, qris_image_url, show_qris')
-                .limit(1)
-                .maybeSingle();
+                .select('id, tenant_id, qris_image_url, show_qris');
+            if (tenantId) {
+                existingQuery = existingQuery.eq('tenant_id', tenantId);
+            }
+            const { data: existingData } = await existingQuery.limit(1).maybeSingle();
 
             const existingQrisUrl = existingData?.qris_image_url ?? this.rawSettings?.qris_image_url ?? '';
             const existingShowQris = existingData?.show_qris !== undefined ? existingData.show_qris : (this.rawSettings?.show_qris !== false);
@@ -524,17 +559,25 @@ _____________________________
                 updated_at: new Date().toISOString()
             };
 
-            // Include existing ID to force UPDATE instead of INSERT
-            if (existingData?.id) {
-                settings.id = existingData.id;
+            if (tenantId) {
+                settings.tenant_id = tenantId;
             }
 
-            // Save to Supabase
-            const { error } = await supabase
-                .from('app_settings')
-                .upsert(settings, { onConflict: 'id' });
+            // Save to Supabase: jika baris tenant ini sudah ada, gunakan update; jika baru, gunakan upsert
+            let saveRes;
+            if (existingData?.id) {
+                settings.id = existingData.id;
+                saveRes = await supabase
+                    .from('app_settings')
+                    .update(settings)
+                    .eq('id', existingData.id);
+            } else {
+                saveRes = await supabase
+                    .from('app_settings')
+                    .upsert(settings, { onConflict: tenantId ? 'tenant_id' : 'id' });
+            }
 
-            if (error) throw error;
+            if (saveRes.error) throw saveRes.error;
 
             // Save to localStorage as fallback
             this.saveLocalSettings(settings);
@@ -791,27 +834,33 @@ _____________________________
             this.saveLocalWhatsAppSettings(localMap);
 
             // 2. Simpan ke database Supabase
+            const tenantId = await this.getTenantId();
             for (const setting of whatsappSettings) {
-                // Coba UPSERT terlebih dahulu (jika baris belum ada di database)
+                const payload = {
+                    setting_key: setting.setting_key,
+                    setting_value: setting.setting_value,
+                    updated_at: new Date().toISOString()
+                };
+                if (tenantId) payload.tenant_id = tenantId;
+
+                const conflictTarget = tenantId ? 'tenant_id, setting_key' : 'setting_key';
                 const { error: upsertErr } = await supabase
                     .from('whatsapp_settings')
-                    .upsert({
-                        setting_key: setting.setting_key,
-                        setting_value: setting.setting_value,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'setting_key' });
+                    .upsert(payload, { onConflict: conflictTarget });
 
                 if (upsertErr) {
                     console.warn(`Upsert gagal untuk ${setting.setting_key}, mencoba update fallback:`, upsertErr.message);
 
                     // Fallback ke UPDATE jika baris sudah ada atau RLS membatasi INSERT
-                    const { error: updateErr } = await supabase
+                    let updateQuery = supabase
                         .from('whatsapp_settings')
                         .update({
                             setting_value: setting.setting_value,
                             updated_at: new Date().toISOString()
                         })
                         .eq('setting_key', setting.setting_key);
+                    if (tenantId) updateQuery = updateQuery.eq('tenant_id', tenantId);
+                    const { error: updateErr } = await updateQuery;
 
                     if (updateErr) {
                         console.error(`Error updating ${setting.setting_key}:`, updateErr);
@@ -881,24 +930,31 @@ _____________________________
                 }
             ];
 
+            const tenantId = await this.getTenantId();
             // Update each setting with upsert fallback
             for (const setting of genieacsSettings) {
+                const payload = {
+                    setting_key: setting.setting_key,
+                    setting_value: setting.setting_value,
+                    updated_at: new Date().toISOString()
+                };
+                if (tenantId) payload.tenant_id = tenantId;
+
+                const conflictTarget = tenantId ? 'tenant_id, setting_key' : 'setting_key';
                 const { error: upsertErr } = await supabase
                     .from('genieacs_settings')
-                    .upsert({
-                        setting_key: setting.setting_key,
-                        setting_value: setting.setting_value,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'setting_key' });
+                    .upsert(payload, { onConflict: conflictTarget });
 
                 if (upsertErr) {
-                    const { error } = await supabase
+                    let updateQuery = supabase
                         .from('genieacs_settings')
                         .update({
                             setting_value: setting.setting_value,
                             updated_at: new Date().toISOString()
                         })
                         .eq('setting_key', setting.setting_key);
+                    if (tenantId) updateQuery = updateQuery.eq('tenant_id', tenantId);
+                    const { error } = await updateQuery;
 
                     if (error) {
                         console.error(`Error updating ${setting.setting_key}:`, error);
