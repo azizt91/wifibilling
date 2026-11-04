@@ -8,6 +8,7 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/services/hive_service.dart';
+import 'core/services/app_analytics_service.dart';
 
 void main() async {
   // Catch all errors and display them
@@ -53,6 +54,9 @@ void main() async {
     );
     print('✅ [MAIN] Supabase initialized');
     print('🔗 [MAIN] Supabase URL: ${AppConstants.supabaseUrl}');
+
+    // Track App Installation / Launch
+    AppAnalyticsService.trackAppLaunch();
   } catch (e, stack) {
     print('❌ [MAIN] Supabase init failed: $e');
     print('Stack: $stack');

@@ -194,6 +194,84 @@
 
         </div>
 
+        <!-- Mobile App Analytics Cards (Download, Installs, Conversion Rate) -->
+        <div class="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200/90 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2 sm:gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xs sm:text-sm font-bold text-slate-900">Statistik Aplikasi Mobile (APK)</h2>
+                        <p class="text-[10px] sm:text-[11px] text-slate-500">Pelacakan unduhan dari web dan perangkat aktif di lapangan</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-toggle-app-details" class="text-[11px] sm:text-xs font-semibold text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1">
+                    <span id="text-toggle-app-details">Lihat Rincian</span>
+                    <svg id="icon-toggle-app-details" class="w-3.5 h-3.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 sm:gap-4">
+                <!-- Total Downloads -->
+                <div class="bg-slate-50 p-2.5 sm:p-4 rounded-xl border border-slate-100">
+                    <div class="flex items-center justify-between text-slate-500 mb-1">
+                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Total Unduh</span>
+                        <span class="text-sm">📥</span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black text-slate-800" id="stat-app-downloads">0</div>
+                    <p class="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 truncate">Klik unduh dari web</p>
+                </div>
+
+                <!-- Total Installs -->
+                <div class="bg-emerald-50/60 p-2.5 sm:p-4 rounded-xl border border-emerald-100/70">
+                    <div class="flex items-center justify-between text-emerald-600 mb-1">
+                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider">HP Terpasang</span>
+                        <span class="text-sm">📱</span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black text-emerald-700" id="stat-app-installs">0</div>
+                    <p class="text-[9px] sm:text-[10px] text-emerald-600/80 mt-0.5 truncate">Perangkat unik aktif</p>
+                </div>
+
+                <!-- Conversion Rate -->
+                <div class="bg-indigo-50/60 p-2.5 sm:p-4 rounded-xl border border-indigo-100/70">
+                    <div class="flex items-center justify-between text-indigo-600 mb-1">
+                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Konversi</span>
+                        <span class="text-sm">⚡</span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black text-indigo-700" id="stat-app-conversion">0%</div>
+                    <p class="text-[9px] sm:text-[10px] text-indigo-600/80 mt-0.5 truncate">Rasio pasang / unduh</p>
+                </div>
+            </div>
+
+            <!-- Expandable Recent Installs & Downloads Log -->
+            <div id="app-details-drawer" class="hidden mt-4 pt-3.5 border-t border-slate-100">
+                <h3 class="text-xs font-bold text-slate-800 mb-2.5 flex items-center gap-1.5">
+                    <span>10 Perangkat HP Terpasang Terakhir</span>
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-50 text-[10px] text-slate-400 uppercase font-bold">
+                            <tr>
+                                <th class="p-2 rounded-l">Model Perangkat</th>
+                                <th class="p-2">Versi OS</th>
+                                <th class="p-2">Versi APK</th>
+                                <th class="p-2">Mitra / Tenant</th>
+                                <th class="p-2 rounded-r">Waktu Pasang</th>
+                            </tr>
+                        </thead>
+                        <tbody id="app-installs-tbody" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="5" class="p-3 text-center text-slate-400">Belum ada data pemasangan APK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Filter & Search Controls -->
         <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-2.5 sm:gap-3 items-stretch md:items-center justify-between">
             
@@ -663,7 +741,7 @@
 
     <!-- Scripts -->
     <script type="module" src="supabase-client.js"></script>
-    <script type="module" src="superadmin.js"></script>
+    <script type="module" src="superadmin.js?v=2.5.0"></script>
     <script src="pwa-installer.js"></script>
 </body>
 </html>

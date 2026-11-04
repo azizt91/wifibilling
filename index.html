@@ -1162,6 +1162,27 @@ ${superAdminUrl}`;
           regSubmitText.textContent = 'Lanjutkan Pendaftaran';
         }
       });
+      // Pelacakan Otomatis Unduhan APK (APK Download Tracker)
+      document.querySelectorAll('a[href*="wifibilling.apk"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          try {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('t') || params.get('tenant') || params.get('slug') || '';
+            supabase.rpc('record_apk_download', {
+              p_tenant_slug: slug,
+              p_user_agent: navigator.userAgent,
+              p_referrer: document.referrer || window.location.href
+            }).then(() => {
+              console.log('✅ APK download recorded successfully');
+            }).catch(e => {
+              console.warn('Record APK download info:', e);
+            });
+          } catch (e) {
+            console.warn('Track APK download exception:', e);
+          }
+        });
+      });
+
     });
   </script>
 </body>

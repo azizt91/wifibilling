@@ -402,6 +402,63 @@ function updateStats() {
             expiredBadge.classList.add('hidden');
         }
     }
+
+    // Muat metrik analitik aplikasi mobile (unduhan & instalasi)
+    loadAppStats();
+}
+
+// -----------------------------------------------------------------------------
+// 4.1. Mobile App Stats (Downloads, Installs, Conversion Rate)
+// -----------------------------------------------------------------------------
+async function loadAppStats() {
+    try {
+        const { data, error } = await supabase.rpc('get_superadmin_app_stats');
+        if (!error && data) {
+            const downloads = Number(data.total_downloads || 0);
+            const installs = Number(data.total_installs || 0);
+            const conversion = data.conversion_rate !== undefined ? data.conversion_rate : (downloads > 0 ? Math.round((installs / downloads) * 100) : 0);
+
+            if ($('stat-app-downloads')) $('stat-app-downloads').textContent = downloads.toLocaleString('id-ID');
+            if ($('stat-app-installs')) $('stat-app-installs').textContent = installs.toLocaleString('id-ID');
+            if ($('stat-app-conversion')) $('stat-app-conversion').textContent = `${conversion}%`;
+
+            renderRecentInstalls(data.recent_installs || []);
+        } else if (error) {
+            console.warn('RPC get_superadmin_app_stats info:', error.message);
+        }
+    } catch (e) {
+        console.warn('Load app stats exception:', e);
+    }
+}
+
+function renderRecentInstalls(installs) {
+    const tbody = $('app-installs-tbody');
+    if (!tbody) return;
+
+    if (!installs || installs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-400">Belum ada perangkat HP yang mengaktifkan APK</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = installs.map(i => {
+        const dateStr = i.first_installed_at ? new Date(i.first_installed_at).toLocaleDateString('id-ID', {
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : '-';
+        return `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-2 font-medium text-slate-900 flex items-center gap-1.5">
+                    <span class="text-xs">📱</span>
+                    <span>${escapeHtml(i.device_model || 'Android Device')}</span>
+                </td>
+                <td class="p-2 text-slate-600">${escapeHtml(i.os_version || 'Android')}</td>
+                <td class="p-2">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">${escapeHtml(i.app_version || 'v1.0.0')}</span>
+                </td>
+                <td class="p-2 text-slate-600">${escapeHtml(i.tenant_name || 'Umum / Publik')}</td>
+                <td class="p-2 text-slate-500 whitespace-nowrap text-[11px]">${dateStr}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 // -----------------------------------------------------------------------------
@@ -810,6 +867,25 @@ function formatQuotaDisplay(t) {
 // 6. Action Listeners (Edit, Copy, Search, Modals, Renewal, WA)
 // -----------------------------------------------------------------------------
 function setupEventListeners() {
+    // Toggle Mobile App Details Drawer
+    $('btn-toggle-app-details')?.addEventListener('click', () => {
+        const drawer = $('app-details-drawer');
+        const text = $('text-toggle-app-details');
+        const icon = $('icon-toggle-app-details');
+        if (!drawer) return;
+
+        const isHidden = drawer.classList.contains('hidden');
+        if (isHidden) {
+            drawer.classList.remove('hidden');
+            if (text) text.textContent = 'Tutup Rincian';
+            if (icon) icon.classList.add('rotate-180');
+        } else {
+            drawer.classList.add('hidden');
+            if (text) text.textContent = 'Lihat Rincian';
+            if (icon) icon.classList.remove('rotate-180');
+        }
+    });
+
     // Search input
     $('search-input')?.addEventListener('input', () => {
         renderTenantsList();
