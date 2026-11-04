@@ -212,3 +212,4 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_superadmin_app_stats() TO anon, authenticated;
+
