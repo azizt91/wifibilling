@@ -1,5 +1,5 @@
 // Service Worker untuk PWA WiFi Billing System
-const CACHE_NAME = 'wifibilling-pwa-v3.0.4';
+const CACHE_NAME = 'wifibilling-pwa-v3.0.5';
 const urlsToCache = [
   './',
   './index.html',
@@ -111,19 +111,28 @@ self.addEventListener('fetch', (event) => {
         const responseToCache = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
-        });
+        }).catch(() => {});
 
         return response;
       })
-      .catch(() => {
+      .catch(async () => {
         // Fallback ke cache jika offline
-        return caches.match(event.request).then((cachedResponse) => {
+        try {
+          const cachedResponse = await caches.match(event.request);
           if (cachedResponse) {
             return cachedResponse;
           }
           if (event.request.mode === 'navigate') {
-            return caches.match('./login.html') || caches.match('./index.html');
+            const fallback = await caches.match('./login.html') || await caches.match('./index.html');
+            if (fallback) return fallback;
           }
+        } catch (e) {
+          console.warn('SW cache match error:', e);
+        }
+        return new Response('Network error occurred', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: new Headers({ 'Content-Type': 'text/plain' })
         });
       })
   );

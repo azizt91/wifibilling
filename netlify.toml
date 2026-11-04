@@ -4,6 +4,72 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Clean URL routes
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/superadmin-login"
+  to = "/superadmin-login.html"
+  status = 200
+
+[[redirects]]
+  from = "/superadmin"
+  to = "/superadmin.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/pelanggan"
+  to = "/pelanggan.html"
+  status = 200
+
+[[redirects]]
+  from = "/tagihan"
+  to = "/tagihan.html"
+  status = 200
+
+[[redirects]]
+  from = "/pengeluaran"
+  to = "/pengeluaran.html"
+  status = 200
+
+[[redirects]]
+  from = "/laporan"
+  to = "/laporan.html"
+  status = 200
+
+[[redirects]]
+  from = "/paket"
+  to = "/paket.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/app-settings"
+  to = "/app-settings.html"
+  status = 200
+
+[[redirects]]
+  from = "/payment-methods"
+  to = "/payment-methods.html"
+  status = 200
+
+[[redirects]]
+  from = "/notifikasi"
+  to = "/notifikasi.html"
+  status = 200
+
 # SPA fallback
 [[redirects]]
   from = "/*"
